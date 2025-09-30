@@ -99,15 +99,22 @@ function App() {
   const handleAnswer = () => {
     if (!currentInput.trim()) return;
 
+    setAnswers(prev => ({
+      ...prev,
+      [currentQuestion]: currentInput
+    }));
+
     setChatHistory(prev => [...prev, { type: 'answer', text: currentInput }]);
-    setAnswers(prev => ({ ...prev, [currentQuestion]: currentInput }));
     setCurrentInput('');
 
     if (currentQuestionIndex < questionsInCurrentSection.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      setCurrentSectionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (currentSectionIndex < sections.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionIndex(0);
+    } else {
+      setGeneratedDsl({ message: "DSL gerado com sucesso!" });
+      setGeneratedPysparkCode("print('Código PySpark gerado!')");
     }
   };
 
