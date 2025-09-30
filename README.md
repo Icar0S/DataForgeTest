@@ -14,6 +14,8 @@ rodar frontend:
 
 Este projeto oferece uma solução para automatizar a criação de regras de qualidade de dados e a geração de código PySpark para aplicá-las. Através de uma interface de linha de comando, o usuário pode responder a perguntas sobre seus dados e as regras desejadas. O chatbot então traduz essas respostas em uma DSL (Domain Specific Language) estruturada e, posteriormente, em um script PySpark funcional.
 
+<img width="1918" height="896" alt="image" src="https://github.com/user-attachments/assets/a5c59bb3-049d-4417-8036-71b9f10e0b25" />
+
 ## Funcionalidades
 
 *   **Coleta de Requisitos**: Interage com o usuário via CLI para coletar informações sobre o dataset e as regras de qualidade de dados desejadas.
