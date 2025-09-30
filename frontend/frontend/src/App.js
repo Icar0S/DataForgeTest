@@ -35,7 +35,6 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [currentInput, setCurrentInput] = useState('');
-  const [generatedDsl, setGeneratedDsl] = useState(null);
   const [generatedPysparkCode, setGeneratedPysparkCode] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -84,7 +83,6 @@ function App() {
         body: JSON.stringify({ answers }),
       });
       const data = await response.json();
-      setGeneratedDsl(data.dsl);
       setGeneratedPysparkCode(data.pyspark_code);
       setErrors(data.errors || []);
       setChatHistory(prev => [...prev, { type: 'system', text: 'Generated DSL and PySpark code.' }]);
@@ -96,81 +94,63 @@ function App() {
     }
   };
 
-  const handleAnswer = () => {
-    if (!currentInput.trim()) return;
-
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: currentInput
-    }));
-
-    setChatHistory(prev => [...prev, { type: 'answer', text: currentInput }]);
-    setCurrentInput('');
-
-    if (currentQuestionIndex < questionsInCurrentSection.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
-    } else {
-      setGeneratedDsl({ message: "DSL gerado com sucesso!" });
-      setGeneratedPysparkCode("print('Código PySpark gerado!')");
-    }
-  };
-
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
       {!showChat ? (
         <HomePage onStartChat={() => setShowChat(true)} />
       ) : (
         <div className="chat-container">
-          <div className="chat-history">
-            {chatHistory.map((msg, index) => (
-              <div key={index} className={`chat-message ${msg.type}`}>
-                {msg.text}
+          <div className="chat-messages">
+            {chatHistory.map((message, index) => (
+              <div key={index} className={`message ${message.type}`}>
+                {message.text}
               </div>
             ))}
-            {isLoading && <div className="chat-message system">Generating code...</div>}
           </div>
-
-          {!generatedDsl && (
-            <div className="input-container">
+          
+          {currentSectionIndex < sections.length && (
+            <form onSubmit={handleSubmit} className="chat-input">
               <input
                 type="text"
                 value={currentInput}
-                onChange={(e) => setCurrentInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAnswer();
-                  }
-                }}
+                onChange={handleInputChange}
                 placeholder="Type your answer..."
-                disabled={isLoading}
+                className="input-field"
               />
-              <button onClick={handleAnswer} disabled={isLoading}>
-                {isLoading ? 'Processing...' : 'Submit'}
+              <button type="submit" className="submit-button">
+                Send
               </button>
-            </div>
+            </form>
           )}
 
-          {generatedDsl && (
-            <div className="generated-code">
-              <h3>Generated DSL:</h3>
-              <pre>{JSON.stringify(generatedDsl, null, 2)}</pre>
+          {currentSectionIndex >= sections.length && !generatedPysparkCode && (
+            <button
+              onClick={sendAnswersToBackend}
+              disabled={isLoading}
+              className="generate-button"
+            >
+              {isLoading ? 'Generating...' : 'Generate PySpark Code'}
+            </button>
+          )}
 
+          {generatedPysparkCode && (
+            <div className="mt-6 space-y-4">
+              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                <h3 className="text-xl font-bold text-purple-300 mb-2">Generated PySpark Code:</h3>
+                <pre className="text-gray-300 overflow-x-auto">
+                  {generatedPysparkCode}
+                </pre>
+              </div>
               {errors.length > 0 && (
-                <div className="errors-section">
-                  <h3>Errors:</h3>
-                  <ul>
+                <div className="bg-red-900/50 p-4 rounded-lg border border-red-700">
+                  <h3 className="text-xl font-bold text-red-300 mb-2">Validation Errors:</h3>
+                  <ul className="list-disc list-inside text-red-200">
                     {errors.map((error, index) => (
-                      <li key={index}><strong>{error.type}:</strong> {error.message}</li>
+                      <li key={index}>{error}</li>
                     ))}
                   </ul>
                 </div>
               )}
-
-              <h3>Generated PySpark Code:</h3>
-              <pre>{generatedPysparkCode}</pre>
             </div>
           )}
         </div>

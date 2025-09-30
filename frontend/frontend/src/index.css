@@ -1,13 +1,45 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+@layer components {
+  .chat-container {
+    @apply max-w-4xl mx-auto p-6;
+  }
+
+  .chat-messages {
+    @apply space-y-4 mb-6 h-[60vh] overflow-y-auto p-4 bg-gray-800/50 rounded-lg border border-gray-700;
+  }
+
+  .message {
+    @apply p-3 rounded-lg;
+  }
+
+  .message.question {
+    @apply bg-purple-900/50 text-white;
+  }
+
+  .message.answer {
+    @apply bg-gray-700/50 text-purple-200 ml-8;
+  }
+
+  .message.system {
+    @apply bg-blue-900/50 text-blue-200 text-center;
+  }
+
+  .chat-input {
+    @apply flex gap-4 items-center;
+  }
+
+  .input-field {
+    @apply flex-1 bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500;
+  }
+
+  .submit-button {
+    @apply px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors;
+  }
+
+  .generate-button {
+    @apply w-full mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50;
+  }
 }

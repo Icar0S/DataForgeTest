@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { fadeIn, staggerContainer, slideIn, scaleIn } from '../styles/animations';
 
 const DataQualityLLMSystem = ({ onStartChat }) => {
   const [selectedStructure, setSelectedStructure] = useState('synthetic');
@@ -130,172 +132,328 @@ const DataQualityLLMSystem = ({ onStartChat }) => {
   const StructureIcon = structures[selectedStructure].icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Sistema LLM para Qualidade de Dados
-          </h1>
-          <p className="text-purple-300">Geração de datasets com erros + validação automática com PySpark</p>
-          <button
-            onClick={onStartChat}
-            className="mt-4 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-semibold"
+    <motion.div 
+      initial="initial"
+      animate="animate"
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white overflow-x-hidden"
+    >
+      {/* Hero Section */}
+      <motion.div 
+        variants={fadeIn}
+        className="relative pt-20 pb-32 px-6"
+      >
+        <div className="max-w-7xl mx-auto text-center">
+          <motion.h1 
+            variants={slideIn}
+            className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600"
           >
-            Iniciar Chat de Validação
-          </button>
+            Sistema LLM para
+            <br />
+            Qualidade de Dados
+          </motion.h1>
+          <motion.p 
+            variants={fadeIn}
+            className="text-xl md:text-2xl text-purple-300 mb-8"
+          >
+            Geração inteligente de datasets com erros + validação automática com PySpark
+          </motion.p>
+          <motion.button
+            variants={scaleIn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onStartChat}
+            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center mx-auto gap-2"
+          >
+            Iniciar Validação <ArrowRight className="w-5 h-5" />
+          </motion.button>
         </div>
 
-        {/* Navigation */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        {/* Floating Badges */}
+        <div className="absolute top-40 left-10 animate-float-slow">
+          <div className="bg-purple-900/30 backdrop-blur-sm p-3 rounded-lg border border-purple-700/30">
+            <Bug className="w-6 h-6 text-purple-400" />
+          </div>
+        </div>
+        <div className="absolute top-60 right-20 animate-float-slower">
+          <div className="bg-pink-900/30 backdrop-blur-sm p-3 rounded-lg border border-pink-700/30">
+            <Code className="w-6 h-6 text-pink-400" />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Navigation */}
+      <motion.div 
+        variants={staggerContainer}
+        className="max-w-7xl mx-auto px-6 mb-12"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(structures).map(([key, struct]) => {
             const Icon = struct.icon;
             return (
-              <button
+              <motion.button
                 key={key}
+                variants={fadeIn}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setSelectedStructure(key)}
-                className={`p-4 rounded-lg transition-all transform hover:scale-105 ${
+                className={`p-6 rounded-xl transition-all ${
                   selectedStructure === key
-                    ? `${struct.color} shadow-lg shadow-purple-500/50`
-                    : 'bg-gray-800 hover:bg-gray-700 border border-gray-700'
+                    ? `${struct.color} shadow-lg shadow-purple-500/20`
+                    : 'bg-gray-800/50 hover:bg-gray-800 border border-gray-700'
                 }`}
               >
-                <Icon className="w-8 h-8 text-white mx-auto mb-2" />
-                <div className="text-white text-xs font-semibold text-center">
+                <Icon className="w-8 h-8 text-white mx-auto mb-3" />
+                <div className="text-sm font-medium text-center">
                   {struct.title}
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
+      </motion.div>
 
-        {/* Selected Structure Details */}
-        <div className="bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700">
-          <div className="flex items-center gap-4 mb-6">
-            <div className={`p-4 rounded-lg ${structures[selectedStructure].color}`}>
-              <StructureIcon className="w-10 h-10 text-white" />
-            </div>
+      {/* Selected Structure Details */}
+      <motion.div 
+        variants={fadeIn}
+        className="max-w-7xl mx-auto px-6"
+      >
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-gray-700/50">
+          <div className="flex items-start gap-6 mb-8">
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              className={`p-4 rounded-xl ${structures[selectedStructure].color}`}
+            >
+              <StructureIcon className="w-12 h-12 text-white" />
+            </motion.div>
             <div>
-              <h2 className="text-3xl font-bold text-white">
+              <h2 className="text-3xl font-bold text-white mb-2">
                 {structures[selectedStructure].title}
               </h2>
-              <p className="text-purple-300 mt-1">
+              <p className="text-purple-300 text-lg">
                 {structures[selectedStructure].description}
               </p>
             </div>
           </div>
 
-          <div className="space-y-3">
+          <motion.div 
+            variants={staggerContainer}
+            className="space-y-4"
+          >
             {structures[selectedStructure].fields.map((field, idx) => (
-              <div
+              <motion.div
                 key={idx}
-                className="bg-gray-700 rounded-lg p-4 hover:bg-gray-650 transition-colors border border-gray-600"
+                variants={fadeIn}
+                whileHover={{ scale: 1.01 }}
+                className="bg-gray-900/50 rounded-xl p-6 hover:bg-gray-900/70 transition-colors border border-gray-700/50"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-3">
                       <code className="text-purple-400 font-mono font-semibold text-lg">
                         {field.name}
                       </code>
-                      <span className="px-3 py-1 bg-gray-600 rounded-full text-xs font-medium text-emerald-400">
+                      <span className="px-3 py-1 bg-gray-800 rounded-full text-xs font-medium text-emerald-400 border border-emerald-900/30">
                         {field.type}
                       </span>
                     </div>
-                    <p className="text-gray-300 text-sm">{field.desc}</p>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {field.desc}
+                    </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
-        {/* Workflow */}
-        <div className="mt-8 bg-gray-800 rounded-xl shadow-2xl p-8 border border-gray-700">
-          <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+        {/* Workflow Section */}
+        <motion.div 
+          variants={fadeIn}
+          className="mt-12 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50"
+        >
+          <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
             <Zap className="text-yellow-400" />
             Fluxo do Sistema
           </h3>
-          <div className="space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="bg-purple-500 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0 text-white font-bold">
+          <div className="space-y-8">
+            <motion.div 
+              variants={slideIn}
+              className="flex items-start gap-6"
+            >
+              <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl w-14 h-14 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl shadow-lg shadow-purple-500/20">
                 1
               </div>
               <div className="flex-1">
-                <h4 className="text-white font-bold mb-1">LLM 1: Geração do Dataset</h4>
-                <p className="text-gray-300 text-sm">Cria <code className="text-purple-400">SyntheticDataset</code> + <code className="text-red-400">ExpectedProblems</code> documentando cada erro injetado</p>
+                <h4 className="text-xl font-bold text-white mb-2">LLM 1: Geração do Dataset</h4>
+                <p className="text-gray-300">
+                  Cria <code className="text-purple-400 font-mono">SyntheticDataset</code> + 
+                  <code className="text-red-400 font-mono ml-1">ExpectedProblems</code> documentando cada erro injetado
+                </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex items-start gap-4">
-              <div className="bg-blue-500 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0 text-white font-bold">
+            <motion.div 
+              variants={slideIn}
+              className="flex items-start gap-6"
+            >
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl w-14 h-14 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl shadow-lg shadow-blue-500/20">
                 2
               </div>
               <div className="flex-1">
-                <h4 className="text-white font-bold mb-1">LLM 2: Geração do Código</h4>
-                <p className="text-gray-300 text-sm">Recebe apenas o dataset e gera <code className="text-blue-400">GeneratedPySparkCode</code> para detectar problemas</p>
+                <h4 className="text-xl font-bold text-white mb-2">LLM 2: Geração do Código</h4>
+                <p className="text-gray-300">
+                  Recebe apenas o dataset e gera <code className="text-blue-400 font-mono">GeneratedPySparkCode</code> para detectar problemas
+                </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex items-start gap-4">
-              <div className="bg-green-500 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0 text-white font-bold">
+            <motion.div 
+              variants={slideIn}
+              className="flex items-start gap-6"
+            >
+              <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl w-14 h-14 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl shadow-lg shadow-green-500/20">
                 3
               </div>
               <div className="flex-1">
-                <h4 className="text-white font-bold mb-1">Execução & Logs</h4>
-                <p className="text-gray-300 text-sm">Roda o PySpark e gera <code className="text-green-400">ValidationLog</code> com <code className="text-yellow-400">DetectedIssue</code> para cada problema encontrado</p>
+                <h4 className="text-xl font-bold text-white mb-2">Execução & Logs</h4>
+                <p className="text-gray-300">
+                  Roda o PySpark e gera <code className="text-green-400 font-mono">ValidationLog</code> com 
+                  <code className="text-yellow-400 font-mono ml-1">DetectedIssue</code> para cada problema encontrado
+                </p>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex items-start gap-4">
-              <div className="bg-teal-500 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0 text-white font-bold">
+            <motion.div 
+              variants={slideIn}
+              className="flex items-start gap-6"
+            >
+              <div className="bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl w-14 h-14 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl shadow-lg shadow-teal-500/20">
                 4
               </div>
               <div className="flex-1">
-                <h4 className="text-white font-bold mb-1">Comparação & Score</h4>
-                <p className="text-gray-300 text-sm">Compara <code className="text-red-400">ExpectedProblems</code> vs <code className="text-yellow-400">DetectedIssues</code> gerando <code className="text-teal-400">ComparisonResult</code> com precisão/recall</p>
+                <h4 className="text-xl font-bold text-white mb-2">Comparação & Score</h4>
+                <p className="text-gray-300">
+                  Compara <code className="text-red-400 font-mono">ExpectedProblems</code> vs 
+                  <code className="text-yellow-400 font-mono ml-1">DetectedIssues</code> gerando 
+                  <code className="text-teal-400 font-mono ml-1">ComparisonResult</code> com precisão/recall
+                </p>
               </div>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Example Types */}
-        <div className="mt-8 bg-gradient-to-r from-purple-900 to-pink-900 rounded-xl p-6 border border-purple-700">
-          <h3 className="text-xl font-bold text-white mb-4">🎯 Tipos de Problemas para Injetar</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-black/30 rounded-lg p-4">
-              <h4 className="text-purple-300 font-bold mb-2">Problemas de Dados</h4>
-              <ul className="space-y-1 text-gray-200 text-sm">
-                <li>• <strong>NULL_VALUE:</strong> Valores nulos em campos obrigatórios</li>
-                <li>• <strong>DUPLICATE:</strong> Registros duplicados completos ou parciais</li>
-                <li>• <strong>OUT_OF_RANGE:</strong> Valores fora do range esperado</li>
-                <li>• <strong>INVALID_FORMAT:</strong> Formato incorreto (email, CPF, data)</li>
+        {/* Problem Types Section */}
+        <motion.div 
+          variants={fadeIn}
+          className="mt-12 bg-gradient-to-r from-purple-900/50 to-pink-900/50 backdrop-blur-sm rounded-2xl p-8 border border-purple-700/50"
+        >
+          <h3 className="text-2xl font-bold text-white mb-6">🎯 Tipos de Problemas para Injetar</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <motion.div 
+              variants={slideIn}
+              className="bg-black/20 backdrop-blur-sm rounded-xl p-6 border border-purple-700/30"
+            >
+              <h4 className="text-xl font-bold text-purple-300 mb-4">Problemas de Dados</h4>
+              <ul className="space-y-3 text-gray-200">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                  <strong>NULL_VALUE:</strong> Valores nulos em campos obrigatórios
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                  <strong>DUPLICATE:</strong> Registros duplicados completos ou parciais
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                  <strong>OUT_OF_RANGE:</strong> Valores fora do range esperado
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
+                  <strong>INVALID_FORMAT:</strong> Formato incorreto (email, CPF, data)
+                </li>
               </ul>
-            </div>
-            <div className="bg-black/30 rounded-lg p-4">
-              <h4 className="text-pink-300 font-bold mb-2">Problemas de Integridade</h4>
-              <ul className="space-y-1 text-gray-200 text-sm">
-                <li>• <strong>INCONSISTENT:</strong> Dados contraditórios entre campos</li>
-                <li>• <strong>MISSING_FK:</strong> Foreign key sem referência</li>
-                <li>• <strong>WRONG_TYPE:</strong> Tipo de dado incorreto</li>
-                <li>• <strong>OUTLIER:</strong> Valores estatisticamente anormais</li>
+            </motion.div>
+
+            <motion.div 
+              variants={slideIn}
+              className="bg-black/20 backdrop-blur-sm rounded-xl p-6 border border-pink-700/30"
+            >
+              <h4 className="text-xl font-bold text-pink-300 mb-4">Problemas de Integridade</h4>
+              <ul className="space-y-3 text-gray-200">
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                  <strong>INCONSISTENT:</strong> Dados contraditórios entre campos
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                  <strong>MISSING_FK:</strong> Foreign key sem referência
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                  <strong>WRONG_TYPE:</strong> Tipo de dado incorreto
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
+                  <strong>OUTLIER:</strong> Valores estatisticamente anormais
+                </li>
               </ul>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Implementation Tips */}
-        <div className="mt-8 bg-gray-800 rounded-xl p-6 border border-gray-700">
-          <h3 className="text-xl font-bold text-white mb-4">💡 Dicas de Implementação</h3>
-          <ul className="space-y-2 text-gray-300 text-sm">
-            <li>• Use <strong>fuzzy matching</strong> para comparar descrições esperadas vs detectadas</li>
-            <li>• Implemente <strong>tolerance</strong> para índices de linhas (±N linhas é aceitável)</li>
-            <li>• Armazene os <strong>prompts usados</strong> para reprodutibilidade</li>
-            <li>• Crie um <strong>benchmark suite</strong> com datasets de diferentes complexidades</li>
-            <li>• Use <strong>embeddings</strong> para comparar semanticamente os tipos de problemas</li>
-            <li>• Mantenha <strong>versionamento</strong> dos datasets e códigos gerados</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+        <motion.div 
+          variants={fadeIn}
+          className="mt-12 mb-20 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50"
+        >
+          <h3 className="text-2xl font-bold text-white mb-6">💡 Dicas de Implementação</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            <motion.div 
+              variants={slideIn}
+              className="space-y-4"
+            >
+              {/*
+                "Use fuzzy matching para comparar descrições esperadas vs detectadas",
+                "Implemente tolerance para índices de linhas (±N linhas é aceitável)",
+                "Armazene os prompts usados para reprodutibilidade"
+              */}
+              {["Use fuzzy matching para comparar descrições esperadas vs detectadas",
+                "Implemente tolerance para índices de linhas (±N linhas é aceitável)",
+                "Armazene os prompts usados para reprodutibilidade"
+              ].map((tip, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-gray-900/30 p-4 rounded-lg border border-gray-700/30">
+                  <div className="w-8 h-8 bg-purple-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <p className="text-gray-300">{tip}</p>
+                </div>
+              ))}
+            </motion.div>
+            <motion.div 
+              variants={slideIn}
+              className="space-y-4"
+            >
+              {/*
+                "Crie um benchmark suite com datasets de diferentes complexidades",
+                "Use embeddings para comparar semanticamente os tipos de problemas",
+                "Mantenha versionamento dos datasets e códigos gerados"
+              */}
+              {["Crie um benchmark suite com datasets de diferentes complexidades",
+                "Use embeddings para comparar semanticamente os tipos de problemas",
+                "Mantenha versionamento dos datasets e códigos gerados"
+              ].map((tip, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-gray-900/30 p-4 rounded-lg border border-gray-700/30">
+                  <div className="w-8 h-8 bg-pink-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-5 h-5 text-pink-400" />
+                  </div>
+                  <p className="text-gray-300">{tip}</p>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
 
