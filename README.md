@@ -1,6 +1,8 @@
 # Data Quality Chatbot
 
-Um chatbot interativo para definir regras de qualidade de dados e gerar scripts PySpark correspondentes.
+DataForgeTest is an innovative tool designed to automate data quality testing for Big Data systems. By combining Large Language Models (LLMs) with Retrieval-Augmented Generation (RAG), this repository provides a cutting-edge solution for generating customizable test cases, creating comprehensive data quality rules, and executing them on scalable Spark clusters.
+<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/f17fd7ad-e9e9-464a-a55b-5d80af8ec578" />
+
 
 # How to Run
 abra dois terminais:
