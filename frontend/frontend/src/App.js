@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+// Importar o CSS do Tailwind primeiro
+import './index.css';
+// Depois importar os estilos específicos da aplicação
 import './App.css';
 import HomePage from './components/HomePage';
 
@@ -35,10 +38,10 @@ function App() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [currentInput, setCurrentInput] = useState('');
-  const [generatedPysparkCode, setGeneratedPysparkCode] = useState('');
+  const [generatedPysparkCode] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [isLoading] = useState(false);
+  const [errors] = useState([]);
   const [showChat, setShowChat] = useState(false);
 
   const sections = Object.keys(QUESTIONS);
@@ -46,107 +49,115 @@ function App() {
   const questionsInCurrentSection = QUESTIONS[currentSection];
   const currentQuestion = questionsInCurrentSection ? questionsInCurrentSection[currentQuestionIndex] : null;
 
-  useEffect(() => {
-    if (currentQuestion) {
-      setChatHistory(prev => [...prev, { type: 'question', text: currentQuestion }]);
-    }
-  }, [currentQuestion]);
-
-  const handleInputChange = (e) => {
-    setCurrentInput(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!currentInput.trim()) return;
-
-    setChatHistory(prev => [...prev, { type: 'answer', text: currentInput }]);
-    setAnswers(prev => ({ ...prev, [currentQuestion]: currentInput }));
-    setCurrentInput('');
-
-    if (currentQuestionIndex < questionsInCurrentSection.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      setCurrentSectionIndex(prev => prev + 1);
-      setCurrentQuestionIndex(0);
-    }
-  };
-
-  const sendAnswersToBackend = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('http://127.0.0.1:5000/ask', { // Assuming Flask runs on 5000
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ answers }),
-      });
-      const data = await response.json();
-      setGeneratedPysparkCode(data.pyspark_code);
-      setErrors(data.errors || []);
-      setChatHistory(prev => [...prev, { type: 'system', text: 'Generated DSL and PySpark code.' }]);
-    } catch (error) {
-      console.error('Error sending answers to backend:', error);
-      setChatHistory(prev => [...prev, { type: 'system', text: 'Error generating code. Please check console for details.' }]);
-    } finally {
-      setIsLoading(false);
-    }
+  // Handle the start chat action
+  const handleStartChat = () => {
+    setShowChat(true);
   };
 
   return (
-    <div className="App min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white">
+    <div className="App">
       {!showChat ? (
-        <HomePage onStartChat={() => setShowChat(true)} />
+        <HomePage onStartChat={handleStartChat} />
       ) : (
-        <div className="chat-container">
-          <div className="chat-messages">
-            {chatHistory.map((message, index) => (
-              <div key={index} className={`message ${message.type}`}>
-                {message.text}
+        <div className="chat-container bg-gradient-to-br from-[#1a1a2e]/90 via-[#16213e]/90 to-[#1a1a2e]/90 backdrop-blur-sm">
+          {isLoading ? (
+            <div className="loading-container flex items-center justify-center h-screen">
+              <div className="loading-spinner"></div>
+              <p className="text-lg text-purple-300">Generating code...</p>
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto p-6 space-y-6">
+              <h2 className="text-3xl font-bold text-white mb-8 flex items-center gap-3">
+                Data Quality Validation Setup
+              </h2>
+              
+              {/* Section Title */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-purple-300">
+                  {currentSection}
+                </h3>
+                <p className="text-gray-400">
+                  Question {currentQuestionIndex + 1} of {questionsInCurrentSection?.length}
+                </p>
               </div>
-            ))}
-          </div>
-          
-          {currentSectionIndex < sections.length && (
-            <form onSubmit={handleSubmit} className="chat-input">
-              <input
-                type="text"
-                value={currentInput}
-                onChange={handleInputChange}
-                placeholder="Type your answer..."
-                className="input-field"
-              />
-              <button type="submit" className="submit-button">
-                Send
-              </button>
-            </form>
-          )}
 
-          {currentSectionIndex >= sections.length && !generatedPysparkCode && (
-            <button
-              onClick={sendAnswersToBackend}
-              disabled={isLoading}
-              className="generate-button"
-            >
-              {isLoading ? 'Generating...' : 'Generate PySpark Code'}
-            </button>
-          )}
-
-          {generatedPysparkCode && (
-            <div className="mt-6 space-y-4">
-              <div className="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
-                <h3 className="text-xl font-bold text-purple-300 mb-2">Generated PySpark Code:</h3>
-                <pre className="text-gray-300 overflow-x-auto">
-                  {generatedPysparkCode}
-                </pre>
+              {/* Chat History */}
+              <div className="space-y-4 mb-8">
+                {chatHistory.map((chat) => (
+                  <div key={chat.text} className={`p-4 rounded-lg ${
+                    chat.type === 'question' 
+                      ? 'bg-gray-800/50 border border-gray-700'
+                      : 'bg-purple-900/30 border border-purple-700'
+                  }`}>
+                    <p className="text-gray-200">{chat.text}</p>
+                  </div>
+                ))}
               </div>
+
+              {/* Current Question */}
+              {currentQuestion && (
+                <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                  <p className="text-gray-200 mb-4">{currentQuestion}</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={currentInput}
+                      onChange={(e) => setCurrentInput(e.target.value)}
+                      className="flex-1 bg-gray-900 text-white px-4 py-2 rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
+                      placeholder="Type your answer here..."
+                    />
+                    <button
+                      onClick={() => {
+                        // Handle answer submission
+                        const newAnswers = {
+                          ...answers,
+                          [`${currentSection}_${currentQuestionIndex}`]: currentInput
+                        };
+                        setAnswers(newAnswers);
+                        
+                        // Add to chat history
+                        setChatHistory([
+                          ...chatHistory,
+                          { type: 'question', text: currentQuestion },
+                          { type: 'answer', text: currentInput }
+                        ]);
+
+                        // Clear input
+                        setCurrentInput('');
+
+                        // Move to next question
+                        if (currentQuestionIndex < questionsInCurrentSection.length - 1) {
+                          setCurrentQuestionIndex(currentQuestionIndex + 1);
+                        } else if (currentSectionIndex < sections.length - 1) {
+                          setCurrentSectionIndex(currentSectionIndex + 1);
+                          setCurrentQuestionIndex(0);
+                        }
+                      }}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Generated Code Display */}
+              {generatedPysparkCode && (
+                <div className="bg-gray-800/50 p-6 rounded-xl border border-gray-700">
+                  <h3 className="text-xl font-bold text-white mb-4">Generated PySpark Code:</h3>
+                  <pre className="text-gray-300 overflow-x-auto">
+                    {generatedPysparkCode}
+                  </pre>
+                </div>
+              )}
+              
+              {/* Error Display */}
               {errors.length > 0 && (
                 <div className="bg-red-900/50 p-4 rounded-lg border border-red-700">
                   <h3 className="text-xl font-bold text-red-300 mb-2">Validation Errors:</h3>
                   <ul className="list-disc list-inside text-red-200">
-                    {errors.map((error, index) => (
-                      <li key={index}>{error}</li>
+                    {errors.map((error) => (
+                      <li key={error}>{error}</li>
                     ))}
                   </ul>
                 </div>

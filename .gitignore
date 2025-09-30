@@ -1,6 +1,7 @@
 # Ignore Python cache files
 __pycache__/
 *.pyc
+/node_modules
 
 # Ignore virtual environment
 .venv/
