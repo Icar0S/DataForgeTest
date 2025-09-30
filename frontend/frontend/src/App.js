@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
+import HomePage from './components/HomePage';
 
 // Hardcoded questions for now, ideally fetched from backend
 const QUESTIONS = {
@@ -39,6 +40,7 @@ function App() {
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [showChat, setShowChat] = useState(false);
 
   const sections = Object.keys(QUESTIONS);
   const currentSection = sections[currentSectionIndex];
@@ -48,15 +50,8 @@ function App() {
   useEffect(() => {
     if (currentQuestion) {
       setChatHistory(prev => [...prev, { type: 'question', text: currentQuestion }]);
-    } else if (currentSectionIndex < sections.length) {
-      // Move to next section if current section is exhausted
-      setCurrentSectionIndex(prev => prev + 1);
-      setCurrentQuestionIndex(0);
-    } else {
-      // All questions answered, send to backend
-      sendAnswersToBackend();
     }
-  }, [currentQuestion, currentSectionIndex]); // Depend on currentQuestion and currentSectionIndex
+  }, [currentQuestion]);
 
   const handleInputChange = (e) => {
     setCurrentInput(e.target.value);
@@ -101,55 +96,78 @@ function App() {
     }
   };
 
+  const handleAnswer = () => {
+    if (!currentInput.trim()) return;
+
+    setChatHistory(prev => [...prev, { type: 'answer', text: currentInput }]);
+    setAnswers(prev => ({ ...prev, [currentQuestion]: currentInput }));
+    setCurrentInput('');
+
+    if (currentQuestionIndex < questionsInCurrentSection.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      setCurrentSectionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(0);
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Data Quality Chatbot</h1>
-      </header>
-      <div className="chat-container">
-        <div className="chat-history">
-          {chatHistory.map((msg, index) => (
-            <div key={index} className={`chat-message ${msg.type}`}>
-              {msg.text}
-            </div>
-          ))}
-          {isLoading && <div className="chat-message system">Generating code...</div>}
-        </div>
-
-        {!generatedDsl && (
-          <form onSubmit={handleSubmit} className="chat-input-form">
-            <input
-              type="text"
-              value={currentInput}
-              onChange={handleInputChange}
-              placeholder="Type your answer here..."
-              disabled={isLoading}
-            />
-            <button type="submit" disabled={isLoading}>Send</button>
-          </form>
-        )}
-
-        {generatedDsl && (
-          <div className="generated-output">
-            <h2>Generated DSL:</h2>
-            <pre>{JSON.stringify(generatedDsl, null, 2)}</pre>
-
-            {errors.length > 0 && (
-              <div className="errors-section">
-                <h3>Errors:</h3>
-                <ul>
-                  {errors.map((error, index) => (
-                    <li key={index}><strong>{error.type}:</strong> {error.message}</li>
-                  ))}
-                </ul>
+      {!showChat ? (
+        <HomePage onStartChat={() => setShowChat(true)} />
+      ) : (
+        <div className="chat-container">
+          <div className="chat-history">
+            {chatHistory.map((msg, index) => (
+              <div key={index} className={`chat-message ${msg.type}`}>
+                {msg.text}
               </div>
-            )}
-
-            <h2>Generated PySpark Code:</h2>
-            <pre>{generatedPysparkCode}</pre>
+            ))}
+            {isLoading && <div className="chat-message system">Generating code...</div>}
           </div>
-        )}
-      </div>
+
+          {!generatedDsl && (
+            <div className="input-container">
+              <input
+                type="text"
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAnswer();
+                  }
+                }}
+                placeholder="Type your answer..."
+                disabled={isLoading}
+              />
+              <button onClick={handleAnswer} disabled={isLoading}>
+                {isLoading ? 'Processing...' : 'Submit'}
+              </button>
+            </div>
+          )}
+
+          {generatedDsl && (
+            <div className="generated-code">
+              <h3>Generated DSL:</h3>
+              <pre>{JSON.stringify(generatedDsl, null, 2)}</pre>
+
+              {errors.length > 0 && (
+                <div className="errors-section">
+                  <h3>Errors:</h3>
+                  <ul>
+                    {errors.map((error, index) => (
+                      <li key={index}><strong>{error.type}:</strong> {error.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <h3>Generated PySpark Code:</h3>
+              <pre>{generatedPysparkCode}</pre>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
