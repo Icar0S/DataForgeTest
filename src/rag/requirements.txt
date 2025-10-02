@@ -1,0 +1,7 @@
+# Dependencies for RAG functionality
+llama-index==0.9.4
+python-dotenv==1.0.0
+faiss-cpu==1.7.4
+pypdf2==3.0.1
+python-magic==0.4.27
+tiktoken==0.5.1

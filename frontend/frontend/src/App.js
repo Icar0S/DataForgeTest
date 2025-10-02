@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Importar o CSS do Tailwind primeiro
 import './index.css';
 // Depois importar os estilos específicos da aplicação
 import './App.css';
 import HomePage from './components/HomePage';
+import SupportPage from './pages/SupportPage';
+import SupportButton from './components/SupportButton';
 
 // Hardcoded questions for now, ideally fetched from backend
 const QUESTIONS = {
@@ -130,11 +133,16 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {!showChat ? (
-        <HomePage onStartChat={handleStartChat} />
-      ) : (
-        <div className="chat-container bg-gradient-to-br from-[#1a1a2e]/90 via-[#16213e]/90 to-[#1a1a2e]/90 backdrop-blur-sm">
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/support-rag" element={<SupportPage />} />
+          <Route path="/" element={
+            <>
+              {!showChat ? (
+                <HomePage onStartChat={handleStartChat} />
+              ) : (
+                <div className="chat-container bg-gradient-to-br from-[#1a1a2e]/90 via-[#16213e]/90 to-[#1a1a2e]/90 backdrop-blur-sm">
           {isLoading ? (
             <div className="loading-container flex items-center justify-center h-screen">
               <div className="loading-spinner"></div>
@@ -281,8 +289,8 @@ function App() {
                 <div className="bg-yellow-900/50 p-4 rounded-lg border border-yellow-700 mb-4">
                   <h3 className="text-xl font-bold text-yellow-300 mb-2">⚠️ Warnings:</h3>
                   <ul className="list-disc list-inside text-yellow-200">
-                    {warnings.map((warning, index) => (
-                      <li key={index}>{warning}</li>
+                    {warnings.map((warning) => (
+                      <li key={`warning-${warning}`}>{warning}</li>
                     ))}
                   </ul>
                 </div>
@@ -293,8 +301,8 @@ function App() {
                 <div className="bg-red-900/50 p-4 rounded-lg border border-red-700">
                   <h3 className="text-xl font-bold text-red-300 mb-2">❌ Validation Errors:</h3>
                   <ul className="list-disc list-inside text-red-200">
-                    {errors.map((error, index) => (
-                      <li key={index}>{error}</li>
+                    {errors.map((error) => (
+                      <li key={`error-${error}`}>{error}</li>
                     ))}
                   </ul>
                 </div>
@@ -303,7 +311,15 @@ function App() {
           )}
         </div>
       )}
-    </div>
+            </>
+          } />
+        </Routes>
+        {/* Add support button on all pages except support page */}
+        {window.location.pathname !== '/support-rag' && (
+          <SupportButton />
+        )}
+      </div>
+    </Router>
   );
 }
 
