@@ -1,8 +1,6 @@
 """API routes for RAG functionality."""
 
-import os
 from pathlib import Path
-from typing import Dict, List
 
 from flask import Blueprint, Response, jsonify, request, stream_with_context
 from werkzeug.utils import secure_filename

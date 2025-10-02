@@ -5,12 +5,47 @@ DataForgeTest is an innovative tool designed to automate data quality testing fo
 
 
 # How to Run
-abra dois terminais:
-rodar api: 
-```(.venv) (base) PS C:\Users\Icaro\OneDrive\Documents\projetos-google-cli\data-quality-chatbot\src> python api.py```
 
-rodar frontend:
-```(base) PS C:\Users\Icaro\OneDrive\Documents\projetos-google-cli\data-quality-chatbot\frontend\frontend> npm start```
+## Windows - Execução Automatizada
+
+### Primeira Execução ou Após Atualizar Dependências
+Execute `setup_start.bat` para:
+1. Verificar e instalar todas as dependências
+2. Configurar o ambiente completo
+3. Iniciar os serviços
+4. Abrir o navegador automaticamente
+
+### Desenvolvimento Diário
+Execute `dev_start.bat` para:
+1. Inicialização rápida dos serviços
+2. Sem verificação de dependências
+3. Ideal para uso durante desenvolvimento
+
+## Método Manual
+Se preferir iniciar manualmente, abra dois terminais:
+
+1. Terminal 1 (Backend):
+```bash
+# Ativar ambiente virtual
+.venv\Scripts\activate
+
+# Rodar API
+cd src
+python api.py
+```
+
+2. Terminal 2 (Frontend):
+```bash
+# Navegar até o diretório do frontend
+cd frontend/frontend
+
+# Iniciar aplicação React
+npm start
+```
+
+A aplicação estará disponível em:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:5000
 
 ## Visão Geral
 

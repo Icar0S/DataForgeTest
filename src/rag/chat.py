@@ -1,7 +1,6 @@
 """Chat functionality using RAG."""
 
-import json
-from typing import Dict, Generator, List, Optional
+from typing import Dict, Generator, List
 
 from llama_index.llms import ChatMessage, MessageRole
 from llama_index.chat_engine import ContextChatEngine
