@@ -1,3 +1,5 @@
+"""PySpark code generator module for converting DSL to executable PySpark code."""
+
 # PySpark imports are used in the generated code strings
 # These imports are not directly used in the generator function
 # but are included in the generated code output
@@ -26,7 +28,7 @@ findspark.init()
 
 # 1. Create SparkSession for Colab environment
 spark = SparkSession.builder \\
-    .appName("DataQualityValidation_{}") \\
+    .appName("DataQualityValidation_{dataset_name}") \\
     .master("local[*]") \\
     .getOrCreate()
 
@@ -44,7 +46,7 @@ def run_check(check_name, failed_df, all_failed_records_list):
     return all_failed_records_list
 
 # 2. Upload the data file to Colab environment
-print("Please upload your {} file")
+print("Please upload your {data_format_upper} file")
 uploaded = files.upload()
 
 # Get the uploaded file name
@@ -60,22 +62,22 @@ except StopIteration:
 all_failed_records = []
 
 # 3. Read data from file
-print(f"\\nReading data from '{{file_name}}' (format: {})")
+print(f"\\nReading data from '{{file_name}}' (format: {data_format})")
 try:
-    if "{}" == "csv":
+    if "{data_format}" == "csv":
         df = spark.read.format("csv") \\
-            .option("header", "{}") \\
+            .option("header", "{has_header}") \\
             .option("inferSchema", "true") \\
             .option("delimiter", ",") \\
             .load(file_name)
-    elif "{}" == "json":
+    elif "{data_format}" == "json":
         df = spark.read.json(file_name)
-    elif "{}" == "parquet":
+    elif "{data_format}" == "parquet":
         df = spark.read.parquet(file_name)
-    elif "{}" == "delta":
+    elif "{data_format}" == "delta":
         df = spark.read.format("delta").load(file_name)
     else:
-        print(f"Unsupported data format: {}. Please load data manually.")
+        print(f"Unsupported data format: {data_format}. Please load data manually.")
         spark.stop()
         exit(1)
 except Exception as e:
@@ -92,15 +94,10 @@ df.printSchema()
 # ================================================================
 print("\\n--- Applying Data Quality Rules ---")
 """.format(
-        dataset_name,
-        data_format.upper(),
-        data_format,
-        data_format,
-        str(has_header).lower(),
-        data_format,
-        data_format,
-        data_format,
-        data_format,
+        dataset_name=dataset_name,
+        data_format_upper=data_format.upper(),
+        data_format=data_format,
+        has_header=str(has_header).lower(),
     )
 
     # Process each rule

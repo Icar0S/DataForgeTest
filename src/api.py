@@ -1,7 +1,9 @@
+"""Flask API for Data Quality Chatbot backend."""
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -17,6 +19,7 @@ app.register_blueprint(rag_bp)
 
 @app.route("/", methods=["GET"])
 def health_check():
+    """Health check endpoint to verify API is running."""
     return jsonify(
         {"status": "Backend is running", "message": "Data Quality Chatbot API"}
     )
@@ -24,6 +27,7 @@ def health_check():
 
 @app.route("/ask", methods=["POST"])
 def ask_question():
+    """Process user answers and generate DSL and PySpark code."""
     try:
         data = request.get_json()
         user_answers = data.get("answers", {})
@@ -50,7 +54,8 @@ def ask_question():
                 "warnings": warnings,
             }
         )
-    except Exception as ex:
+    except Exception as ex:  # pylint: disable=broad-exception-caught
+        # Catching all exceptions to provide a stable API response
         print(f"Error in ask_question: {ex}")
         return (
             jsonify(

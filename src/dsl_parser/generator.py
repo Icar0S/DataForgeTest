@@ -1,3 +1,6 @@
+"""DSL generator module for converting user answers to DSL format."""
+
+
 def generate_dsl(answers):
     """Generates a DSL from the user's answers."""
     dsl = {"dataset": {}, "rules": []}
@@ -156,7 +159,7 @@ def generate_dsl(answers):
                             "message": f"Invalid format for column:format pair in '{formatted_cols_str}'. Expected 'column:format' (e.g., 'date_col:YYYY-MM-DD').",
                         }
                     )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             dsl.setdefault("errors", []).append(
                 {
                     "type": "format_validation",
@@ -215,7 +218,7 @@ def generate_dsl(answers):
                             "message": f"Invalid column specification in range constraint: '{':'.join(rule_parts)}'. Expected 'column:min:max', 'column::max', or 'column:min:'. Input: '{range_cols_str}'.",
                         }
                     )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             dsl.setdefault("errors", []).append(
                 {
                     "type": "range_validation",
@@ -255,7 +258,7 @@ def generate_dsl(answers):
                             "message": f"Invalid format for column:[values] pair in '{':'.join(rule_parts)}'. Expected 'column:[value1,value2]' (e.g., 'status:[active,inactive]'). Input: '{set_cols_str}'.",
                         }
                     )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             dsl.setdefault("errors", []).append(
                 {
                     "type": "set_validation",
@@ -307,7 +310,7 @@ def generate_dsl(answers):
                             "message": f"Invalid format for column:pattern pair in '{part}'. Expected 'column:pattern' (e.g., 'email:^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{{2,}}$)'. Input: '{regex_cols_str}'.",
                         }
                     )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             dsl.setdefault("errors", []).append(
                 {
                     "type": "regex_validation",
@@ -341,20 +344,33 @@ def generate_dsl(answers):
                     dsl.setdefault("errors", []).append(
                         {
                             "type": "value_distribution_validation",
-                            "message": f"Invalid format for value distribution rule: '{':'.join(rule_parts)}'. Expected 'column:value:min_freq:max_freq' (e.g., 'status:active:0.7:1.0'). Input: '{value_dist_str}'.",
+                            "message": (
+                                f"Invalid format for value distribution rule: "
+                                f"'{':'.join(rule_parts)}'. "
+                                f"Expected 'column:value:min_freq:max_freq' "
+                                f"(e.g., 'status:active:0.7:1.0'). "
+                                f"Input: '{value_dist_str}'."),
                         }
                     )
         except (ValueError, IndexError) as e:
             dsl.setdefault("errors", []).append(
                 {
                     "type": "value_distribution_validation",
-                    "message": f"Error parsing value distribution constraints: {e}. Input: '{value_dist_str}'. Expected 'column:value:min_freq:max_freq' (e.g., 'status:active:0.7:1.0').",
+                    "message": (
+                        f"Error parsing value distribution constraints: {e}. "
+                        f"Input: '{value_dist_str}'. "
+                        f"Expected 'column:value:min_freq:max_freq' "
+                        f"(e.g., 'status:active:0.7:1.0')."),
                 }
             )
 
     # Cross-Column Validation
     cross_column_str = answers.get(
-        "Are there any relationships between two columns that should always hold true (e.g., 'start_date' must be before 'end_date', 'price' must be greater than 'cost')? List as 'column1:operator:column2', separated by commas. Supported operators: <, <=, >, >=, ==, !=. (e.g., start_date:<:end_date, price:>:cost)",
+        ("Are there any relationships between two columns that should always hold true "
+         "(e.g., 'start_date' must be before 'end_date', 'price' must be greater than "
+         "'cost')? List as 'column1:operator:column2', separated by commas. "
+         "Supported operators: <, <=, >, >=, ==, !=. "
+         "(e.g., start_date:<:end_date, price:>:cost)"),
         "",
     )
     if cross_column_str:
@@ -381,21 +397,34 @@ def generate_dsl(answers):
                         dsl.setdefault("errors", []).append(
                             {
                                 "type": "cross_column_validation",
-                                "message": f"Unsupported operator '{operator}' in cross-column comparison. Supported operators are: {', '.join(supported_operators)}. Input: '{cross_column_str}'.",
+                                "message": (
+                                    f"Unsupported operator '{operator}' in cross-column "
+                                    f"comparison. Supported operators are: "
+                                    f"{', '.join(supported_operators)}. "
+                                    f"Input: '{cross_column_str}'."),
                             }
                         )
                 else:
                     dsl.setdefault("errors", []).append(
                         {
                             "type": "cross_column_validation",
-                            "message": f"Invalid format for cross-column comparison rule: '{':'.join(rule_parts)}'. Expected 'column1:operator:column2' (e.g., 'start_date:<:end_date'). Input: '{cross_column_str}'.",
+                            "message": (
+                                f"Invalid format for cross-column comparison rule: "
+                                f"'{':'.join(rule_parts)}'. "
+                                f"Expected 'column1:operator:column2' "
+                                f"(e.g., 'start_date:<:end_date'). "
+                                f"Input: '{cross_column_str}'."),
                         }
                     )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             dsl.setdefault("errors", []).append(
                 {
                     "type": "cross_column_validation",
-                    "message": f"Error parsing cross-column comparison constraints: {e}. Input: '{cross_column_str}'. Expected 'column1:operator:column2' (e.g., 'start_date:<:end_date').",
+                    "message": (
+                        f"Error parsing cross-column comparison constraints: {e}. "
+                        f"Input: '{cross_column_str}'. "
+                        f"Expected 'column1:operator:column2' "
+                        f"(e.g., 'start_date:<:end_date')."),
                 }
             )
 
