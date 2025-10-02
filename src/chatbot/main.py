@@ -38,7 +38,10 @@ def process_chatbot_request(answers):
         "col1,col2,col3,col4,col5,col6",
     )
     answers.setdefault(
-        "What is the expected data type for each column (e.g., string, integer, float, date)? Please list them in the same order as column names, separated by commas. (e.g., integer, string, string, string)",
+        ("What is the expected data type for each column "
+         "(e.g., string, integer, float, date)? Please list them in the same order "
+         "as column names, separated by commas. "
+         "(e.g., integer, string, string, string)"),
         "string,string,string,string,string,string",
     )
 

@@ -1,16 +1,19 @@
+"""Unit tests for PySpark code generator functionality."""
 import unittest
 import sys
+import os
 
-sys.path.append(
-    "C:/Users/Icaro/OneDrive/Documents/projetos-google-cli/data-quality-chatbot"
-)
+# Add project root to path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.code_generator.pyspark_generator import generate_pyspark_code
 
 
 class TestPySparkGenerator(unittest.TestCase):
+    """Test suite for PySpark code generation from DSL."""
 
     def test_basic_code_generation(self):
+        """Test basic code generation structure."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -28,6 +31,7 @@ class TestPySparkGenerator(unittest.TestCase):
         self.assertIn("spark.stop()", code)
 
     def test_not_null_rule(self):
+        """Test not_null rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -41,6 +45,7 @@ class TestPySparkGenerator(unittest.TestCase):
         self.assertIn("Checking not_null for column: id", code)
 
     def test_uniqueness_rule(self):
+        """Test uniqueness rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -56,6 +61,7 @@ class TestPySparkGenerator(unittest.TestCase):
         self.assertIn("Checking uniqueness for columns: 'id', 'email'", code)
 
     def test_format_rule_date(self):
+        """Test date format rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -71,6 +77,7 @@ class TestPySparkGenerator(unittest.TestCase):
         self.assertIn("Checking date format 'YYYY-MM-DD' for column: event_date", code)
 
     def test_range_rule(self):
+        """Test range rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -84,6 +91,7 @@ class TestPySparkGenerator(unittest.TestCase):
         self.assertIn("Checking range [18.0, 65.0] for column: age", code)
 
     def test_in_set_rule(self):
+        """Test in_set rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -101,6 +109,7 @@ class TestPySparkGenerator(unittest.TestCase):
         )
 
     def test_regex_rule(self):
+        """Test regex pattern rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -126,6 +135,7 @@ class TestPySparkGenerator(unittest.TestCase):
         )
 
     def test_value_distribution_rule(self):
+        """Test value distribution rule code generation."""
         dsl = {
             "dataset": {
                 "name": "test_data",
@@ -152,5 +162,4 @@ class TestPySparkGenerator(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
     unittest.main()
