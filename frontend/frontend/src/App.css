@@ -130,3 +130,44 @@
 .errors-section li {
   margin-bottom: 5px;
 }
+
+/* Python syntax highlighting */
+.language-python {
+  color: #e5e7eb;
+  background: transparent;
+}
+
+.language-python .keyword {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+.language-python .string {
+  color: #10b981;
+}
+
+.language-python .comment {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.language-python .function {
+  color: #3b82f6;
+}
+
+.language-python .number {
+  color: #f97316;
+}
+
+/* Code block styling */
+pre code {
+  display: block;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', 'Courier New', monospace;
+  line-height: 1.6;
+  tab-size: 4;
+}

@@ -1,4 +1,9 @@
+"""Answer management module for the data quality chatbot."""
+
+
 class AnswerManager:
+    """Manages user answers for the chatbot questions."""
+
     def __init__(self):
         self.answers = {}
 

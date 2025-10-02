@@ -1,5 +1,7 @@
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit, to_date, regexp_extract, array_contains, countDistinct
+# PySpark imports are used in the generated code strings
+# These imports are not directly used in the generator function
+# but are included in the generated code output
+
 
 def generate_pyspark_code(dsl):
     """Generates PySpark code from the DSL."""
@@ -50,7 +52,7 @@ print("\n--- Applying Data Quality Rules ---")
     for rule in dsl.get("rules", []):
         rule_type = rule.get("type")
         column = rule.get("column")
-        columns = rule.get("columns") # For uniqueness rule
+        columns = rule.get("columns")  # For uniqueness rule
 
         if rule_type == "not_null":
             code += f"""
@@ -86,7 +88,7 @@ else:
                 "YYYY-MM-DD": "yyyy-MM-dd",
                 "MM-DD-YYYY": "MM-dd-yyyy",
                 "DD/MM/YYYY": "dd/MM/yyyy",
-                "YYYY/MM/DD": "yyyy/MM/dd"
+                "YYYY/MM/DD": "yyyy/MM/dd",
             }
             spark_date_format = date_formats.get(fmt.upper())
 
@@ -103,14 +105,16 @@ if failed_count > 0:
 else:
     print(f"  PASS: Column '{column}' has valid date format.")
 """
-            else: # Generic format check using regex (if a regex pattern is provided in the format string)
+            else:  # Generic format check using regex (if a regex pattern is provided in the format string)
                 # This assumes the 'format' answer could be a regex directly if not a known date format
                 code += f"""
 print(f"Checking custom format (regex) '{fmt}' for column: {column}")
 failed_format = df.filter(~col("{column}").rlike("{fmt}"))
-if failed_format.count() > 0:
-    print(f"  FAIL: {failed_format.count()} records do not match the custom format (regex) in column '{column}'.")
-    failed_format.show(truncate=False)
+failed_count = failed_format.count()
+if failed_count > 0:
+    print(f"  FAIL: {{failed_count}} records do not match the custom format (regex) in column '{column}'.")
+    failed_format.limit(5).show(truncate=False)
+    all_failed_records.append((f"format_{column}", failed_count))
 else:
     print(f"  PASS: Column '{column}' values match the custom format (regex).")
 """
@@ -119,10 +123,10 @@ else:
             max_val = rule.get("max")
             range_condition = []
             if min_val is not None:
-                range_condition.append(f"col(\"{column}\") < {min_val}")
+                range_condition.append(f'col("{column}") < {min_val}')
             if max_val is not None:
-                range_condition.append(f"col(\"{column}\") > {max_val}")
-            
+                range_condition.append(f'col("{column}") > {max_val}')
+
             if range_condition:
                 condition_str = " | ".join(range_condition)
                 code += f"""
@@ -188,7 +192,7 @@ value_count = df.filter(col("{column}") == "{value}").count()
             col1 = rule.get("column1")
             operator = rule.get("operator")
             col2 = rule.get("column2")
-            
+
             code += f"""
 print(f"Checking cross-column comparison: {col1} {operator} {col2}")
 failed_comparison = df.filter(~(col("{col1}") {operator} col("{col2}")))
