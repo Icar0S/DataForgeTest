@@ -4,37 +4,78 @@
 
 
 def generate_pyspark_code(dsl):
-    """Generates PySpark code from the DSL."""
+    """Generates PySpark code from the DSL and formats it for Google Colab."""
     dataset_name = dsl.get("dataset", {}).get("name", "data")
-    source_path = dsl.get("dataset", {}).get("source", "")
     data_format = dsl.get("dataset", {}).get("format", "").lower()
     has_header = dsl.get("dataset", {}).get("has_header", False)
 
-    code = f"""
+    # Initialize the code with Colab setup and helper functions
+    code = """# Data Quality Validation Script
+# After installation above, run this cell.
+# You will be prompted to upload your data file.
+# =================================================================
+
+import os
+import findspark
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, to_date, regexp_extract, array_contains, countDistinct
+from google.colab import files
 
-spark = SparkSession.builder \
-    .appName("DataQualityValidation_{dataset_name}") \
+# Initialize findspark to locate Spark installation
+findspark.init()
+
+# 1. Create SparkSession for Colab environment
+spark = SparkSession.builder \\
+    .appName("DataQualityValidation_{}") \\
+    .master("local[*]") \\
     .getOrCreate()
 
-all_failed_records = [] # To collect all failed records for summary
-
-print("Reading data from {source_path} (format: {data_format})")
-try:
-    if "csv" == "{data_format}":
-        df = spark.read.format("csv")\
-            .option("header", "{str(has_header).lower()}")\
-            .option("inferSchema", "true")\
-            .load("{source_path}")
-    elif "json" == "{data_format}":
-        df = spark.read.json("{source_path}")
-    elif "parquet" == "{data_format}":
-        df = spark.read.parquet("{source_path}")
-    elif "delta" == "{data_format}":
-        df = spark.read.format("delta").load("{source_path}")
+# Helper function to avoid code repetition
+def run_check(check_name, failed_df, all_failed_records_list):
+    \"\"\"Execute failure count and display results.\"\"\"
+    failed_count = failed_df.count()
+    if failed_count > 0:
+        print(f"  FAIL: {{failed_count}} records violated the rule.")
+        print("  Sample of failing records:")
+        failed_df.limit(5).show(truncate=False)
+        all_failed_records_list.append((check_name, failed_count))
     else:
-        print(f"Unsupported data format: {data_format}. Please load data manually.")
+        print(f"  SUCCESS: All records passed the check.")
+    return all_failed_records_list
+
+# 2. Upload the data file to Colab environment
+print("Please upload your {} file")
+uploaded = files.upload()
+
+# Get the uploaded file name
+try:
+    file_name = next(iter(uploaded))
+    print(f"\\nFile '{{file_name}}' received successfully!")
+except StopIteration:
+    print("No file was uploaded. Ending script.")
+    spark.stop()
+    exit()
+
+# List to collect all failure records for summary
+all_failed_records = []
+
+# 3. Read data from file
+print(f"\\nReading data from '{{file_name}}' (format: {})")
+try:
+    if "{}" == "csv":
+        df = spark.read.format("csv") \\
+            .option("header", "{}") \\
+            .option("inferSchema", "true") \\
+            .option("delimiter", ",") \\
+            .load(file_name)
+    elif "{}" == "json":
+        df = spark.read.json(file_name)
+    elif "{}" == "parquet":
+        df = spark.read.parquet(file_name)
+    elif "{}" == "delta":
+        df = spark.read.format("delta").load(file_name)
+    else:
+        print(f"Unsupported data format: {}. Please load data manually.")
         spark.stop()
         exit(1)
 except Exception as e:
@@ -42,13 +83,27 @@ except Exception as e:
     spark.stop()
     exit(1)
 
-print("Data loaded successfully. Total records: {{df.count()}}")
+print(f"Data loaded successfully. Total records: {{df.count()}}")
+print("\\nData schema:")
 df.printSchema()
 
-# Apply data quality rules
-print("\n--- Applying Data Quality Rules ---")
-"""
+# ================================================================
+# 4. Applying Data Quality Rules
+# ================================================================
+print("\\n--- Applying Data Quality Rules ---")
+""".format(
+        dataset_name,
+        data_format.upper(),
+        data_format,
+        data_format,
+        str(has_header).lower(),
+        data_format,
+        data_format,
+        data_format,
+        data_format,
+    )
 
+    # Process each rule
     for rule in dsl.get("rules", []):
         rule_type = rule.get("type")
         column = rule.get("column")
@@ -56,34 +111,19 @@ print("\n--- Applying Data Quality Rules ---")
 
         if rule_type == "not_null":
             code += f"""
-print(f"Checking not_null for column: {column}")
+print(f"\\nChecking not_null for column: {column}")
 failed_not_null = df.filter(col("{column}").isNull())
-failed_count = failed_not_null.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records have nulls in column '{column}'.")
-    print("    Sample failed records:")
-    failed_not_null.limit(5).show(truncate=False)
-    all_failed_records.append((f"not_null_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' has no nulls.")
+all_failed_records = run_check(f"null_{column}", failed_not_null, all_failed_records)
 """
         elif rule_type == "uniqueness":
             cols_str = ", ".join([f"'{c}'" for c in columns])
             code += f"""
-print(f"Checking uniqueness for columns: {cols_str}")
+print(f"\\nChecking uniqueness for columns: {cols_str}")
 failed_uniqueness = df.groupBy({cols_str}).count().filter(col("count") > 1)
-failed_count = failed_uniqueness.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} unique combinations found with duplicates in columns {cols_str}.")
-    print("    Sample failed records:")
-    failed_uniqueness.limit(5).show(truncate=False)
-    all_failed_records.append((f"uniqueness_{'_'.join(columns)}", failed_count))
-else:
-    print(f"  PASS: Columns {cols_str} have unique values.")
+all_failed_records = run_check(f"uniqueness_{'_'.join(columns)}", failed_uniqueness, all_failed_records)
 """
         elif rule_type == "format":
             fmt = rule.get("format")
-            # More robust date format validation
             date_formats = {
                 "YYYY-MM-DD": "yyyy-MM-dd",
                 "MM-DD-YYYY": "MM-dd-yyyy",
@@ -94,30 +134,17 @@ else:
 
             if spark_date_format:
                 code += f"""
-print(f"Checking date format '{fmt}' for column: {column}")
+print(f"\\nChecking date format '{fmt}' for column: {column}")
 failed_format = df.filter(to_date(col("{column}"), "{spark_date_format}").isNull() & col("{column}").isNotNull())
-failed_count = failed_format.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records have invalid date format in column '{column}'.")
-    print("    Sample failed records:")
-    failed_format.limit(5).show(truncate=False)
-    all_failed_records.append((f"format_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' has valid date format.")
+all_failed_records = run_check(f"date_format_{column}", failed_format, all_failed_records)
 """
-            else:  # Generic format check using regex (if a regex pattern is provided in the format string)
-                # This assumes the 'format' answer could be a regex directly if not a known date format
+            else:  # Generic format check using regex
                 code += f"""
-print(f"Checking custom format (regex) '{fmt}' for column: {column}")
+print(f"\\nChecking custom format (regex) '{fmt}' for column: {column}")
 failed_format = df.filter(~col("{column}").rlike("{fmt}"))
-failed_count = failed_format.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records do not match the custom format (regex) in column '{column}'.")
-    failed_format.limit(5).show(truncate=False)
-    all_failed_records.append((f"format_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' values match the custom format (regex).")
+all_failed_records = run_check(f"format_{column}", failed_format, all_failed_records)
 """
+
         elif rule_type == "range":
             min_val = rule.get("min")
             max_val = rule.get("max")
@@ -128,65 +155,62 @@ else:
                 range_condition.append(f'col("{column}") > {max_val}')
 
             if range_condition:
+                # Add floating point for numeric literals to match test expectations
+                def add_float_literal(val):
+                    if val is not None and isinstance(val, (int, float)):
+                        return str(float(val))
+                    return str(val)
+
+                range_condition = []
+                if min_val is not None:
+                    range_condition.append(
+                        f'col("{column}") < {add_float_literal(min_val)}'
+                    )
+                if max_val is not None:
+                    range_condition.append(
+                        f'col("{column}") > {add_float_literal(max_val)}'
+                    )
+
                 condition_str = " | ".join(range_condition)
                 code += f"""
-print(f"Checking range [{min_val if min_val is not None else '-inf'}, {max_val if max_val is not None else 'inf'}] for column: {column}")
+print(f"\\nChecking range [{add_float_literal(min_val) if min_val is not None else '-inf'}, {add_float_literal(max_val) if max_val is not None else 'inf'}] for column: {column}")
 failed_range = df.filter({condition_str})
-failed_count = failed_range.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records are outside the expected range in column '{column}'.")
-    print("    Sample failed records:")
-    failed_range.limit(5).show(truncate=False)
-    all_failed_records.append((f"range_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' values are within the expected range.")
+all_failed_records = run_check(f"range_{column}", failed_range, all_failed_records)
 """
         elif rule_type == "in_set":
             values = rule.get("values", [])
             values_str = ", ".join([f"'{v}'" for v in values])
             code += f"""
-print(f"Checking values in set [{values_str}] for column: {column}")
+print(f"\\nChecking values in set [{values_str}] for column: {column}")
 failed_in_set = df.filter(~col("{column}").isin({values_str}))
-failed_count = failed_in_set.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records have values not in the expected set in column '{column}'.")
-    print("    Sample failed records:")
-    failed_in_set.limit(5).show(truncate=False)
-    all_failed_records.append((f"in_set_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' values are within the expected set.")
+all_failed_records = run_check(f"in_set_{column}", failed_in_set, all_failed_records)
 """
         elif rule_type == "regex":
             pattern = rule.get("pattern")
+            # Handle backslash escaping for regex patterns
+            escaped_pattern = pattern.replace("\\", "\\\\")
             code += f"""
-print(f"Checking regex pattern '{pattern}' for column: {column}")
-failed_regex = df.filter(~col("{column}").rlike("{pattern}"))
-failed_count = failed_regex.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records do not match the regex pattern in column '{column}'.")
-    print("    Sample failed records:")
-    failed_regex.limit(5).show(truncate=False)
-    all_failed_records.append((f"regex_{column}", failed_count))
-else:
-    print(f"  PASS: Column '{column}' values match the regex pattern.")
+print(f"\\nChecking regex pattern '{pattern}' for column: {column}")
+failed_regex = df.filter(~col("{column}").rlike("{escaped_pattern}"))
+all_failed_records = run_check(f"regex_{column}", failed_regex, all_failed_records)
 """
         elif rule_type == "value_distribution":
             value = rule.get("value")
             min_freq = rule.get("min_freq")
             max_freq = rule.get("max_freq")
             code += f"""
-print(f"Checking value distribution for column '{column}' (value: '{value}', min_freq: {min_freq}, max_freq: {max_freq})")
+print(f"\\nChecking value distribution for column '{column}' (value: '{value}', min_freq: {min_freq}, max_freq: {max_freq})")
 total_count = df.count()
 value_count = df.filter(col("{column}") == "{value}").count()
-    if total_count > 0:
-        actual_freq = value_count / total_count
-        if {min_freq} <= actual_freq <= {max_freq}:
-            print(f"  PASS: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, which is within [{min_freq}, {max_freq}].")
-        else:
-            print(f"  FAIL: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, which is outside [{min_freq}, {max_freq}].")
-            all_failed_records.append((f"value_distribution_{column}_{value}", actual_freq))
+if total_count > 0:
+    actual_freq = value_count / total_count
+    if {min_freq} <= actual_freq <= {max_freq}:
+        print(f"  SUCCESS: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, within range [{min_freq}, {max_freq}].")
     else:
-        print(f"  WARNING: Dataset is empty, cannot check value distribution for column '{column}'.")
+        print(f"  FAIL: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, outside range [{min_freq}, {max_freq}].")
+        all_failed_records.append((f"distribution_{column}_{value}", actual_freq))
+else:
+    print(f"  WARNING: Dataset is empty, unable to check value distribution for column '{column}'.")
 """
         elif rule_type == "cross_column_comparison":
             col1 = rule.get("column1")
@@ -194,28 +218,27 @@ value_count = df.filter(col("{column}") == "{value}").count()
             col2 = rule.get("column2")
 
             code += f"""
-print(f"Checking cross-column comparison: {col1} {operator} {col2}")
+print(f"\\nChecking cross-column comparison: {col1} {operator} {col2}")
 failed_comparison = df.filter(~(col("{col1}") {operator} col("{col2}")))
-failed_count = failed_comparison.count()
-if failed_count > 0:
-    print(f"  FAIL: {{failed_count}} records where '{col1}' {operator} '{col2}' is false.")
-    print("    Sample failed records:")
-    failed_comparison.limit(5).show(truncate=False)
-    all_failed_records.append((f"cross_column_comparison_{col1}_{operator}_{col2}", failed_count))
-else:
-    print(f"  PASS: All records satisfy '{col1}' {operator} '{col2}'.")
+all_failed_records = run_check(f"cross_column_{col1}_{operator}_{col2}", failed_comparison, all_failed_records)
 """
 
+    # Add final summary and cleanup
     code += """
-print("\n--- Data Quality Summary ---")
+# ================================================================
+# 5. Data Quality Summary
+# ================================================================
+print("\\n\\n--- Data Quality Summary ---")
 if all_failed_records:
     print("The following data quality rules failed:")
     for rule_name, failed_count in all_failed_records:
         print(f"- {rule_name}: {failed_count} failures")
 else:
-    print("All data quality rules passed!")
+    print("✅ All data quality rules passed!")
 
+# 6. Finalize Spark Session
 spark.stop()
-print("Spark session stopped.")
+print("\\nSpark session finalized.")
 """
+
     return code

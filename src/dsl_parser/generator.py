@@ -269,13 +269,34 @@ def generate_dsl(answers):
     )
     if regex_cols_str:
         try:
-            regex_rules = [
-                item.strip().split(":", 1) for item in regex_cols_str.split(",")
-            ]
-            for rule_parts in regex_rules:
-                if len(rule_parts) == 2 and rule_parts[0] and rule_parts[1]:
-                    col_name = rule_parts[0]
-                    pattern = rule_parts[1]
+            # First split the string by comma, but only when not inside a regex pattern
+            parts = []
+            current = ""
+            brace_count = 0
+            for char in regex_cols_str:
+                if char == "{":
+                    brace_count += 1
+                elif char == "}":
+                    brace_count -= 1
+                elif char == "," and brace_count == 0:
+                    if current.strip():
+                        parts.append(current.strip())
+                    current = ""
+                    continue
+                current += char
+            if current.strip():
+                parts.append(current.strip())
+
+            # Now process each part to extract column and pattern
+            for part in parts:
+                col_and_pattern = part.split(":", 1)
+                if (
+                    len(col_and_pattern) == 2
+                    and col_and_pattern[0]
+                    and col_and_pattern[1]
+                ):
+                    col_name = col_and_pattern[0].strip()
+                    pattern = col_and_pattern[1].strip()
                     dsl["rules"].append(
                         {"type": "regex", "column": col_name, "pattern": pattern}
                     )
@@ -283,7 +304,7 @@ def generate_dsl(answers):
                     dsl.setdefault("errors", []).append(
                         {
                             "type": "regex_validation",
-                            "message": f"Invalid format for column:pattern pair in '{':'.join(rule_parts)}'. Expected 'column:pattern' (e.g., 'email:^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$)'. Input: '{regex_cols_str}'.",
+                            "message": f"Invalid format for column:pattern pair in '{part}'. Expected 'column:pattern' (e.g., 'email:^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{{2,}}$)'. Input: '{regex_cols_str}'.",
                         }
                     )
         except Exception as e:
