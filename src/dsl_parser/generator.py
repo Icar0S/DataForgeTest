@@ -1,3 +1,6 @@
+"""DSL generator module for converting user answers to DSL format."""
+
+
 def generate_dsl(answers):
     """Generates a DSL from the user's answers."""
     dsl = {"dataset": {}, "rules": []}

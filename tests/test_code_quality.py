@@ -1,10 +1,11 @@
+"""Unit tests for code quality validation of generated PySpark code."""
 import sys
 import ast
 import unittest
+import os
 
-sys.path.append(
-    "C:/Users/Icaro/OneDrive/Documents/projetos-google-cli/data-quality-chatbot"
-)
+# Add project root to path for imports
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.dsl_parser.generator import generate_dsl
 from src.code_generator.pyspark_generator import generate_pyspark_code
@@ -12,6 +13,7 @@ from tests.sample_answers import SAMPLE_ANSWERS
 
 
 class TestCodeQuality(unittest.TestCase):
+    """Test suite for validating the quality of generated PySpark code."""
     def setUp(self):
         """Configura o ambiente de teste gerando o código uma vez para todos os testes."""
         self.dsl = generate_dsl(SAMPLE_ANSWERS)
