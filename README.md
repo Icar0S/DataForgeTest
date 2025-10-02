@@ -47,6 +47,36 @@ A aplicação estará disponível em:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:5000
 
+## RAG Support System
+
+### Chat com Documentação (Support Page)
+
+O sistema inclui um chat inteligente na página de Support que permite fazer perguntas sobre a documentação do projeto.
+
+**Status Atual:** O sistema usa Simple RAG (busca por palavras-chave) por padrão.
+
+**Para habilitar IA Claude Sonnet:**
+1. Configure a chave API no arquivo `.env` (copie de `.env.example`)
+2. Instale dependências adicionais: `pip install llama-index-llms-anthropic`
+3. Veja o guia completo em: [`docs/RAG_TROUBLESHOOTING.md`](docs/RAG_TROUBLESHOOTING.md)
+
+**Testes e Diagnósticos:**
+```bash
+# Executar testes do sistema RAG
+python tests/test_rag_integration.py
+python tests/test_rag_api.py
+
+# Diagnóstico completo do sistema
+python tests/test_rag_diagnostics.py
+```
+
+📚 **Documentação RAG:**
+- [`docs/RAG_QUICK_REFERENCE.md`](docs/RAG_QUICK_REFERENCE.md) - Referência rápida
+- [`docs/RAG_TROUBLESHOOTING.md`](docs/RAG_TROUBLESHOOTING.md) - Guia de solução de problemas
+- [`docs/RAG_ANALYSIS_SUMMARY.md`](docs/RAG_ANALYSIS_SUMMARY.md) - Análise completa
+- [`docs/RAG_TEST_RESULTS.md`](docs/RAG_TEST_RESULTS.md) - Resultados dos testes
+- [`tests/README_TESTS.md`](tests/README_TESTS.md) - Documentação dos testes
+
 ## Visão Geral
 
 Este projeto oferece uma solução para automatizar a criação de regras de qualidade de dados e a geração de código PySpark para aplicá-las. Através de uma interface de linha de comando, o usuário pode responder a perguntas sobre seus dados e as regras desejadas. O chatbot então traduz essas respostas em uma DSL (Domain Specific Language) estruturada e, posteriormente, em um script PySpark funcional.
