@@ -15,3 +15,7 @@ data/
 
 # Ignore output files
 output/
+
+# Ignore RAG storage and test data
+storage/
+.env
