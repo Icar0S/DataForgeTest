@@ -38,19 +38,19 @@ if __name__ == "__main__":
     print("DSL cross-column comparison rule assertion PASSED.")
 
     # Assertions for cross_column_comparison in PySpark code
-    expected_msg = "Checking cross-column comparison: start_date < end_date"
-    assert expected_msg in pyspark_code_valid, (
+    EXPECTED_MSG = "Checking cross-column comparison: start_date < end_date"
+    assert EXPECTED_MSG in pyspark_code_valid, (
         "PySpark code for start_date < end_date not found.")
-    expected_filter = (
+    EXPECTED_FILTER = (
         'failed_comparison = df.filter(~(col("start_date") < col("end_date")))')
-    assert expected_filter in pyspark_code_valid, (
+    assert EXPECTED_FILTER in pyspark_code_valid, (
         "PySpark filter for start_date < end_date not found.")
-    expected_msg2 = "Checking cross-column comparison: price > cost"
-    assert expected_msg2 in pyspark_code_valid, (
+    EXPECTED_MSG2 = "Checking cross-column comparison: price > cost"
+    assert EXPECTED_MSG2 in pyspark_code_valid, (
         "PySpark code for price > cost not found.")
-    expected_filter2 = (
+    EXPECTED_FILTER2 = (
         'failed_comparison = df.filter(~(col("price") > col("cost")))')
-    assert expected_filter2 in pyspark_code_valid, (
+    assert EXPECTED_FILTER2 in pyspark_code_valid, (
         "PySpark filter for price > cost not found.")
     print("PySpark cross-column comparison code assertion PASSED.")
 
