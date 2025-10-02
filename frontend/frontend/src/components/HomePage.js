@@ -167,7 +167,7 @@ const DataQualityLLMSystem = ({ onStartChat }) => {
               onClick={onStartChat}
               className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center gap-2"
             >
-              Start Testing <ArrowRight className="w-5 h-5" />
+              Start Checklist Testing <ArrowRight className="w-5 h-5" />
             </motion.button>
             <RAGButton />
           </div>

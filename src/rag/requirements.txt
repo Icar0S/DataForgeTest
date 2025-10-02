@@ -1,7 +1,16 @@
-# Dependencies for RAG functionality
-llama-index==0.9.4
-python-dotenv==1.1.1
-faiss-cpu==1.7.4
-pypdf2==3.0.1
-python-magic==0.4.27
-tiktoken==0.5.1
+# Essentials only for basic RAG functionality
+python-dotenv>=1.0.0
+requests>=2.25.0
+flask>=2.0.0
+flask-cors>=3.0.0
+
+# Text processing
+pypdf2>=3.0.0
+python-docx>=0.8.11
+
+# Simple vector search (alternative to complex dependencies)
+sentence-transformers>=2.2.0
+chromadb>=0.4.0
+
+# Optional: Simple OpenAI client (if needed)
+# openai>=1.0.0

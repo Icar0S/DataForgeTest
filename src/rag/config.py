@@ -1,6 +1,6 @@
 """Configuration for RAG system."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
 
@@ -23,13 +23,15 @@ class RAGConfig:
 
     storage_path: Path = Path("./storage/vectorstore")
     llm_api_key: str = ""
-    llm_model: str = "llama-3-instruct"
-    embed_model: str = "text-embedding-3-large"
+    llm_model: str = "claude-3-haiku-20240307"
+    embed_model: str = "text-embedding-3-small"
     chunk_size: int = 512
     chunk_overlap: int = 50
     top_k: int = 4
     max_upload_mb: int = 10
-    allowed_file_types: List[str] = [".pdf", ".txt", ".md", ".csv"]
+    allowed_file_types: List[str] = field(
+        default_factory=lambda: [".pdf", ".txt", ".md", ".csv"]
+    )
 
     @classmethod
     def from_env(cls) -> "RAGConfig":
@@ -42,8 +44,8 @@ class RAGConfig:
         return cls(
             storage_path=Path(os.getenv("VECTOR_STORE_PATH", "./storage/vectorstore")),
             llm_api_key=os.getenv("LLM_API_KEY", ""),
-            llm_model=os.getenv("LLM_MODEL", "llama-3-instruct"),
-            embed_model=os.getenv("EMBED_MODEL", "text-embedding-3-large"),
+            llm_model=os.getenv("LLM_MODEL", "claude-3-haiku-20240307"),
+            embed_model=os.getenv("EMBED_MODEL", "text-embedding-3-small"),
             chunk_size=int(os.getenv("CHUNK_SIZE", "512")),
             chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "50")),
             top_k=int(os.getenv("TOP_K", "4")),

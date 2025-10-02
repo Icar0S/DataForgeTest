@@ -1,4 +1,5 @@
 """Flask API for Data Quality Chatbot backend."""
+
 import sys
 import os
 
@@ -8,7 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot.main import process_chatbot_request
-from rag.routes import rag_bp
+from rag.routes_simple import rag_bp
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes

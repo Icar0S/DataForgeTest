@@ -1,21 +1,17 @@
 """RAG document ingestion and processing."""
 
-import os
 from pathlib import Path
 from typing import Dict, List, Optional
 import uuid
 
-from llama_index import (
+from llama_index.core import (
     Document,
-    ServiceContext,
     StorageContext,
     load_index_from_storage,
     VectorStoreIndex,
+    Settings,
 )
-from llama_index.node_parser import SimpleNodeParser
-from llama_index.text_splitter import TokenTextSplitter
-from llama_index.embeddings import OpenAIEmbedding
-
+from llama_index.core.node_parser import SimpleNodeParser
 from .config import RAGConfig
 
 
@@ -24,137 +20,166 @@ class DocumentIngestor:
 
     def __init__(self, config: RAGConfig):
         """Initialize the document ingestor.
-        
+
         Args:
             config: RAG configuration object
         """
         self.config = config
         self.storage_path = Path(config.storage_path)
         self.storage_path.mkdir(parents=True, exist_ok=True)
-        
-        # Initialize embedding model
-        embed_model = OpenAIEmbedding()
-        
-        # Configure text splitting
-        text_splitter = TokenTextSplitter(
-            chunk_size=config.chunk_size,
-            chunk_overlap=config.chunk_overlap
+
+        # Configure global settings - usando configuração simples por enquanto
+        # Settings.embed_model = OpenAIEmbedding(api_key=config.llm_api_key)
+        # Settings.llm = Anthropic(api_key=config.llm_api_key, model=config.llm_model)
+        Settings.node_parser = SimpleNodeParser.from_defaults(
+            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
         )
-        node_parser = SimpleNodeParser(text_splitter=text_splitter)
-        
-        # Create service context
-        self.service_context = ServiceContext.from_defaults(
-            embed_model=embed_model,
-            node_parser=node_parser,
-        )
-        
+
         # Load or create index
         try:
             storage_context = StorageContext.from_defaults(
                 persist_dir=str(self.storage_path)
             )
-            self.index = load_index_from_storage(
-                storage_context,
-                service_context=self.service_context
-            )
-        except:
-            self.index = VectorStoreIndex(
-                [],
-                service_context=self.service_context
-            )
-    
+            self.index = load_index_from_storage(storage_context)
+        except Exception:
+            self.index = VectorStoreIndex([])
+
     def add_document(self, content: str, metadata: Dict) -> str:
         """Add a document to the index.
-        
+
         Args:
             content: Document text content
             metadata: Document metadata (filename, size, etc)
-            
+
         Returns:
             str: Document ID
         """
         doc_id = str(uuid.uuid4())
         metadata["doc_id"] = doc_id
-        
-        document = Document(
-            text=content,
-            metadata=metadata
-        )
-        
+
+        document = Document(text=content, metadata=metadata)
+
         self.index.insert(document)
-        self.index.storage_context.persist(str(self.storage_path))
-        
+        self.save_index()
+
         return doc_id
-    
-    def remove_document(self, doc_id: str) -> bool:
-        """Remove a document from the index.
-        
+
+    def get_retriever(self, top_k: Optional[int] = None):
+        """Get a retriever for the index.
+
         Args:
-            doc_id: Document ID to remove
-            
+            top_k: Number of documents to retrieve
+
         Returns:
-            bool: True if document was found and removed
-        """
-        try:
-            self.index.delete(doc_id)
-            self.index.storage_context.persist(str(self.storage_path))
-            return True
-        except:
-            return False
-    
-    def list_documents(self) -> List[Dict]:
-        """List all indexed documents.
-        
-        Returns:
-            List of document metadata dicts
-        """
-        docs = []
-        for node in self.index.docstore.docs.values():
-            if node.metadata.get("doc_id"):
-                docs.append(node.metadata)
-        return docs
-    
-    def reindex(self) -> None:
-        """Rebuild the entire index from stored documents."""
-        docs = self.list_documents()
-        
-        # Clear existing index
-        self.index = VectorStoreIndex(
-            [],
-            service_context=self.service_context
-        )
-        
-        # Re-add all documents
-        for doc in docs:
-            content = doc.pop("content", "")
-            if content:
-                self.add_document(content, doc)
-                
-    def get_relevant_context(
-        self,
-        query: str,
-        top_k: Optional[int] = None
-    ) -> List[Dict]:
-        """Get relevant document chunks for a query.
-        
-        Args:
-            query: Query text
-            top_k: Number of chunks to return (default: config.top_k)
-            
-        Returns:
-            List of dicts with text and metadata
+            Retriever object
         """
         if top_k is None:
             top_k = self.config.top_k
-            
-        retriever = self.index.as_retriever(similarity_top_k=top_k)
-        nodes = retriever.retrieve(query)
-        
-        context = []
+
+        return self.index.as_retriever(similarity_top_k=top_k)
+
+    def save_index(self):
+        """Persist the index to storage."""
+        self.index.storage_context.persist(persist_dir=str(self.storage_path))
+
+    def load_documents_from_files(self, file_paths: List[Path]) -> List[str]:
+        """Load documents from files.
+
+        Args:
+            file_paths: List of file paths to load
+
+        Returns:
+            List of document IDs
+        """
+        doc_ids = []
+
+        for file_path in file_paths:
+            try:
+                content = self._extract_text_from_file(file_path)
+                metadata = {
+                    "filename": file_path.name,
+                    "filepath": str(file_path),
+                    "size": file_path.stat().st_size,
+                }
+
+                doc_id = self.add_document(content, metadata)
+                doc_ids.append(doc_id)
+
+            except Exception as e:
+                print(f"Error loading {file_path}: {e}")
+                continue
+
+        return doc_ids
+
+    def _extract_text_from_file(self, file_path: Path) -> str:
+        """Extract text content from a file.
+
+        Args:
+            file_path: Path to the file
+
+        Returns:
+            str: Extracted text content
+        """
+        suffix = file_path.suffix.lower()
+
+        if suffix == ".txt":
+            return file_path.read_text(encoding="utf-8")
+        elif suffix == ".md":
+            return file_path.read_text(encoding="utf-8")
+        elif suffix == ".pdf":
+            # For PDF files, we'll use the built-in readers
+            from llama_index.readers.file import PDFReader
+
+            reader = PDFReader()
+            docs = reader.load_data(file_path)
+            return "\n".join([doc.text for doc in docs])
+        elif suffix == ".csv":
+            import pandas as pd
+
+            df = pd.read_csv(file_path)
+            return df.to_string()
+        else:
+            raise ValueError(f"Unsupported file type: {suffix}")
+
+    def get_document_sources(self) -> List[Dict]:
+        """Get information about all indexed documents.
+
+        Returns:
+            List of document metadata
+        """
+        sources = []
+
+        # Get all document nodes from the index
+        retriever = self.get_retriever(top_k=1000)  # Get all documents
+        nodes = retriever.retrieve("")  # Empty query to get all
+
         for node in nodes:
-            context.append({
-                "text": node.text,
-                "metadata": node.metadata
-            })
-            
-        return context
+            if hasattr(node, "metadata"):
+                sources.append(
+                    {
+                        "id": node.metadata.get("doc_id", "unknown"),
+                        "filename": node.metadata.get("filename", "unknown"),
+                        "filepath": node.metadata.get("filepath", "unknown"),
+                        "size": node.metadata.get("size", 0),
+                    }
+                )
+
+        return sources
+
+    def delete_document(self, doc_id: str) -> bool:
+        """Delete a document from the index.
+
+        Args:
+            doc_id: Document ID to delete
+
+        Returns:
+            bool: True if deleted, False if not found
+        """
+        # This is a simplified implementation
+        # In a production system, you'd want proper document deletion
+        try:
+            self.index.delete_ref_doc(doc_id)
+            self.save_index()
+            return True
+        except Exception:
+            return False

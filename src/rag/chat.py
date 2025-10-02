@@ -2,27 +2,18 @@
 
 from typing import Dict, Generator, List
 
-from llama_index.llms import ChatMessage, MessageRole
-from llama_index.chat_engine import ContextChatEngine
+from llama_index.core.llms import ChatMessage, MessageRole
+from llama_index.core.chat_engine import CondensePlusContextChatEngine
 
 from .config import RAGConfig
 from .ingest import DocumentIngestor
 
 # System prompt template
-SYSTEM_PROMPT = """You are a helpful AI assistant with access to documentation. 
+SYSTEM_PROMPT = """You are a helpful AI assistant with access to documentation about data quality testing and validation. 
 When answering questions, use the provided context and cite your sources with [1], [2], etc.
 If there is no relevant context, inform the user you are answering based on general knowledge.
 Keep your answers focused and relevant to the question.
-
-Current conversation history:
-{chat_history}
-
-Relevant context from documents:
-{context_str}
-
-Question: {query_str}
-
-Answer the question while citing relevant sources."""
+Be helpful and provide practical examples when possible."""
 
 
 class ChatEngine:
@@ -38,14 +29,10 @@ class ChatEngine:
         self.config = config
         self.ingestor = ingestor
 
-        # Create chat prompt
-        self.qa_prompt = Prompt(SYSTEM_PROMPT)
-
-        # Initialize chat engine
-        self.chat_engine = ContextChatEngine.from_defaults(
-            retriever=self.ingestor.index.as_retriever(similarity_top_k=config.top_k),
+        # Initialize chat engine with retriever
+        self.chat_engine = CondensePlusContextChatEngine.from_defaults(
+            retriever=self.ingestor.get_retriever(config.top_k),
             system_prompt=SYSTEM_PROMPT,
-            qa_prompt=self.qa_prompt,
         )
 
         # Track conversation history

@@ -5,6 +5,23 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
+const CodeComponent = ({node, inline, className, children, ...props}) => {
+  const match = /language-(\w+)/.exec(className || '');
+  return !inline && match ? (
+    <SyntaxHighlighter
+      children={Array.isArray(children) ? String(children).replace(/\n$/, '') : String(children)}
+      style={materialDark}
+      language={match[1]}
+      PreTag="div"
+      {...props}
+    />
+  ) : (
+    <code className={className} {...props}>
+      {children}
+    </code>
+  );
+};
+
 const ChatWindow = ({ onClose }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -39,14 +56,23 @@ const ChatWindow = ({ onClose }) => {
       setIsLoading(true);
       setError(null);
       
+      // Add empty assistant message for streaming
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
       // Start streaming response
       eventSourceRef.current = new EventSource(
-        `/api/rag/chat?stream=true`
+        `/api/rag/chat?message=${encodeURIComponent(userMessage)}`
       );
       
       let currentMessage = '';
       
       eventSourceRef.current.onmessage = (event) => {
+        if (event.data === '[DONE]') {
+          setIsLoading(false);
+          eventSourceRef.current.close();
+          return;
+        }
+        
         const data = JSON.parse(event.data);
         
         if (data.type === 'token') {
@@ -58,6 +84,12 @@ const ChatWindow = ({ onClose }) => {
         }
         else if (data.type === 'citations') {
           setSources(data.content.citations);
+          setIsLoading(false);
+          eventSourceRef.current.close();
+        }
+        else if (data.type === 'error') {
+          setError(data.content);
+          setIsLoading(false);
           eventSourceRef.current.close();
         }
       };
@@ -106,39 +138,17 @@ const ChatWindow = ({ onClose }) => {
       </div>
       
       {/* Messages */}
-      <div className="flex-1 p-4 space-y-4 overflow-y-auto bg-gray-900/30">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${
-              msg.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-          >
-            <div
-              className={`max-w-3xl px-4 py-2 rounded-lg backdrop-blur-sm ${
-                msg.role === 'user'
-                  ? 'bg-purple-600/90 text-white border border-purple-500/50'
-                  : 'bg-gray-800/90 text-gray-100 border border-gray-700/50'
-              }`}
-            >
+          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[80%] p-3 rounded-lg ${
+              msg.role === 'user' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+                : 'bg-gray-800/50 text-gray-100 border border-gray-700/50'
+            }`}>
               <ReactMarkdown
                 components={{
-                  code({node, inline, className, children, ...props}) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        children={Array.isArray(children) ? String(children).replace(/\n$/, '') : String(children)}
-                        style={materialDark}
-                        language={match[1]}
-                        PreTag="div"
-                        {...props}
-                      />
-                    ) : (
-                      <code className={className} {...props}>
-                        {children}
-                      </code>
-                    );
-                  }
+                  code: CodeComponent
                 }}
               >
                 {msg.content}
@@ -192,6 +202,7 @@ const ChatWindow = ({ onClose }) => {
           />
           <button
             type="submit"
+            aria-label="Send message"
             className="p-3 text-white bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 disabled:opacity-50"
             disabled={isLoading}
           >
