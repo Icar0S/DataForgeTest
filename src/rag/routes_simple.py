@@ -17,6 +17,55 @@ config = RAGConfig.from_env()
 rag_system = SimpleRAG(config)
 chat_engine = SimpleChatEngine(rag_system)
 
+# Debug: Print RAG initialization info
+print(
+    f"RAG System initialized: {len(rag_system.documents)} documents, {len(rag_system.document_chunks)} chunks"
+)
+
+
+@rag_bp.route("/debug", methods=["GET"])
+def debug_rag():
+    """Debug endpoint to check RAG system state."""
+    global rag_system, chat_engine
+
+    return jsonify(
+        {
+            "documents_count": len(rag_system.documents),
+            "chunks_count": len(rag_system.document_chunks),
+            "documents": [
+                {
+                    "id": doc_id[:8] + "...",
+                    "filename": doc_data.get("metadata", {}).get("filename", "Unknown"),
+                    "content_length": len(doc_data.get("content", "")),
+                }
+                for doc_id, doc_data in list(rag_system.documents.items())[:5]
+            ],
+        }
+    )
+
+
+@rag_bp.route("/reload", methods=["POST"])
+def reload_rag():
+    """Reload RAG system to pick up new documents/chunks."""
+    global rag_system, chat_engine
+
+    try:
+        # Reinitialize RAG system
+        config = RAGConfig.from_env()
+        rag_system = SimpleRAG(config)
+        chat_engine = SimpleChatEngine(rag_system)
+
+        return jsonify(
+            {
+                "status": "success",
+                "message": "RAG system reloaded",
+                "documents_count": len(rag_system.documents),
+                "chunks_count": len(rag_system.document_chunks),
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @rag_bp.route("/chat", methods=["POST"])
 def chat():

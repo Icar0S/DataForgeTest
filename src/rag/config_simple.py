@@ -10,7 +10,7 @@ import os
 class RAGConfig:
     """Simple RAG configuration."""
 
-    storage_path: Path = Path("./storage/vectorstore")
+    storage_path: Path = Path("storage/vectorstore")
     chunk_size: int = 512
     chunk_overlap: int = 50
     top_k: int = 4
