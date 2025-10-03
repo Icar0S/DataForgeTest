@@ -40,9 +40,9 @@ def chat():
                 yield f"data: {chunk}\n\n"
 
         return Response(stream_with_context(generate()), mimetype="text/event-stream")
-    else:
-        response = chat_engine.chat(message, stream=False)
-        return jsonify(response)
+
+    response = chat_engine.chat(message, stream=False)
+    return jsonify(response)
 
 
 @rag_bp.route("/upload", methods=["POST"])
@@ -105,7 +105,7 @@ def upload():
             {"document_id": doc_id, "filename": filename, "size_mb": size_mb}
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -122,8 +122,7 @@ def delete_source(doc_id: str):
     success = ingestor.remove_document(doc_id)
     if success:
         return "", 204
-    else:
-        return jsonify({"error": "Document not found"}), 404
+    return jsonify({"error": "Document not found"}), 404
 
 
 @rag_bp.route("/reindex", methods=["POST"])
@@ -132,7 +131,7 @@ def reindex():
     try:
         ingestor.reindex()
         return "", 204
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -149,5 +148,5 @@ def health():
                 "embeddings": config.embed_model,
             }
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"status": "error", "error": str(e)}), 500

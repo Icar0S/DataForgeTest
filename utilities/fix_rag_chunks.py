@@ -4,8 +4,8 @@ import sys
 import os
 
 # Add project root to path for imports
-sys.path.insert(0, os.path.abspath("."))
-sys.path.insert(0, os.path.abspath("src"))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 
 def rebuild_rag_chunks():
@@ -15,8 +15,8 @@ def rebuild_rag_chunks():
     print("=" * 70)
 
     try:
-        from src.rag.simple_rag import SimpleRAG
-        from src.rag.config_simple import RAGConfig
+        from rag.simple_rag import SimpleRAG
+        from rag.config_simple import RAGConfig
 
         config = RAGConfig.from_env()
         rag = SimpleRAG(config)

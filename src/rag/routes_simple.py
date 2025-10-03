@@ -1,9 +1,9 @@
 """Simple RAG routes for Flask."""
 
+import json
 from pathlib import Path
 from flask import Blueprint, request, jsonify, Response
 from werkzeug.utils import secure_filename
-import json
 
 from .config_simple import RAGConfig
 from .simple_rag import SimpleRAG
@@ -26,8 +26,6 @@ print(
 @rag_bp.route("/debug", methods=["GET"])
 def debug_rag():
     """Debug endpoint to check RAG system state."""
-    global rag_system, chat_engine
-
     return jsonify(
         {
             "documents_count": len(rag_system.documents),
@@ -47,12 +45,12 @@ def debug_rag():
 @rag_bp.route("/reload", methods=["POST"])
 def reload_rag():
     """Reload RAG system to pick up new documents/chunks."""
-    global rag_system, chat_engine
+    global rag_system, chat_engine  # pylint: disable=global-statement
 
     try:
         # Reinitialize RAG system
-        config = RAGConfig.from_env()
-        rag_system = SimpleRAG(config)
+        new_config = RAGConfig.from_env()
+        rag_system = SimpleRAG(new_config)
         chat_engine = SimpleChatEngine(rag_system)
 
         return jsonify(
@@ -63,7 +61,7 @@ def reload_rag():
                 "chunks_count": len(rag_system.document_chunks),
             }
         )
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -84,7 +82,7 @@ def chat():
             {"response": result["response"], "citations": result["citations"]}
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -106,14 +104,14 @@ def chat_stream():
 
                 # Stream response word by word
                 words = response_text.split()
-                for i, word in enumerate(words):
+                for word in words:
                     yield f"data: {json.dumps({'type': 'token', 'content': word + ' '})}\n\n"
 
                 # Send citations at the end
                 yield f"data: {json.dumps({'type': 'citations', 'content': {'citations': result['citations']}})}\n\n"
                 yield "data: [DONE]\n\n"
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
 
         return Response(
@@ -127,7 +125,7 @@ def chat_stream():
             },
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -153,14 +151,14 @@ def chat_stream_get():
 
                 # Stream response word by word
                 words = response_text.split()
-                for i, word in enumerate(words):
+                for word in words:
                     yield f"data: {json.dumps({'type': 'token', 'content': word + ' '})}\n\n"
 
                 # Send citations at the end
                 yield f"data: {json.dumps({'type': 'citations', 'content': {'citations': result['citations']}})}\n\n"
                 yield "data: [DONE]\n\n"
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
 
         return Response(
@@ -174,7 +172,7 @@ def chat_stream_get():
             },
         )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return "data: " + json.dumps({"type": "error", "content": str(e)}) + "\n\n", 500
 
 
@@ -237,7 +235,7 @@ def upload_document():
                 temp_path.unlink()
             raise e
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -247,7 +245,7 @@ def get_sources():
     try:
         sources = rag_system.get_sources()
         return jsonify({"sources": sources})
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -258,9 +256,8 @@ def delete_source(doc_id):
         success = rag_system.delete_document(doc_id)
         if success:
             return jsonify({"message": "Document deleted successfully"})
-        else:
-            return jsonify({"error": "Document not found"}), 404
-    except Exception as e:
+        return jsonify({"error": "Document not found"}), 404
+    except Exception as e:  # pylint: disable=broad-exception-caught
         return jsonify({"error": str(e)}), 500
 
 
@@ -270,9 +267,9 @@ def _extract_text_from_file(file_path: Path) -> str:
 
     if suffix in [".txt", ".md"]:
         return file_path.read_text(encoding="utf-8")
-    elif suffix == ".pdf":
+    if suffix == ".pdf":
         try:
-            import PyPDF2
+            import PyPDF2  # pylint: disable=import-outside-toplevel
 
             text = ""
             with open(file_path, "rb") as file:
@@ -282,25 +279,24 @@ def _extract_text_from_file(file_path: Path) -> str:
             return text
         except ImportError:
             return "PDF processing not available. Please install PyPDF2."
-    elif suffix == ".csv":
+    if suffix == ".csv":
         try:
-            import pandas as pd
+            import pandas as pd  # pylint: disable=import-outside-toplevel
 
             df = pd.read_csv(file_path)
             return df.to_string()
         except ImportError:
             # Fallback: simple CSV reading
             return file_path.read_text(encoding="utf-8")
-    elif suffix == ".docx":
+    if suffix == ".docx":
         try:
-            import docx
+            import docx  # pylint: disable=import-outside-toplevel
 
             doc = docx.Document(file_path)
             return "\n".join([paragraph.text for paragraph in doc.paragraphs])
         except ImportError:
             return "DOCX processing not available. Please install python-docx."
-    else:
-        raise ValueError(f"Unsupported file type: {suffix}")
+    raise ValueError(f"Unsupported file type: {suffix}")
 
 
 @rag_bp.route("/health", methods=["GET"])

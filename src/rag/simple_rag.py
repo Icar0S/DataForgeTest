@@ -31,7 +31,7 @@ class SimpleRAG:
                     data = json.load(f)
                     self.documents = data.get("documents", {})
                     self.document_chunks = data.get("chunks", {})
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"Error loading documents: {e}")
 
     def _save_documents(self):
@@ -45,7 +45,7 @@ class SimpleRAG:
                     indent=2,
                     ensure_ascii=False,
                 )
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             print(f"Error saving documents: {e}")
 
     def add_document(self, content: str, metadata: Dict) -> str:

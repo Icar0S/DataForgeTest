@@ -41,7 +41,7 @@ class DocumentIngestor:
                 persist_dir=str(self.storage_path)
             )
             self.index = load_index_from_storage(storage_context)
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             self.index = VectorStoreIndex([])
 
     def add_document(self, content: str, metadata: Dict) -> str:
@@ -105,7 +105,7 @@ class DocumentIngestor:
                 doc_id = self.add_document(content, metadata)
                 doc_ids.append(doc_id)
 
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"Error loading {file_path}: {e}")
                 continue
 
@@ -124,22 +124,21 @@ class DocumentIngestor:
 
         if suffix == ".txt":
             return file_path.read_text(encoding="utf-8")
-        elif suffix == ".md":
+        if suffix == ".md":
             return file_path.read_text(encoding="utf-8")
-        elif suffix == ".pdf":
+        if suffix == ".pdf":
             # For PDF files, we'll use the built-in readers
-            from llama_index.readers.file import PDFReader
+            from llama_index.readers.file import PDFReader  # pylint: disable=import-outside-toplevel
 
             reader = PDFReader()
             docs = reader.load_data(file_path)
             return "\n".join([doc.text for doc in docs])
-        elif suffix == ".csv":
-            import pandas as pd
+        if suffix == ".csv":
+            import pandas as pd  # pylint: disable=import-outside-toplevel
 
             df = pd.read_csv(file_path)
             return df.to_string()
-        else:
-            raise ValueError(f"Unsupported file type: {suffix}")
+        raise ValueError(f"Unsupported file type: {suffix}")
 
     def get_document_sources(self) -> List[Dict]:
         """Get information about all indexed documents.
@@ -181,5 +180,5 @@ class DocumentIngestor:
             self.index.delete_ref_doc(doc_id)
             self.save_index()
             return True
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             return False

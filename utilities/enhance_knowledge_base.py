@@ -6,6 +6,7 @@ from pathlib import Path
 
 # Add project root to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
 
 def investigate_knowledge_base():
@@ -15,8 +16,8 @@ def investigate_knowledge_base():
     print("=" * 70)
 
     try:
-        from src.rag.simple_rag import SimpleRAG
-        from src.rag.config_simple import RAGConfig
+        from rag.simple_rag import SimpleRAG
+        from rag.config_simple import RAGConfig
 
         config = RAGConfig.from_env()
         rag = SimpleRAG(config)
@@ -360,7 +361,7 @@ def test_improved_responses(rag):
     print(f"\n🧪 TESTING IMPROVED RESPONSES:")
 
     try:
-        from src.rag.simple_chat import SimpleChatEngine
+        from rag.simple_chat import SimpleChatEngine
 
         chat = SimpleChatEngine(rag)
 
