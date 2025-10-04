@@ -47,6 +47,136 @@ A aplicação estará disponível em:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:5000
 
+## Data Accuracy Feature
+
+### Overview
+
+A feature de **Acurácia de Dados (Datasets)** permite comparar e corrigir datasets usando um dataset GOLD (referência confiável) como base de verdade. O sistema identifica diferenças, gera relatórios detalhados e corrige automaticamente o dataset alvo.
+
+### Funcionalidades
+
+- **Upload de Datasets:** Suporte para CSV, XLSX e Parquet
+- **Mapeamento de Colunas:** Defina quais colunas são chaves (identificadores) e quais são valores a comparar
+- **Normalização Automática:** 
+  - Colunas convertidas para snake_case
+  - Chaves normalizadas (trim, lowercase, remoção de acentos/pontuação)
+  - Coerção numérica (vírgula → ponto, remoção de separadores de milhares)
+- **Detecção de Duplicatas:**
+  - GOLD: Erro se houver duplicatas
+  - TARGET: Políticas configuráveis (manter última, somar, média)
+- **Comparação com Tolerância:** Defina tolerância numérica para comparações
+- **Relatórios Completos:**
+  - Métricas de acurácia
+  - Tabela de diferenças paginada
+  - Downloads em CSV e JSON
+
+### Variáveis de Configuração
+
+Configure no arquivo `.env` (copie de `.env.example`):
+
+```bash
+# Data Accuracy Configuration
+ACCURACY_STORAGE_PATH=./storage
+MAX_UPLOAD_MB=50
+ACCURACY_ALLOWED_FILE_TYPES=.csv,.xlsx,.parquet
+ACCURACY_MAX_ROWS=2000000
+ACCURACY_REQUEST_TIMEOUT=120
+```
+
+### Endpoints da API
+
+#### POST `/api/accuracy/upload?role=gold|target`
+Upload de dataset (GOLD ou TARGET)
+
+**Request:** `multipart/form-data` com arquivo
+
+**Response:**
+```json
+{
+  "sessionId": "uuid",
+  "role": "gold",
+  "datasetId": "uuid",
+  "columns": ["produto", "preco_unitario"],
+  "preview": [{...}, {...}],
+  "rowCount": 100
+}
+```
+
+#### POST `/api/accuracy/compare-correct`
+Compara e corrige datasets
+
+**Request:**
+```json
+{
+  "sessionId": "string",
+  "keyColumns": ["produto"],
+  "valueColumns": ["preco_unitario"],
+  "options": {
+    "normalizeKeys": true,
+    "lowercase": true,
+    "stripAccents": true,
+    "stripPunctuation": true,
+    "coerceNumeric": true,
+    "decimalPlaces": 2,
+    "tolerance": 0.0,
+    "targetDuplicatePolicy": "keep_last"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "summary": {
+    "rows_gold": 100,
+    "rows_target": 98,
+    "common_keys": 95,
+    "missing_in_target": 5,
+    "extra_in_target": 3,
+    "mismatches_total": 10,
+    "accuracy": 0.8947
+  },
+  "diffSample": [...],
+  "download": {
+    "correctedCsv": "/api/accuracy/download/{sessionId}/target_corrected.csv",
+    "diffCsv": "/api/accuracy/download/{sessionId}/diff.csv",
+    "reportJson": "/api/accuracy/download/{sessionId}/report.json"
+  }
+}
+```
+
+#### GET `/api/accuracy/download/<session_id>/<filename>`
+Download de arquivos gerados (target_corrected.csv, diff.csv, report.json)
+
+#### GET `/api/accuracy/health`
+Health check do serviço
+
+### Exemplo de Uso
+
+1. Acesse http://localhost:3000 e clique em "Acurácia de Dados (Datasets)"
+2. Faça upload do dataset GOLD (referência confiável)
+3. Faça upload do dataset a validar
+4. Selecione as colunas chave (ex: produto, codigo)
+5. Selecione as colunas de valor (ex: preco_unitario, quantidade)
+6. Configure as opções de normalização e tolerância
+7. Clique em "Comparar & Corrigir"
+8. Visualize as métricas e diferenças
+9. Baixe o dataset corrigido e relatórios
+
+### Testes
+
+**Backend:**
+```bash
+cd /home/runner/work/DataForgeTest/DataForgeTest
+python -m pytest tests/test_accuracy_backend.py -v
+```
+
+**Frontend:**
+```bash
+cd frontend/frontend
+npm test -- DataAccuracy.test.js
+```
+
 ## RAG Support System
 
 ### Chat com Documentação (Support Page)
