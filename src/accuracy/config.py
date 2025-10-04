@@ -30,11 +30,20 @@ class AccuracyConfig:
     def from_env(cls) -> "AccuracyConfig":
         """Create config from environment variables."""
         from dotenv import load_dotenv
+        import os
         
         load_dotenv()
         
+        # Get storage path and make it absolute
+        storage_path = os.getenv("ACCURACY_STORAGE_PATH", "./storage")
+        if not os.path.isabs(storage_path):
+            # Make it relative to the project root, not the current directory
+            # Assuming this file is in src/accuracy/config.py
+            project_root = Path(__file__).parent.parent.parent
+            storage_path = project_root / storage_path
+        
         return cls(
-            storage_path=Path(os.getenv("ACCURACY_STORAGE_PATH", "./storage")),
+            storage_path=Path(storage_path),
             max_upload_mb=int(os.getenv("MAX_UPLOAD_MB", "50")),
             allowed_file_types=os.getenv(
                 "ACCURACY_ALLOWED_FILE_TYPES", ".csv,.xlsx,.parquet"
