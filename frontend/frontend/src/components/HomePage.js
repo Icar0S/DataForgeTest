@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer, slideIn, scaleIn } from '../styles/animations';
 
-const DataQualityLLMSystem = ({ onStartChat }) => {
+const DataQualityLLMSystem = () => {
   const [selectedStructure, setSelectedStructure] = useState('synthetic');
 
   const structures = {
@@ -161,15 +161,19 @@ const DataQualityLLMSystem = ({ onStartChat }) => {
             Advanced Data-Intensive Systems Testing with LLMs and Automated PySpark Validation
           </motion.p>
           <div className="flex gap-4 justify-center">
-            <motion.button
+            <motion.div
               variants={scaleIn}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={onStartChat}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center gap-2"
             >
-              Start Checklist Testing <ArrowRight className="w-5 h-5" />
-            </motion.button>
+              <Link
+                to="/qa-checklist"
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-purple-500/30 transition-all duration-300 flex items-center gap-2"
+                aria-label="Iniciar Checklist de Testes"
+              >
+                Iniciar Checklist de Testes <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
             <motion.div
               variants={scaleIn}
               whileHover={{ scale: 1.05 }}
@@ -479,8 +483,6 @@ const DataQualityLLMSystem = ({ onStartChat }) => {
   );
 };
 
-DataQualityLLMSystem.propTypes = {
-  onStartChat: PropTypes.func.isRequired
-};
+DataQualityLLMSystem.propTypes = {};
 
 export default DataQualityLLMSystem;

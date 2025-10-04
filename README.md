@@ -47,6 +47,35 @@ A aplicação estará disponível em:
 - Frontend: http://localhost:3000
 - Backend: http://localhost:5000
 
+## QA Checklist Feature
+
+### Overview
+
+A feature **Checklist de Testes QA** oferece uma interface de chat dedicada para realizar testes de qualidade de dados de forma interativa.
+
+### Funcionalidades
+
+- **Interface de Chat Full-Screen:** Layout responsivo que ocupa toda a tela (mobile → desktop)
+- **Mensagens Scrolláveis:** Área de mensagens com scroll automático
+- **Input Inteligente:** Campo de mensagem com suporte a múltiplas linhas
+- **Estados de Loading:** Indicadores visuais durante o envio de mensagens
+- **Navegação Facilitada:** Botão de voltar sempre visível no topo
+- **Acessibilidade:** Foco automático no input, aria-labels, navegação por teclado
+
+### Atalhos de Teclado
+
+Na página `/qa-checklist`:
+
+- **Enter**: Envia a mensagem
+- **Shift + Enter**: Cria uma nova linha no campo de mensagem
+- **Tab**: Navega entre os elementos interativos
+
+### Endpoints Utilizados
+
+A feature utiliza o endpoint existente de RAG:
+
+- **GET** `/api/rag/chat?message=<mensagem>` - Streaming de resposta via EventSource
+
 ## Data Accuracy Feature
 
 ### Overview
