@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.dsl_parser.generator import generate_dsl
 from src.code_generator.pyspark_generator import generate_pyspark_code
-from tests.sample_answers import SAMPLE_ANSWERS, SAMPLE_ANSWERS_WITH_ERRORS
+from utilities.sample_answers import SAMPLE_ANSWERS, SAMPLE_ANSWERS_WITH_ERRORS
 
 if __name__ == "__main__":
     print("\n--- Testing with valid sample answers ---")

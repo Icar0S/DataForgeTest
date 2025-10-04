@@ -60,7 +60,7 @@ def test_rag_with_working_path():
         print("=" * 70)
 
         try:
-            sys.path.insert(0, "src")
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
             from rag.simple_rag import SimpleRAG
             from rag.config_simple import RAGConfig
             from rag.simple_chat import SimpleChatEngine

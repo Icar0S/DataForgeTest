@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from src.dsl_parser.generator import generate_dsl
 from src.code_generator.pyspark_generator import generate_pyspark_code
-from tests.sample_answers import SAMPLE_ANSWERS
+from utilities.sample_answers import SAMPLE_ANSWERS
 
 
 class TestCodeQuality(unittest.TestCase):

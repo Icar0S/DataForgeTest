@@ -16,12 +16,12 @@ def debug_flask_vs_direct():
         import sys
         import os
 
-        sys.path.insert(0, os.path.abspath("."))
-        sys.path.insert(0, os.path.abspath("src"))
+        sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+        sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
 
-        from src.rag.simple_rag import SimpleRAG
-        from src.rag.config_simple import RAGConfig
-        from src.rag.simple_chat import SimpleChatEngine
+        from rag.simple_rag import SimpleRAG
+        from rag.config_simple import RAGConfig
+        from rag.simple_chat import SimpleChatEngine
 
         config = RAGConfig.from_env()
         rag = SimpleRAG(config)

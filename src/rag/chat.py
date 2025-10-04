@@ -9,7 +9,8 @@ from .config import RAGConfig
 from .ingest import DocumentIngestor
 
 # System prompt template
-SYSTEM_PROMPT = """You are a helpful AI assistant with access to documentation about data quality testing and validation. 
+SYSTEM_PROMPT = """You are a helpful AI assistant with access to documentation \
+about data quality testing and validation.
 When answering questions, use the provided context and cite your sources with [1], [2], etc.
 If there is no relevant context, inform the user you are answering based on general knowledge.
 Keep your answers focused and relevant to the question.
@@ -82,22 +83,25 @@ class ChatEngine:
                 message, chat_history=self.chat_history[:-1]
             )
 
+            last_response = None
             for response in response_gen:
+                last_response = response
                 if response.delta:
                     yield {"type": "token", "content": response.delta}
 
             # Add complete response to history
-            self.chat_history.append(
-                ChatMessage(role=MessageRole.ASSISTANT, content=response.response)
-            )
+            if last_response:
+                self.chat_history.append(
+                    ChatMessage(role=MessageRole.ASSISTANT, content=last_response.response)
+                )
 
-            # Send citation data
-            yield {
-                "type": "citations",
-                "content": self._format_response(
-                    response.response, response.source_nodes
-                ),
-            }
+                # Send citation data
+                yield {
+                    "type": "citations",
+                    "content": self._format_response(
+                        last_response.response, last_response.source_nodes
+                    ),
+                }
 
         else:
             # Get complete response

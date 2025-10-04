@@ -56,7 +56,8 @@ class SimpleChatEngine:
 
 {self._extract_relevant_info(question, context)}
 
-Please note: This response is based on the documents in the knowledge base. You can refer to the citations for more detailed information."""
+Please note: This response is based on the documents in the knowledge base. \
+You can refer to the citations for more detailed information."""
 
         return response
 
@@ -76,13 +77,12 @@ Please note: This response is based on the documents in the knowledge base. You 
 
         if relevant_sentences:
             return ". ".join(relevant_sentences[:3])  # Max 3 sentences
-        else:
-            # Fallback: return first part of context
-            return (
-                sentences[0][:300] + "..."
-                if sentences
-                else "No specific information found."
-            )
+        # Fallback: return first part of context
+        return (
+            sentences[0][:300] + "..."
+            if sentences
+            else "No specific information found."
+        )
 
     def clear_history(self):
         """Clear chat history."""
