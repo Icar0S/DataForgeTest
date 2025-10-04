@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight, Database } from 'lucide-react';
 import RAGButton from './RAGButton';
 import { Link } from 'react-router-dom';
@@ -482,7 +481,5 @@ const DataQualityLLMSystem = () => {
     </motion.div>
   );
 };
-
-DataQualityLLMSystem.propTypes = {};
 
 export default DataQualityLLMSystem;
