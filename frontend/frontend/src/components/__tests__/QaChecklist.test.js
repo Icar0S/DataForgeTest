@@ -6,37 +6,10 @@ import QaChecklist from '../../pages/QaChecklist';
 // Use manual mock for react-router-dom
 jest.mock('react-router-dom');
 
-// Mock EventSource
-class MockEventSource {
-  constructor(url) {
-    this.url = url;
-    this.readyState = 1;
-    this.onmessage = null;
-    this.onerror = null;
-    this.onopen = null;
-    MockEventSource.instances.push(this);
-  }
+// Mock fetch
+global.fetch = jest.fn();
 
-  close() {
-    this.readyState = 2;
-  }
-
-  static instances = [];
-  static clearInstances() {
-    this.instances = [];
-  }
-}
-
-global.EventSource = MockEventSource;
-
-// Mock react-markdown and react-syntax-highlighter
-jest.mock('react-markdown', () => {
-  function ReactMarkdown({ children }) {
-    return <div data-testid="markdown-content">{children}</div>;
-  }
-  return ReactMarkdown;
-});
-
+// Mock react-syntax-highlighter
 jest.mock('react-syntax-highlighter', () => ({
   Prism: function SyntaxHighlighter({ children }) {
     return <pre data-testid="syntax-highlighter">{children}</pre>;
@@ -54,14 +27,8 @@ const renderComponent = (component) => {
 
 describe('QaChecklist Component', () => {
   beforeEach(() => {
-    MockEventSource.clearInstances();
     jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    MockEventSource.instances.forEach(instance => {
-      instance.close();
-    });
+    global.fetch.mockClear();
   });
 
   test('renders QaChecklist page with all elements', () => {
@@ -70,58 +37,73 @@ describe('QaChecklist Component', () => {
     expect(screen.getByText('Checklist de Testes QA')).toBeInTheDocument();
     expect(screen.getByText('Voltar')).toBeInTheDocument();
     expect(screen.getByText('Limpar')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Digite sua mensagem/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Enviar mensagem/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Digite sua resposta/)).toBeInTheDocument();
   });
 
   test('auto-focuses on input field when page loads', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
     expect(textarea).toHaveFocus();
   });
 
-  test('sends message when Enter key is pressed', async () => {
+  test('displays first question from General section', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
+    expect(screen.getByText('General')).toBeInTheDocument();
+    expect(screen.getByText(/What is the name of the dataset you want to validate/)).toBeInTheDocument();
+  });
+
+  test('shows progress bar', () => {
+    renderComponent(<QaChecklist />);
     
-    // Type a message
-    fireEvent.change(textarea, { target: { value: 'Test message' } });
+    expect(screen.getByText(/Questão 1 de/)).toBeInTheDocument();
+    expect(screen.getByText(/concluído/)).toBeInTheDocument();
+  });
+
+  test('navigates to next question when Próxima is clicked', () => {
+    renderComponent(<QaChecklist />);
+    
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    const nextButton = screen.getByText('Próxima').closest('button');
+    
+    // Answer first question
+    fireEvent.change(textarea, { target: { value: 'my_dataset' } });
+    fireEvent.click(nextButton);
+    
+    // Should show second question
+    expect(screen.getByText(/What is the source of the data/)).toBeInTheDocument();
+  });
+
+  test('moves to next question when Enter is pressed', () => {
+    renderComponent(<QaChecklist />);
+    
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    
+    // Type answer
+    fireEvent.change(textarea, { target: { value: 'my_dataset' } });
     
     // Press Enter key
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: false });
     
-    // Check that message was sent
-    await waitFor(() => {
-      expect(screen.getByText('Test message')).toBeInTheDocument();
-    });
-    
-    // Check that input was cleared
-    expect(textarea.value).toBe('');
-    
-    // Check that EventSource was created
-    await waitFor(() => {
-      expect(MockEventSource.instances).toHaveLength(1);
-    });
+    // Should show second question
+    expect(screen.getByText(/What is the source of the data/)).toBeInTheDocument();
   });
 
   test('creates new line when Shift+Enter is pressed', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    const initialQuestion = screen.getByText(/What is the name of the dataset you want to validate/);
     
     // Type initial text
     fireEvent.change(textarea, { target: { value: 'Line 1' } });
     
-    // Press Shift+Enter - should NOT send message
+    // Press Shift+Enter - should NOT move to next question
     fireEvent.keyDown(textarea, { key: 'Enter', shiftKey: true });
     
-    // EventSource should NOT be created
-    expect(MockEventSource.instances).toHaveLength(0);
-    
-    // The textarea should still have content
-    expect(textarea.value).toBe('Line 1');
+    // Should still be on same question
+    expect(initialQuestion).toBeInTheDocument();
   });
 
   test('back button navigates to home page', () => {
@@ -131,86 +113,99 @@ describe('QaChecklist Component', () => {
     expect(backButton).toHaveAttribute('href', '/');
   });
 
-  test('disables send button while loading', async () => {
+  test('Previous button is disabled on first question', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
+    const prevButton = screen.getByText('Anterior').closest('button');
+    expect(prevButton).toBeDisabled();
+  });
+
+  test('Previous button works after moving forward', () => {
+    renderComponent(<QaChecklist />);
     
-    // Type and send message
-    fireEvent.change(textarea, { target: { value: 'Test message' } });
-    fireEvent.click(sendButton);
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    const nextButton = screen.getByText('Próxima').closest('button');
     
-    // Button should be disabled and show loading state
-    await waitFor(() => {
-      expect(sendButton).toBeDisabled();
-      expect(screen.getByText('Enviando...')).toBeInTheDocument();
+    // Answer and move to second question
+    fireEvent.change(textarea, { target: { value: 'my_dataset' } });
+    fireEvent.click(nextButton);
+    
+    expect(screen.getByText(/What is the source of the data/)).toBeInTheDocument();
+    
+    // Go back
+    const prevButton = screen.getByText('Anterior').closest('button');
+    fireEvent.click(prevButton);
+    
+    // Should be back to first question
+    expect(screen.getByText(/What is the name of the dataset you want to validate/)).toBeInTheDocument();
+  });
+
+  test('submits form and displays results on last question', async () => {
+    // Mock successful API response
+    global.fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        dsl: { dataset: { name: 'test' }, rules: [] },
+        pyspark_code: 'print("test")',
+        errors: [],
+        warnings: []
+      })
     });
-  });
 
-  test('disables send button when input is empty', () => {
     renderComponent(<QaChecklist />);
     
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
     
-    // Button should be disabled when input is empty
-    expect(sendButton).toBeDisabled();
+    // Navigate to last question by going through all 14 questions
+    // There are 14 questions total (3+3+3+4+1)
+    for (let i = 0; i < 13; i++) {
+      fireEvent.change(textarea, { target: { value: `answer${i}` } });
+      const nextButton = screen.getByText('Próxima').closest('button');
+      fireEvent.click(nextButton);
+    }
+    
+    // Should now be on last question
+    expect(screen.getByText(/relationships between two columns/)).toBeInTheDocument();
+    
+    // Fill and submit
+    fireEvent.change(textarea, { target: { value: 'start_date:<:end_date' } });
+    const submitButton = screen.getByText('Gerar DSL e PySpark').closest('button');
+    fireEvent.click(submitButton);
+    
+    // Should show success message and results
+    await waitFor(() => {
+      expect(screen.getByText(/DSL e código PySpark gerados com sucesso/)).toBeInTheDocument();
+    });
+    
+    expect(screen.getByText('DSL (Domain Specific Language)')).toBeInTheDocument();
+    expect(screen.getByText('Código PySpark')).toBeInTheDocument();
   });
 
-  test('enables send button when input has text', () => {
+  test('clears form when Limpar button is clicked', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    const nextButton = screen.getByText('Próxima').closest('button');
     
-    // Initially disabled
-    expect(sendButton).toBeDisabled();
+    // Answer first question and move forward
+    fireEvent.change(textarea, { target: { value: 'my_dataset' } });
+    fireEvent.click(nextButton);
     
-    // Type text
-    fireEvent.change(textarea, { target: { value: 'Some text' } });
+    // Should be on second question
+    expect(screen.getByText(/What is the source of the data/)).toBeInTheDocument();
     
-    // Should now be enabled
-    expect(sendButton).not.toBeDisabled();
-  });
-
-  test('clears chat when clear button is clicked', async () => {
-    renderComponent(<QaChecklist />);
-    
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
+    // Click Limpar
     const clearButton = screen.getByRole('button', { name: /Limpar conversa/i });
-    
-    // Send a message
-    fireEvent.change(textarea, { target: { value: 'Test message' } });
-    fireEvent.click(sendButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText('Test message')).toBeInTheDocument();
-    });
-    
-    // Clear chat
     fireEvent.click(clearButton);
     
-    // Message should be gone
-    await waitFor(() => {
-      expect(screen.queryByText('Test message')).not.toBeInTheDocument();
-    });
-    
-    // Welcome message should be visible again
-    expect(screen.getByText(/Bem-vindo ao Checklist de Testes QA/)).toBeInTheDocument();
-  });
-
-  test('displays welcome message when no messages', () => {
-    renderComponent(<QaChecklist />);
-    
-    expect(screen.getByText('Bem-vindo ao Checklist de Testes QA')).toBeInTheDocument();
-    expect(screen.getByText('Digite sua mensagem para começar')).toBeInTheDocument();
+    // Should be back to first question
+    expect(screen.getByText(/What is the name of the dataset you want to validate/)).toBeInTheDocument();
+    expect(screen.getByText(/Questão 1 de/)).toBeInTheDocument();
   });
 
   test('handles responsive layout classes', () => {
     renderComponent(<QaChecklist />);
     
-    // Find the main content container by its classes instead of DOM navigation
     const containers = document.querySelectorAll('.max-w-5xl');
     expect(containers.length).toBeGreaterThan(0);
     
@@ -222,64 +217,59 @@ describe('QaChecklist Component', () => {
   test('textarea has proper accessibility attributes', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
     expect(textarea).toHaveAttribute('aria-label', 'Campo de mensagem');
   });
 
-  test('send button has proper accessibility attributes', () => {
-    renderComponent(<QaChecklist />);
-    
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
-    
-    expect(sendButton).toHaveAttribute('aria-label', 'Enviar mensagem');
-    expect(sendButton).toHaveAttribute('aria-disabled', 'true');
-  });
+  test('displays error message when API fails', async () => {
+    // Mock failed API response
+    global.fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'API error' })
+    });
 
-  test('displays error message when connection fails', async () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    const sendButton = screen.getByRole('button', { name: /Enviar mensagem/i });
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
     
-    // Send message
-    fireEvent.change(textarea, { target: { value: 'Test message' } });
-    fireEvent.click(sendButton);
+    // Navigate to last question
+    for (let i = 0; i < 13; i++) {
+      fireEvent.change(textarea, { target: { value: `answer${i}` } });
+      const nextButton = screen.getByText('Próxima').closest('button');
+      fireEvent.click(nextButton);
+    }
     
+    // Submit on last question
+    fireEvent.change(textarea, { target: { value: 'start_date:<:end_date' } });
+    const submitButton = screen.getByText('Gerar DSL e PySpark').closest('button');
+    fireEvent.click(submitButton);
+    
+    // Should show error
     await waitFor(() => {
-      expect(MockEventSource.instances).toHaveLength(1);
-    });
-    
-    const eventSource = MockEventSource.instances[0];
-    
-    // Simulate connection error wrapped in act
-    await waitFor(() => {
-      eventSource.onerror();
-    });
-    
-    await waitFor(() => {
-      expect(screen.getByText(/Connection error. Please try again./)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to generate DSL and PySpark code/)).toBeInTheDocument();
     });
   });
 
-  test('form submission works correctly', async () => {
+  test('preserves answers when navigating back and forth', () => {
     renderComponent(<QaChecklist />);
     
-    const textarea = screen.getByPlaceholderText(/Digite sua mensagem/);
-    const form = textarea.closest('form');
+    const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
+    const nextButton = screen.getByText('Próxima').closest('button');
     
-    // Type message
-    fireEvent.change(textarea, { target: { value: 'Form test' } });
+    // Answer first question
+    fireEvent.change(textarea, { target: { value: 'my_dataset' } });
+    fireEvent.click(nextButton);
     
-    // Submit form
-    fireEvent.submit(form);
+    // Answer second question
+    fireEvent.change(textarea, { target: { value: 'my_source' } });
+    fireEvent.click(nextButton);
     
-    // Message should appear
-    await waitFor(() => {
-      expect(screen.getByText('Form test')).toBeInTheDocument();
-    });
+    // Go back twice
+    const prevButton = screen.getByText('Anterior').closest('button');
+    fireEvent.click(prevButton);
+    fireEvent.click(prevButton);
     
-    // Input should be cleared
-    expect(textarea.value).toBe('');
+    // First answer should be preserved
+    expect(textarea.value).toBe('my_dataset');
   });
 });
