@@ -10,12 +10,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot.main import process_chatbot_request
 from rag.routes_simple import rag_bp
+from accuracy.routes import accuracy_bp
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Register RAG blueprint
+# Register blueprints
 app.register_blueprint(rag_bp)
+app.register_blueprint(accuracy_bp)
 
 
 @app.route("/", methods=["GET"])
