@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight, Database } from 'lucide-react';
 import RAGButton from './RAGButton';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer, slideIn, scaleIn } from '../styles/animations';
 
@@ -169,6 +170,20 @@ const DataQualityLLMSystem = ({ onStartChat }) => {
             >
               Start Checklist Testing <ArrowRight className="w-5 h-5" />
             </motion.button>
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                to="/data-accuracy"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center gap-2"
+                aria-label="Acurácia de Dados (Datasets)"
+              >
+                <Database className="w-5 h-5" />
+                Acurácia de Dados (Datasets)
+              </Link>
+            </motion.div>
             <RAGButton />
           </div>
         </div>

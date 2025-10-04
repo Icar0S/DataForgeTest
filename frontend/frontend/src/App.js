@@ -6,6 +6,7 @@ import './index.css';
 import './App.css';
 import HomePage from './components/HomePage';
 import SupportPage from './pages/SupportPage';
+import DataAccuracy from './pages/DataAccuracy';
 import SupportButton from './components/SupportButton';
 
 // Hardcoded questions for now, ideally fetched from backend
@@ -137,6 +138,7 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/support-rag" element={<SupportPage />} />
+          <Route path="/data-accuracy" element={<DataAccuracy />} />
           <Route path="/" element={
             <>
               {!showChat ? (
