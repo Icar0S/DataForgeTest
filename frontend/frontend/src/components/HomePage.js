@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight, Database } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, ArrowRight, Database, Sparkles } from 'lucide-react';
 import RAGButton from './RAGButton';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -159,7 +159,7 @@ const DataQualityLLMSystem = () => {
           >
             Advanced Data-Intensive Systems Testing with LLMs and Automated PySpark Validation
           </motion.p>
-          <div className="flex gap-4 justify-center">
+          <div className="flex gap-4 justify-center flex-wrap">
             <motion.div
               variants={scaleIn}
               whileHover={{ scale: 1.05 }}
@@ -185,6 +185,20 @@ const DataQualityLLMSystem = () => {
               >
                 <Database className="w-5 h-5" />
                 Acurácia de Dados (Datasets)
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                to="/generate-dataset"
+                className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 flex items-center gap-2"
+                aria-label="Generate Synthetic Dataset"
+              >
+                <Sparkles className="w-5 h-5" />
+                Generate Synthetic Dataset
               </Link>
             </motion.div>
             <RAGButton />
