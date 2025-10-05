@@ -1,3 +1,10 @@
 pyspark==3.5.1
 Flask
 Flask-Cors
+pandas
+numpy
+anthropic
+python-dotenv
+openpyxl
+pyarrow
+xlsxwriter

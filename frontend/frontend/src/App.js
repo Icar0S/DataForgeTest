@@ -8,6 +8,7 @@ import HomePage from './components/HomePage';
 import SupportPage from './pages/SupportPage';
 import DataAccuracy from './pages/DataAccuracy';
 import QaChecklist from './pages/QaChecklist';
+import GenerateDataset from './pages/GenerateDataset';
 import SupportButton from './components/SupportButton';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/support-rag" element={<SupportPage />} />
           <Route path="/data-accuracy" element={<DataAccuracy />} />
           <Route path="/qa-checklist" element={<QaChecklist />} />
+          <Route path="/generate-dataset" element={<GenerateDataset />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
         {/* Add support button on all pages except support page */}
