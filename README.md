@@ -1,167 +1,158 @@
-# Data Quality Chatbot
+# DataForgeTest
 
-DataForgeTest is an innovative tool designed to automate data quality testing for Big Data systems. By combining Large Language Models (LLMs) with Retrieval-Augmented Generation (RAG), this repository provides a cutting-edge solution for generating customizable test cases, creating comprehensive data quality rules, and executing them on scalable Spark clusters.
-<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/f17fd7ad-e9e9-464a-a55b-5d80af8ec578" />
+> **Advanced Data Quality Testing Platform with AI-Powered Synthetic Data Generation**
+
+DataForgeTest is a comprehensive solution for automating data quality testing in Big Data environments. It combines Large Language Models (LLMs) with advanced data processing capabilities to generate synthetic datasets, validate data accuracy, and create intelligent testing workflows for scalable data systems.
+
+<div align="center">
+  <img width="1024" height="1024" alt="DataForgeTest Logo" src="https://github.com/user-attachments/assets/f17fd7ad-e9e9-464a-a55b-5d80af8ec578" />
+</div>
+
+## 🚀 Key Features
+
+- **🤖 AI-Powered Synthetic Data Generation** - Create realistic datasets using LLMs with 14+ data types
+- **📊 Data Accuracy Validation** - Compare and correct datasets using GOLD reference standards  
+- **💬 Intelligent RAG Support System** - Chat with documentation using retrieval-augmented generation
+- **⚡ PySpark Code Generation** - Automated generation of data quality validation scripts
+- **🌐 Modern Web Interface** - React-based frontend with responsive design and dark theme
+- **🔧 RESTful API Architecture** - Modular Flask backend with comprehensive error handling
+
+## 📋 Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Features Overview](#-features-overview)
+- [API Reference](#-api-reference)
+- [Configuration](#-configuration)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Contributing](#-contributing)
 
 
-# How to Run
+## 🚀 Quick Start
 
-## Windows - Execução Automatizada
+### Prerequisites
+- **Python 3.8+** with pip
+- **Node.js 16+** with npm
+- **Git** for version control
 
-### Primeira Execução ou Após Atualizar Dependências
-Execute `setup_start.bat` para:
-1. Verificar e instalar todas as dependências
-2. Configurar o ambiente completo
-3. Iniciar os serviços
-4. Abrir o navegador automaticamente
+### Automated Setup (Windows)
 
-### Desenvolvimento Diário
-Execute `dev_start.bat` para:
-1. Inicialização rápida dos serviços
-2. Sem verificação de dependências
-3. Ideal para uso durante desenvolvimento
-
-## Método Manual
-Se preferir iniciar manualmente, abra dois terminais:
-
-1. Terminal 1 (Backend):
+**🎯 First Time Setup**
 ```bash
-# Ativar ambiente virtual
-.venv\Scripts\activate
+setup_start.bat
+```
+- Installs all dependencies
+- Configures environment
+- Starts services
+- Opens browser automatically
 
-# Rodar API
+**⚡ Daily Development**
+```bash
+dev_start.bat
+```
+- Quick service startup
+- No dependency checks
+- Optimized for development
+
+### Manual Setup
+
+1. **Clone Repository**
+```bash
+git clone https://github.com/Icar0S/DataForgeTest.git
+cd DataForgeTest
+```
+
+2. **Backend Setup**
+```bash
+# Create and activate virtual environment
+python -m venv .venv
+.venv\Scripts\activate  # Windows
+source .venv/bin/activate  # Linux/Mac
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment (copy from .env.example)
+cp .env.example .env
+# Edit .env with your configuration
+```
+
+3. **Frontend Setup**
+```bash
+cd frontend/frontend
+npm install
+```
+
+4. **Start Services**
+
+Terminal 1 (Backend):
+```bash
 cd src
 python api.py
 ```
 
-2. Terminal 2 (Frontend):
+Terminal 2 (Frontend):
 ```bash
-# Navegar até o diretório do frontend
 cd frontend/frontend
-
-# Iniciar aplicação React
 npm start
 ```
 
-A aplicação estará disponível em:
-- Frontend: http://localhost:3000
-- Backend: http://localhost:5000
+**🌐 Access Points:**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **API Documentation**: http://localhost:5000/docs
 
-## QA Checklist Feature
+## 🎯 Features Overview
 
-### Overview
+### 1. 🤖 PySpark Code Generation (QA Checklist)
 
-A feature **Checklist de Testes QA** oferece uma interface de chat dedicada para realizar testes de qualidade de dados de forma interativa.
+Interactive chat interface for generating PySpark data quality validation code through natural language conversations.
 
-### Funcionalidades
+**Key Features:**
+- **Full-screen responsive chat interface** (mobile → desktop)
+- **Auto-scrolling message area** with loading indicators
+- **Multi-line message input** with keyboard shortcuts
+- **Real-time streaming responses** via EventSource
+- **Accessible design** with focus management and ARIA labels
 
-- **Interface de Chat Full-Screen:** Layout responsivo que ocupa toda a tela (mobile → desktop)
-- **Mensagens Scrolláveis:** Área de mensagens com scroll automático
-- **Input Inteligente:** Campo de mensagem com suporte a múltiplas linhas
-- **Estados de Loading:** Indicadores visuais durante o envio de mensagens
-- **Navegação Facilitada:** Botão de voltar sempre visível no topo
-- **Acessibilidade:** Foco automático no input, aria-labels, navegação por teclado
+**Keyboard Shortcuts:**
+- `Enter` - Send message
+- `Shift + Enter` - New line in message
+- `Tab` - Navigate interactive elements
 
-### Atalhos de Teclado
+**API Integration:**
+- Uses streaming endpoint: `GET /api/rag/chat?message=<query>`
 
-Na página `/qa-checklist`:
+### 2. 🎲 Synthetic Dataset Generation
 
-- **Enter**: Envia a mensagem
-- **Shift + Enter**: Cria uma nova linha no campo de mensagem
-- **Tab**: Navega entre os elementos interativos
+LLM-powered synthetic data generation supporting realistic datasets with customizable schemas and multiple output formats.
 
-### Endpoints Utilizados
+**Supported Data Types:**
+- **Primitives**: string, integer, float, boolean
+- **Date/Time**: date, datetime with custom ranges
+- **Semantic**: email, phone, address, product_name, price, uuid
+- **Advanced**: category (with weights), custom_pattern (regex)
 
-A feature utiliza o endpoint existente de RAG:
+**Output Formats**: CSV, XLSX, JSON, Parquet
 
-- **GET** `/api/rag/chat?message=<mensagem>` - Streaming de resposta via EventSource
+**Capabilities:**
+- Up to **1,000,000 rows** per dataset
+- Up to **50 columns** per schema
+- **Preview mode** (50 rows) for quick validation
+- **Batch processing** with progress tracking
+- **Type validation** and coercion
+- **Uniqueness constraints**
+- **Null value control** (percentage-based)
+- **Locale-aware generation** (default: pt_BR)
 
-## Generate Synthetic Dataset Feature
+**Performance Benchmarks:**
+- Small datasets (< 1K rows): 5-15 seconds
+- Medium datasets (1K-50K rows): 1-5 minutes  
+- Large datasets (50K-1M rows): 10-60 minutes
 
-### Overview
-
-A feature de **Geração de Dataset Sintético** permite criar datasets sintéticos realistas usando LLM (Large Language Models). Suporta múltiplos tipos de dados, esquemas customizáveis e vários formatos de saída.
-
-### Funcionalidades
-
-- **Tipos de Dados Suportados:**
-  - Primitivos: string, integer, float, boolean
-  - Data/Hora: date, datetime
-  - Semânticos: email, phone, address, product_name, price, uuid
-  - Avançados: category (com pesos), custom_pattern
-
-- **Formatos de Saída:** CSV, XLSX, JSON, Parquet
-- **Capacidades:**
-  - Até 1.000.000 linhas por dataset
-  - Até 50 colunas por esquema
-  - Modo preview (50 linhas) para validação rápida
-  - Geração em lotes com tracking de progresso
-  - Validação e coerção de tipos
-  - Restrições de unicidade
-  - Controle de valores nulos (%)
-  - Geração locale-aware (padrão: pt_BR)
-
-### Configuração
-
-Adicione ao arquivo `.env`:
-
-```bash
-# LLM Configuration (compartilhado com RAG)
-LLM_API_KEY=your-anthropic-api-key-here
-LLM_MODEL=claude-3-haiku-20240307
-
-# Synthetic Dataset Generation
-SYNTH_STORAGE_PATH=./storage/synth
-SYNTH_MAX_ROWS=1000000
-SYNTH_REQUEST_TIMEOUT=300
-SYNTH_MAX_MEM_MB=2048
-SYNTH_RATE_LIMIT=60
-```
-
-### Endpoints da API
-
-#### POST `/api/synth/preview`
-Gera preview do dataset sintético (máx. 100 linhas)
-
-**Request:**
+**Example Schema:**
 ```json
-{
-  "schema": {
-    "columns": [
-      {"name": "id", "type": "integer", "options": {"min": 1, "max": 1000000, "unique": true}},
-      {"name": "email", "type": "email", "options": {}},
-      {"name": "created_at", "type": "datetime", "options": {"start": "2020-01-01", "end": "2025-12-31"}}
-    ]
-  },
-  "rows": 50,
-  "locale": "pt_BR"
-}
-```
-
-#### POST `/api/synth/generate`
-Gera dataset completo e salva em arquivo
-
-**Request:**
-```json
-{
-  "schema": {"columns": [...]},
-  "rows": 10000,
-  "fileType": "csv",
-  "llmMode": "batched",
-  "batchSize": 1000
-}
-```
-
-#### GET `/api/synth/download/:session_id/:filename`
-Download do dataset gerado
-
-#### GET `/api/synth/health`
-Health check do serviço
-
-### Exemplo de Uso
-
-```javascript
-// Catálogo de produtos
 {
   "schema": {
     "columns": [
@@ -169,9 +160,8 @@ Health check do serviço
       {"name": "name", "type": "product_name", "options": {}},
       {"name": "price", "type": "price", "options": {"min": 10, "max": 9999, "decimals": 2}},
       {"name": "category", "type": "category", "options": {
-          "categories": ["Electronics", "Clothing", "Food", "Books"]
-        }
-      }
+        "categories": ["Electronics", "Clothing", "Food", "Books"]
+      }}
     ]
   },
   "rows": 1000,
@@ -179,442 +169,393 @@ Health check do serviço
 }
 ```
 
-### Performance
+### 3. 🎯 Data Accuracy Validation
 
-- **Pequenos datasets** (< 1.000 linhas): 5-15 segundos
-- **Médios** (1.000 - 50.000 linhas): 1-5 minutos
-- **Grandes** (50.000 - 1.000.000 linhas): 10-60 minutos
+Compare and correct datasets using GOLD reference standards with automated normalization and intelligent difference detection.
 
-**Documentação completa:** [docs/SYNTHETIC_DATASET_FEATURE.md](docs/SYNTHETIC_DATASET_FEATURE.md)
+**Key Features:**
+- **Multi-format support**: CSV, XLSX, Parquet uploads
+- **Smart column mapping**: Define key columns (identifiers) and value columns (data to compare)
+- **Automatic normalization**:
+  - Column names → snake_case
+  - Key normalization (trim, lowercase, accent/punctuation removal)
+  - Numeric coercion (comma→decimal, thousands separator removal)
+- **Duplicate handling**:
+  - GOLD: Error on duplicates
+  - TARGET: Configurable policies (keep_last, sum, average)
+- **Tolerance-based comparison**: Define numeric comparison tolerance
+- **Comprehensive reporting**:
+  - Accuracy metrics with precision/recall
+  - Paginated difference tables
+  - Downloadable reports (CSV, JSON)
 
-## Data Accuracy Feature
+**Workflow:**
+1. Upload GOLD dataset (trusted reference)
+2. Upload TARGET dataset (data to validate)  
+3. Map key columns (identifiers) and value columns
+4. Configure normalization and tolerance options
+5. Execute comparison and download corrected dataset
 
-### Overview
+**Supported Files**: Up to 50MB, 2M rows, CSV/XLSX/Parquet formats
 
-A feature de **Acurácia de Dados (Datasets)** permite comparar e corrigir datasets usando um dataset GOLD (referência confiável) como base de verdade. O sistema identifica diferenças, gera relatórios detalhados e corrige automaticamente o dataset alvo.
+### 4. 💬 Intelligent RAG Support System
 
-### Funcionalidades
+AI-powered documentation chat system with retrieval-augmented generation for contextual support and guidance.
 
-- **Upload de Datasets:** Suporte para CSV, XLSX e Parquet
-- **Mapeamento de Colunas:** Defina quais colunas são chaves (identificadores) e quais são valores a comparar
-- **Normalização Automática:** 
-  - Colunas convertidas para snake_case
-  - Chaves normalizadas (trim, lowercase, remoção de acentos/pontuação)
-  - Coerção numérica (vírgula → ponto, remoção de separadores de milhares)
-- **Detecção de Duplicatas:**
-  - GOLD: Erro se houver duplicatas
-  - TARGET: Políticas configuráveis (manter última, somar, média)
-- **Comparação com Tolerância:** Defina tolerância numérica para comparações
-- **Relatórios Completos:**
-  - Métricas de acurácia
-  - Tabela de diferenças paginada
-  - Downloads em CSV e JSON
+**Features:**
+- **Smart document search**: Keyword-based retrieval with relevance scoring
+- **Contextual responses**: Structured answers based on query type
+- **Streaming chat interface**: Real-time response generation
+- **Document management**: Upload, index, and manage documentation
+- **Multiple implementations**:
+  - **Simple RAG**: Keyword-based search (default, no API key required)
+  - **Full RAG**: LLM-powered with Claude Sonnet (requires API key)
 
-### Variáveis de Configuração
-
-Configure no arquivo `.env` (copie de `.env.example`):
-
+**Quick Test:**
 ```bash
-# Data Accuracy Configuration
-ACCURACY_STORAGE_PATH=./storage
-MAX_UPLOAD_MB=50
-ACCURACY_ALLOWED_FILE_TYPES=.csv,.xlsx,.parquet
-ACCURACY_MAX_ROWS=2000000
-ACCURACY_REQUEST_TIMEOUT=120
-```
-
-### Endpoints da API
-
-#### POST `/api/accuracy/upload?role=gold|target`
-Upload de dataset (GOLD ou TARGET)
-
-**Request:** `multipart/form-data` com arquivo
-
-**Response:**
-```json
-{
-  "sessionId": "uuid",
-  "role": "gold",
-  "datasetId": "uuid",
-  "columns": ["produto", "preco_unitario"],
-  "preview": [{...}, {...}],
-  "rowCount": 100
-}
-```
-
-#### POST `/api/accuracy/compare-correct`
-Compara e corrige datasets
-
-**Request:**
-```json
-{
-  "sessionId": "string",
-  "keyColumns": ["produto"],
-  "valueColumns": ["preco_unitario"],
-  "options": {
-    "normalizeKeys": true,
-    "lowercase": true,
-    "stripAccents": true,
-    "stripPunctuation": true,
-    "coerceNumeric": true,
-    "decimalPlaces": 2,
-    "tolerance": 0.0,
-    "targetDuplicatePolicy": "keep_last"
-  }
-}
-```
-
-**Response:**
-```json
-{
-  "summary": {
-    "rows_gold": 100,
-    "rows_target": 98,
-    "common_keys": 95,
-    "missing_in_target": 5,
-    "extra_in_target": 3,
-    "mismatches_total": 10,
-    "accuracy": 0.8947
-  },
-  "diffSample": [...],
-  "download": {
-    "correctedCsv": "/api/accuracy/download/{sessionId}/target_corrected.csv",
-    "diffCsv": "/api/accuracy/download/{sessionId}/diff.csv",
-    "reportJson": "/api/accuracy/download/{sessionId}/report.json"
-  }
-}
-```
-
-#### GET `/api/accuracy/download/<session_id>/<filename>`
-Download de arquivos gerados (target_corrected.csv, diff.csv, report.json)
-
-#### GET `/api/accuracy/health`
-Health check do serviço
-
-### Exemplo de Uso
-
-1. Acesse http://localhost:3000 e clique em "Acurácia de Dados (Datasets)"
-2. Faça upload do dataset GOLD (referência confiável)
-3. Faça upload do dataset a validar
-4. Selecione as colunas chave (ex: produto, codigo)
-5. Selecione as colunas de valor (ex: preco_unitario, quantidade)
-6. Configure as opções de normalização e tolerância
-7. Clique em "Comparar & Corrigir"
-8. Visualize as métricas e diferenças
-9. Baixe o dataset corrigido e relatórios
-
-### Testes
-
-**Backend:**
-```bash
-cd /home/runner/work/DataForgeTest/DataForgeTest
-python -m pytest tests/test_accuracy_backend.py -v
-```
-
-**Frontend:**
-```bash
-cd frontend/frontend
-npm test -- DataAccuracy.test.js
-```
-
-## RAG Support System
-
-### Chat com Documentação (Support Page)
-
-O sistema inclui um chat inteligente na página de Support que permite fazer perguntas sobre a documentação do projeto.
-
-**Status Atual:** O sistema usa Simple RAG (busca por palavras-chave) por padrão.
-
-**Para habilitar IA Claude Sonnet:**
-1. Configure a chave API no arquivo `.env` (copie de `.env.example`)
-2. Instale dependências adicionais: `pip install llama-index-llms-anthropic`
-3. Veja o guia completo em: [`docs/RAG_TROUBLESHOOTING.md`](docs/RAG_TROUBLESHOOTING.md)
-
-**Testes e Diagnósticos:**
-```bash
-# Executar testes do sistema RAG
+# Test RAG system functionality
 python tests/test_rag_integration.py
 python tests/test_rag_api.py
 
-# Diagnóstico completo do sistema
+# Full system diagnostics  
 python tests/test_rag_diagnostics.py
 ```
 
-📚 **Documentação RAG:**
-- [`docs/RAG_QUICK_REFERENCE.md`](docs/RAG_QUICK_REFERENCE.md) - Referência rápida
-- [`docs/RAG_TROUBLESHOOTING.md`](docs/RAG_TROUBLESHOOTING.md) - Guia de solução de problemas
-- [`docs/RAG_ANALYSIS_SUMMARY.md`](docs/RAG_ANALYSIS_SUMMARY.md) - Análise completa
-- [`docs/RAG_TEST_RESULTS.md`](docs/RAG_TEST_RESULTS.md) - Resultados dos testes
-- [`tests/README_TESTS.md`](tests/README_TESTS.md) - Documentação dos testes
+**Enable Full AI Mode:**
+1. Add API key to `.env`: `LLM_API_KEY=your-anthropic-key`
+2. Install: `pip install llama-index-llms-anthropic`
+3. Restart backend
 
-## Visão Geral
+**Current Status**: ✅ Simple RAG active with 6 documents, structured responses
 
-Este projeto oferece uma solução para automatizar a criação de regras de qualidade de dados e a geração de código PySpark para aplicá-las. Através de uma interface de linha de comando, o usuário pode responder a perguntas sobre seus dados e as regras desejadas. O chatbot então traduz essas respostas em uma DSL (Domain Specific Language) estruturada e, posteriormente, em um script PySpark funcional.
+## 🏗️ Architecture Overview
 
-<img width="1918" height="896" alt="image" src="https://github.com/user-attachments/assets/a5c59bb3-049d-4417-8036-71b9f10e0b25" />
+DataForgeTest follows a modern microservices architecture with clear separation between frontend and backend components.
 
-## Funcionalidades
+<div align="center">
+  <img width="1918" height="896" alt="System Architecture" src="https://github.com/user-attachments/assets/a5c59bb3-049d-4417-8036-71b9f10e0b25" />
+</div>
 
-*   **Coleta de Requisitos**: Interage com o usuário via CLI para coletar informações sobre o dataset e as regras de qualidade de dados desejadas.
-*   **Geração de DSL**: Converte as respostas do usuário em um formato DSL (JSON) que representa as regras de qualidade de dados de forma estruturada e legível por máquina.
-*   **Geração de Código PySpark**: A partir da DSL gerada, o chatbot cria scripts PySpark prontos para serem executados em ambientes Spark, aplicando as regras de qualidade de dados definidas.
-*   **Suporte a Diversas Regras**:
-    *   **Validação de Esquema**: Verifica nomes e tipos de colunas, e se o dataset possui cabeçalho.
-    *   **Integridade de Dados**:
-        *   `not_null`: Garante que colunas não contenham valores ausentes.
-        *   `uniqueness`: Assegura que colunas ou combinações de colunas tenham valores únicos.
-    *   **Restrições de Valor**:
-        *   `format`: Valida o formato de valores em colunas (e.g., datas, e-mails).
-        *   `range`: Verifica se valores numéricos estão dentro de um intervalo especificado.
-        *   `in_set`: Confere se valores pertencem a um conjunto predefinido de opções.
-        *   `regex`: Valida valores contra um padrão de expressão regular.
-        *   `value_distribution`: Permite verificar a frequência de ocorrência de valores específicos.
+### Core Components
 
-## Estrutura do Projeto
+**🎨 Frontend (React + TypeScript)**
+- Modern responsive UI with dark theme
+- Real-time streaming chat interfaces
+- File upload with progress tracking
+- Interactive data visualization
+- Accessibility-focused design
 
+**🔧 Backend (Python + Flask)**
+- Modular blueprint architecture
+- RESTful API with comprehensive error handling
+- LLM integration (Anthropic Claude)
+- Multi-format file processing
+- Automated data validation pipelines
+
+**📁 Project Structure**
 ```
-data-quality-chatbot/
-├── data/                     # Diretório para dados de exemplo ou datasets de entrada.
-├── dsl/                      # Armazena os arquivos DSL (JSON) gerados pelo chatbot.
-├── output/                   # Armazena os scripts PySpark (.py) gerados.
-├── notebooks/                # Notebooks Jupyter para experimentação ou demonstração.
-├── src/
-│   ├── chatbot/              # Lógica principal do chatbot e interação com o usuário.
-│   │   ├── main.py           # Ponto de entrada do chatbot.
-│   │   ├── questions.py      # Definição das perguntas feitas ao usuário.
-│   │   └── answers.py        # Gerenciamento das respostas do usuário.
-│   ├── code_generator/       # Módulos para gerar código PySpark a partir da DSL.
-│   │   └── pyspark_generator.py # Lógica de geração de código PySpark.
-│   ├── dsl_parser/           # Módulos para parsing e geração da DSL.
-│   │   └── generator.py      # Lógica para converter respostas em DSL.
-│   └── __init__.py
-├── tests/                    # Testes unitários para as diferentes partes do projeto.
-│   ├── test_generator.py
-│   ├── test_pyspark_generator.py
-│   └── sample_answers.py
-└── .gitignore                # Arquivo para ignorar arquivos e diretórios no controle de versão.
-└── README.md                 # Este arquivo.
+DataForgeTest/
+├── frontend/frontend/          # React application
+│   ├── src/components/        # UI components
+│   ├── src/pages/            # Application pages
+│   └── public/               # Static assets
+├── src/                      # Python backend
+│   ├── api.py               # Main Flask application
+│   ├── chatbot/             # PySpark code generation
+│   ├── synthetic/           # Synthetic data generation
+│   ├── accuracy/            # Data accuracy validation
+│   └── rag/                # RAG support system
+├── docs/                    # Comprehensive documentation
+├── tests/                   # Test suites
+└── storage/                 # Data storage
 ```
 
-## Como Usar
+## 📡 API Reference
 
-### Pré-requisitos
+### Core Endpoints
 
-*   Python 3.x
-*   pip (gerenciador de pacotes do Python)
+**Main Application**
+- `GET /` - Health check and system status
+- `POST /ask` - Process chatbot requests and generate PySpark code
 
-### Instalação
+**Synthetic Data Generation**
+- `POST /api/synth/preview` - Generate dataset preview (max 100 rows)
+- `POST /api/synth/generate` - Generate full synthetic dataset
+- `GET /api/synth/download/:session/:file` - Download generated files
+- `GET /api/synth/health` - Service health check
 
-1.  Clone o repositório:
-    ```bash
-    git clone https://github.com/seu-usuario/data-quality-chatbot.git
-    cd data-quality-chatbot
-    ```
-    (Nota: Substitua `https://github.com/seu-usuario/data-quality-chatbot.git` pelo link real do seu repositório, se aplicável.)
+**Data Accuracy Validation**  
+- `POST /api/accuracy/upload?role=gold|target` - Upload datasets
+- `POST /api/accuracy/compare-correct` - Compare and correct datasets
+- `GET /api/accuracy/download/:session/:file` - Download results
+- `GET /api/accuracy/health` - Service health check
 
-2.  Crie e ative um ambiente virtual (recomendado):
-    ```bash
-    python -m venv .venv
-    # No Windows:
-    .venv\\Scripts\\activate
-    # No macOS/Linux:
-    source .venv/bin/activate
-    ```
+**RAG Support System**
+- `POST /api/rag/chat` - Send chat messages
+- `GET /api/rag/chat?message=query` - Streaming chat (EventSource)
+- `POST /api/rag/search` - Search documentation  
+- `POST /api/rag/upload` - Upload documentation
+- `GET /api/rag/sources` - List indexed documents
+- `DELETE /api/rag/sources/:id` - Remove documents
+- `GET /api/rag/health` - RAG system health
 
-3.  Instale as dependências:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    (Nota: Se o arquivo `requirements.txt` não existir, você precisará criá-lo com as dependências do projeto, como `pyspark` e outras que possam ser necessárias.)
+## ⚙️ Configuration
 
-### Executando o Chatbot
+### Environment Variables
 
-Para iniciar o chatbot, execute o seguinte comando no terminal:
+Create `.env` file (copy from `.env.example`):
 
 ```bash
-python -m src.chatbot.main
+# LLM Configuration (Anthropic Claude)
+LLM_API_KEY=your-anthropic-api-key-here
+LLM_MODEL=claude-3-haiku-20240307
+
+# RAG System
+VECTOR_STORE_PATH=./storage/vectorstore
+CHUNK_SIZE=512
+CHUNK_OVERLAP=50
+TOP_K=4
+MAX_UPLOAD_MB=10
+
+# Synthetic Data Generation
+SYNTH_STORAGE_PATH=./storage/synth
+SYNTH_MAX_ROWS=1000000
+SYNTH_REQUEST_TIMEOUT=300
+SYNTH_MAX_MEM_MB=2048
+
+# Data Accuracy
+ACCURACY_STORAGE_PATH=./storage/accuracy
+ACCURACY_MAX_UPLOAD_MB=50
+ACCURACY_MAX_ROWS=2000000
+ACCURACY_REQUEST_TIMEOUT=120
+
+# Flask Settings
+FLASK_ENV=development
+FLASK_DEBUG=True
 ```
 
-O chatbot fará uma série de perguntas sobre o seu dataset e as regras de qualidade de dados que você deseja aplicar. Ao final, ele exibirá a DSL gerada e o código PySpark correspondente, com a opção de salvá-los em arquivos.
+### Supported Data Quality Rules
 
-### Exemplo de Interação
+The PySpark code generator supports comprehensive data quality validation:
 
+**Schema Validation**
+- Column name and type verification
+- Header presence validation
+
+**Data Integrity**
+- `not_null`: Ensure no missing values
+- `uniqueness`: Guarantee unique values/combinations
+
+**Value Constraints**
+- `format`: Validate data formats (dates, emails, etc.)
+- `range`: Check numeric ranges
+- `in_set`: Validate against predefined values
+- `regex`: Pattern matching validation
+- `value_distribution`: Frequency analysis
+
+## 🛠️ Development
+
+### Development Setup
+
+```bash
+# Clone and setup
+git clone https://github.com/Icar0S/DataForgeTest.git
+cd DataForgeTest
+
+# Backend development
+python -m venv .venv
+source .venv/bin/activate  # or .venv\Scripts\activate on Windows
+pip install -r requirements.txt
+
+# Frontend development  
+cd frontend/frontend
+npm install
+npm start
 ```
-Welcome to the Data Quality Chatbot!
 
---- Dataset Information ---
-What is the name of the dataset you want to validate? my_sales_data
-What is the source of the data (e.g., a file path, a database table)? /data/sales.csv
-What is the format of the data (e.g., CSV, JSON, Parquet)? CSV
+### Code Quality
 
---- Schema Validation ---
-Does the data have a header? yes
-What are the expected column names, in order? product_id, sale_date, amount, region
-What is the expected data type for each column (e.g., string, integer, float, date)? string, date, float, string
+```bash
+# Python linting
+pylint src/**/*.py
 
---- Data Integrity ---
-Which columns should not contain any missing values (i.e., are mandatory)? product_id, sale_date
-Which columns should contain unique values (i.e., are primary keys)? product_id
+# Frontend testing
+cd frontend/frontend
+npm test
 
---- Value Constraints ---
-Are there any columns that should have a specific format (e.g., a date format like YYYY-MM-DD)? sale_date:YYYY-MM-DD
-Are there any columns that should have a minimum or maximum value? amount:0:1000
-Are there any columns that should only contain values from a specific set (e.g., a list of categories)? region:[North,South,East,West]
-Are there any columns that should match a specific regular expression pattern? product_id:^[A-Z]{3}\\d{4}$
-Are there any columns for which you want to check the value distribution (e.g., to ensure certain values appear with a specific frequency)? region:North:0.2:0.4
+# Type checking
+npm run type-check
+```
 
---- Generated DSL ---
-{
-    "dataset": {
-        "name": "my_sales_data",
-        "source": "/data/sales.csv",
-        "format": "CSV",
-        "has_header": true,
-        "schema": {
-            "product_id": "string",
-            "sale_date": "date",
-            "amount": "float",
-            "region": "string"
-        }
-    },
-    "rules": [
-        {
-            "type": "not_null",
-            "column": "product_id"
-        },
-        {
-            "type": "not_null",
-            "column": "sale_date"
-        },
-        {
-            "type": "uniqueness",
-            "columns": [
-                "product_id"
-            ]
-        },
-        {
-            "type": "format",
-            "column": "sale_date",
-            "format": "YYYY-MM-DD"
-        },
-        {
-            "type": "range",
-            "column": "amount",
-            "min": 0.0,
-            "max": 1000.0
-        },
-        {
-            "type": "in_set",
-            "column": "region",
-            "values": [
-                "North",
-                "South",
-                "East",
-                "West"
-            ]
-        },
-        {
-            "type": "regex",
-            "column": "product_id",
-            "pattern": "^[A-Z]{3}\\d{4}$"
-        },
-        {
-            "type": "value_distribution",
-            "column": "region",
-            "value": "North",
-            "min_freq": 0.2,
-            "max_freq": 0.4
-        }
-    ]
-}
+### Backend Architecture
 
-Would you like to save the generated DSL to a file? (yes/no): yes
-Please enter a filename for the DSL (e.g., my_rules.json): sales_rules.json
-DSL saved successfully to dsl\\sales_rules.json
+**Modular Blueprint Design:**
+- `api.py` - Main Flask application with CORS support
+- `synthetic/` - LLM-powered synthetic data generation
+- `accuracy/` - Dataset comparison and correction
+- `rag/` - RAG documentation system (Simple + Full implementations)
+- `chatbot/` - PySpark code generation from natural language
 
---- Generating PySpark Code ---
-# PySpark code generated by Data Quality Chatbot
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, isnull, countDistinct, regexp_extract, lit
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, FloatType, DateType
+**Key Design Patterns:**
+- Configuration via environment variables
+- Comprehensive error handling with structured responses
+- Session-based file management
+- Streaming responses for real-time feedback
+- Modular validators and processors
 
-spark = SparkSession.builder.appName("DataQualityChecks").getOrCreate()
+## 🧪 Testing
 
-# Define schema
-schema = StructType([
-    StructField("product_id", StringType(), True),
-    StructField("sale_date", DateType(), True),
-    StructField("amount", FloatType(), True),
-    StructField("region", StringType(), True)
-])
+### Automated Test Suites
 
-# Load data
-df = spark.read.csv("/data/sales.csv", header=True, schema=schema)
+```bash
+# Run all tests
+python -m pytest tests/ -v
 
-print("Running Data Quality Checks...")
+# Specific test categories
+python tests/test_rag_integration.py      # RAG system tests
+python tests/test_rag_api.py             # API endpoint tests  
+python tests/test_rag_diagnostics.py     # System diagnostics
+python tests/test_accuracy_backend.py    # Data accuracy tests
 
-# Rule: not_null for product_id
-null_product_id_count = df.filter(isnull(col("product_id"))).count()
-if null_product_id_count > 0:
-    print(f"FAIL: Column 'product_id' has {null_product_id_count} null values.")
-else:
-    print("PASS: Column 'product_id' has no null values.")
+# Frontend tests
+cd frontend/frontend
+npm test
+```
 
-# Rule: not_null for sale_date
-null_sale_date_count = df.filter(isnull(col("sale_date"))).count()
-if null_sale_date_count > 0:
-    print(f"FAIL: Column 'sale_date' has {null_sale_date_count} null values.")
-else:
-    print("PASS: Column 'sale_date' has no null values.")
+### Manual Testing Scripts
 
-# Rule: uniqueness for product_id
-total_rows = df.count()
-distinct_product_id_count = df.select(countDistinct(col("product_id"))).collect()[0][0]
-if total_rows != distinct_product_id_count:
-    print(f"FAIL: Column 'product_id' has duplicate values. Total rows: {total_rows}, Distinct product_ids: {distinct_product_id_count}.")
-else:
-    print("PASS: Column 'product_id' has unique values.")
+```bash
+# Test RAG improvements
+python test_improved_rag.py
 
-# Rule: format for sale_date (YYYY-MM-DD)
-invalid_sale_date_format_count = df.filter(~col("sale_date").cast(StringType()).rlike("^\\d{4}-\\d{2}-\\d{2}$")).count()
-if invalid_sale_date_format_count > 0:
-    print(f"FAIL: Column 'sale_date' has {invalid_sale_date_format_count} values with invalid format (expected YYYY-MM-DD).")
-else:
-    print("PASS: Column 'sale_date' has valid format.")
+# Test synthetic data generation
+python test_csv_download.py
 
-# Rule: range for amount (min: 0.0, max: 1000.0)
-out_of_range_amount_count = df.filter((col("amount") < 0.0) | (col("amount") > 1000.0)).count()
-if out_of_range_amount_count > 0:
-    print(f"FAIL: Column 'amount' has {out_of_range_amount_count} values out of expected range [0.0, 1000.0].")
-else:
-    print("PASS: Column 'amount' values are within range.")
+# Test system connectivity
+python tests/test_connectivity.py
+```
 
-# Rule: in_set for region (values: ['North', 'South', 'East', 'West'])
-invalid_region_count = df.filter(~col("region").isin(['North', 'South', 'East', 'West'])).count()
-if invalid_region_count > 0:
-    print(f"FAIL: Column 'region' has {invalid_region_count} values not in the allowed set.")
-else:
-    print("PASS: Column 'region' values are in the allowed set.")
+### Test Coverage
 
-# Rule: regex for product_id (pattern: ^[A-Z]{3}\d{4}$)
-invalid_product_id_regex_count = df.filter(~col("product_id").rlike("^[A-Z]{3}\\d{4}$")).count()
-if invalid_product_id_regex_count > 0:
-    print(f"FAIL: Column 'product_id' has {invalid_product_id_regex_count} values not matching the regex pattern '^[A-Z]{3}\\d{4}$'.")
-else:
-    print("PASS: Column 'product_id' values match the regex pattern.")
+**Backend Components:**
+- ✅ RAG system (14/14 tests passing, 100% success rate)
+- ✅ API endpoints (all endpoints functional)
+- ✅ Synthetic data generation (CSV download working)
+- ✅ Data accuracy validation (upload/compare/download cycle)
+- ✅ Error handling and edge cases
 
-# Rule: value_distribution for region (value: North, min_freq: 0.2, max_freq: 0.4)
-north_region_count = df.filter(col("region") == "North").count()
-total_rows = df.count()
-north_region_frequency = north_region_count / total_rows if total_rows > 0 else 0
+**Frontend Components:**
+- ✅ React component rendering
+- ✅ Chat interface functionality
+- ✅ File upload workflows
+- ✅ API integration points
+- ✅ Responsive design
 
-if north_region_frequency >= 0.2 and north_region_frequency <= 0.4:
-    print(f"PASS: Value 'North' in column 'region' has frequency {north_region_frequency:.2f}, which is within [0.2, 0.4].")
-else:
-    print(f"FAIL: Value 'North' in column 'region' has frequency {north_region_frequency:.2f}, which is outside [0.2, 0.4].")
+## 📚 Documentation
 
-spark.stop()
+### Comprehensive Guides
 
-Would you like to save the generated PySpark code to a file? (yes/no): yes
-Please enter a filename for the PySpark code (e.g., data_quality_script.py): sales_data_quality_checks.py
-PySpark code saved successfully to output\\sales_data_quality_checks.py
+**Core Documentation:**
+- [`docs/BACKEND_STRUCTURE.md`](docs/BACKEND_STRUCTURE.md) - Backend architecture guide
+- [`docs/IMPLEMENTATION_SUMMARY.md`](docs/IMPLEMENTATION_SUMMARY.md) - Complete feature overview
+- [`docs/ACCEPTANCE_CHECKLIST.md`](docs/ACCEPTANCE_CHECKLIST.md) - QA validation checklist
+
+**Feature-Specific:**
+- [`docs/SYNTHETIC_DATASET_FEATURE.md`](docs/SYNTHETIC_DATASET_FEATURE.md) - Synthetic data generation
+- [`docs/RAG_TROUBLESHOOTING.md`](docs/RAG_TROUBLESHOOTING.md) - RAG system guide
+- [`docs/RAG_TEST_RESULTS.md`](docs/RAG_TEST_RESULTS.md) - Test results analysis
+
+**Testing Documentation:**
+- [`tests/README_TESTS.md`](tests/README_TESTS.md) - Test suite overview
+- [`docs/RAG_QUICK_REFERENCE.md`](docs/RAG_QUICK_REFERENCE.md) - Quick reference guide
+
+### API Documentation
+
+Interactive API documentation available at:
+- **Swagger UI**: http://localhost:5000/docs (when running)
+- **Postman Collection**: Available in `/docs/api/`
+
+## 🎯 Use Cases
+
+**Data Engineering Teams:**
+- Generate realistic test datasets for pipeline validation
+- Automate data quality rule creation
+- Compare production vs. staging datasets
+- Create comprehensive PySpark validation scripts
+
+**QA/Testing Teams:**
+- Generate edge case datasets for testing
+- Validate data accuracy across environments
+- Create automated data quality checks
+- Document and track data quality metrics
+
+**Data Scientists:**
+- Create synthetic datasets for model training
+- Validate data preprocessing pipelines
+- Compare dataset versions and track changes
+- Generate documentation-aware support queries
+
+## 🚀 Deployment
+
+### Production Deployment
+
+```bash
+# Backend (using gunicorn)
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:5000 src.api:app
+
+# Frontend (build and serve)
+cd frontend/frontend
+npm run build
+# Serve build/ directory with your preferred web server
+```
+
+### Docker Support (Coming Soon)
+
+```bash
+# Will be available in future releases
+docker-compose up --build
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines:
+
+1. **Fork the repository**
+2. **Create feature branch**: `git checkout -b feature/amazing-feature`
+3. **Run tests**: `python -m pytest tests/ -v`
+4. **Commit changes**: `git commit -m 'Add amazing feature'`
+5. **Push to branch**: `git push origin feature/amazing-feature`
+6. **Open Pull Request**
+
+### Development Guidelines
+
+- Follow PEP 8 for Python code
+- Use ESLint/Prettier for JavaScript/React
+- Add tests for new features
+- Update documentation
+- Ensure all tests pass
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Anthropic Claude** for LLM capabilities
+- **Apache Spark** for big data processing
+- **React Community** for frontend framework
+- **Flask Community** for backend framework
+
+---
+
+<div align="center">
+  <p><strong>Built with ❤️ for the Data Engineering Community</strong></p>
+  <p>
+    <a href="https://github.com/Icar0S/DataForgeTest/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/Icar0S/DataForgeTest/issues">Request Feature</a>
+    ·
+    <a href="docs/">Documentation</a>
+  </p>
+</div>
