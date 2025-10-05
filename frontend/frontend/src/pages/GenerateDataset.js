@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Trash2, Eye, Download, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Trash2, Eye, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../styles/animations';
 
@@ -54,6 +54,7 @@ const GenerateDataset = () => {
     } else if (numColumns < columns.length) {
       setColumns(columns.slice(0, numColumns));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [numColumns]);
 
   const handleColumnChange = (index, field, value) => {

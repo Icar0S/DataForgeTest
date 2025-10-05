@@ -76,6 +76,117 @@ A feature utiliza o endpoint existente de RAG:
 
 - **GET** `/api/rag/chat?message=<mensagem>` - Streaming de resposta via EventSource
 
+## Generate Synthetic Dataset Feature
+
+### Overview
+
+A feature de **Geração de Dataset Sintético** permite criar datasets sintéticos realistas usando LLM (Large Language Models). Suporta múltiplos tipos de dados, esquemas customizáveis e vários formatos de saída.
+
+### Funcionalidades
+
+- **Tipos de Dados Suportados:**
+  - Primitivos: string, integer, float, boolean
+  - Data/Hora: date, datetime
+  - Semânticos: email, phone, address, product_name, price, uuid
+  - Avançados: category (com pesos), custom_pattern
+
+- **Formatos de Saída:** CSV, XLSX, JSON, Parquet
+- **Capacidades:**
+  - Até 1.000.000 linhas por dataset
+  - Até 50 colunas por esquema
+  - Modo preview (50 linhas) para validação rápida
+  - Geração em lotes com tracking de progresso
+  - Validação e coerção de tipos
+  - Restrições de unicidade
+  - Controle de valores nulos (%)
+  - Geração locale-aware (padrão: pt_BR)
+
+### Configuração
+
+Adicione ao arquivo `.env`:
+
+```bash
+# LLM Configuration (compartilhado com RAG)
+LLM_API_KEY=your-anthropic-api-key-here
+LLM_MODEL=claude-3-haiku-20240307
+
+# Synthetic Dataset Generation
+SYNTH_STORAGE_PATH=./storage/synth
+SYNTH_MAX_ROWS=1000000
+SYNTH_REQUEST_TIMEOUT=300
+SYNTH_MAX_MEM_MB=2048
+SYNTH_RATE_LIMIT=60
+```
+
+### Endpoints da API
+
+#### POST `/api/synth/preview`
+Gera preview do dataset sintético (máx. 100 linhas)
+
+**Request:**
+```json
+{
+  "schema": {
+    "columns": [
+      {"name": "id", "type": "integer", "options": {"min": 1, "max": 1000000, "unique": true}},
+      {"name": "email", "type": "email", "options": {}},
+      {"name": "created_at", "type": "datetime", "options": {"start": "2020-01-01", "end": "2025-12-31"}}
+    ]
+  },
+  "rows": 50,
+  "locale": "pt_BR"
+}
+```
+
+#### POST `/api/synth/generate`
+Gera dataset completo e salva em arquivo
+
+**Request:**
+```json
+{
+  "schema": {"columns": [...]},
+  "rows": 10000,
+  "fileType": "csv",
+  "llmMode": "batched",
+  "batchSize": 1000
+}
+```
+
+#### GET `/api/synth/download/:session_id/:filename`
+Download do dataset gerado
+
+#### GET `/api/synth/health`
+Health check do serviço
+
+### Exemplo de Uso
+
+```javascript
+// Catálogo de produtos
+{
+  "schema": {
+    "columns": [
+      {"name": "product_id", "type": "uuid", "options": {"unique": true}},
+      {"name": "name", "type": "product_name", "options": {}},
+      {"name": "price", "type": "price", "options": {"min": 10, "max": 9999, "decimals": 2}},
+      {"name": "category", "type": "category", "options": {
+          "categories": ["Electronics", "Clothing", "Food", "Books"]
+        }
+      }
+    ]
+  },
+  "rows": 1000,
+  "fileType": "csv"
+}
+```
+
+### Performance
+
+- **Pequenos datasets** (< 1.000 linhas): 5-15 segundos
+- **Médios** (1.000 - 50.000 linhas): 1-5 minutos
+- **Grandes** (50.000 - 1.000.000 linhas): 10-60 minutos
+
+**Documentação completa:** [docs/SYNTHETIC_DATASET_FEATURE.md](docs/SYNTHETIC_DATASET_FEATURE.md)
+
 ## Data Accuracy Feature
 
 ### Overview
