@@ -34,7 +34,7 @@ def test_rag_direct():
                 print(f"   {i+1}. {filename} ({content_length} chars)")
 
         # Test a specific question
-        print(f"\n🧪 Testing question: 'What is data quality testing?'")
+        print("\n🧪 Testing question: 'What is data quality testing?'")
         result = chat.chat("What is data quality testing?")
 
         response = result.get("response", "")
@@ -48,7 +48,7 @@ def test_rag_direct():
             print("🔍 This suggests the system is not finding relevant content")
 
             # Let's test the search directly
-            print(f"\n🔍 Testing direct search:")
+            print("\n🔍 Testing direct search:")
             search_results = rag.search("data quality testing", top_k=3)
             print(f"   Search results: {len(search_results)}")
 

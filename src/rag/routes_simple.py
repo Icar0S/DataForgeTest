@@ -65,6 +65,29 @@ def reload_rag():
         return jsonify({"error": str(e)}), 500
 
 
+@rag_bp.route("/search", methods=["POST"])
+def search():
+    """Handle search requests."""
+    try:
+        data = request.get_json()
+        query = data.get("query", "")
+        max_results = data.get("max_results", 5)
+
+        if not query:
+            return jsonify({"error": "Query is required"}), 400
+
+        # Search for relevant documents
+        results = rag_system.search(query)
+
+        # Limit results
+        limited_results = results[:max_results]
+
+        return jsonify({"results": limited_results, "total": len(results)})
+
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        return jsonify({"error": str(e)}), 500
+
+
 @rag_bp.route("/chat", methods=["POST"])
 def chat():
     """Handle chat requests."""

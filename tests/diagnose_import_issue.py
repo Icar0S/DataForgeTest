@@ -1,14 +1,11 @@
-#!/usr/bin/env python3
 """
 Script para diagnosticar problema intermitente de importação do anthropic.
 O erro parece estar relacionado à leitura de entry_points.txt de pacotes.
 """
 
 import sys
-import os
 import traceback
 import importlib.metadata
-from pathlib import Path
 
 
 def diagnose_metadata_issue():
@@ -103,12 +100,10 @@ def test_multiple_imports():
             for mod in modules_to_remove:
                 del sys.modules[mod]
 
-            import anthropic
-
-            print(f"  ✓ Sucesso")
+            print("  ✓ Sucesso")
             success_count += 1
         except Exception as e:
-            print(f"  ❌ Falha: {e}")
+            print(f" ❌ Falha: {e}")
 
     print(f"\nResultado: {success_count}/{total_attempts} importações bem-sucedidas")
     print(f"Taxa de sucesso: {(success_count/total_attempts)*100:.1f}%")

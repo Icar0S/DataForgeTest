@@ -1,4 +1,5 @@
 """Integration tests for RAG functionality to diagnose connection issues."""
+
 import sys
 import os
 import unittest
@@ -6,7 +7,7 @@ import json
 from pathlib import Path
 
 # Add project root to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.rag.config_simple import RAGConfig
 from src.rag.simple_rag import SimpleRAG
@@ -24,7 +25,9 @@ class TestRAGConfiguration(unittest.TestCase):
             self.assertIsInstance(config.storage_path, Path)
             self.assertGreater(config.chunk_size, 0)
             self.assertGreater(config.top_k, 0)
-            print(f"✓ Config loaded: storage={config.storage_path}, chunk_size={config.chunk_size}")
+            print(
+                f"✓ Config loaded: storage={config.storage_path}, chunk_size={config.chunk_size}"
+            )
         except Exception as e:
             self.fail(f"Failed to load config: {str(e)}")
 
@@ -82,7 +85,7 @@ class TestRAGDocumentOperations(unittest.TestCase):
         """Test adding a document to RAG system."""
         test_content = "This is a test document about data quality testing."
         test_metadata = {"filename": "test.txt", "size": len(test_content)}
-        
+
         try:
             doc_id = self.rag_system.add_document(test_content, test_metadata)
             self.assertIsNotNone(doc_id)
@@ -97,18 +100,18 @@ class TestRAGDocumentOperations(unittest.TestCase):
         test_content = "Data quality is essential for accurate analytics and reporting."
         test_metadata = {"filename": "quality.txt", "size": len(test_content)}
         self.rag_system.add_document(test_content, test_metadata)
-        
+
         try:
             results = self.rag_system.search("data quality", top_k=5)
             self.assertIsInstance(results, list)
             print(f"✓ Search returned {len(results)} results")
-            
+
             if len(results) > 0:
                 result = results[0]
-                self.assertIn('text', result)
-                self.assertIn('score', result)
-                self.assertIn('metadata', result)
-                print(f"✓ Search result structure is valid")
+                self.assertIn("text", result)
+                self.assertIn("score", result)
+                self.assertIn("metadata", result)
+                print("✓ Search result structure is valid")
         except Exception as e:
             self.fail(f"Failed to search documents: {str(e)}")
 
@@ -130,7 +133,7 @@ class TestChatEngineOperations(unittest.TestCase):
         self.config = RAGConfig.from_env()
         self.rag_system = SimpleRAG(self.config)
         self.chat_engine = SimpleChatEngine(self.rag_system)
-        
+
         # Add a test document
         test_content = """
         Data quality testing ensures that data meets the required standards.
@@ -145,11 +148,11 @@ class TestChatEngineOperations(unittest.TestCase):
         try:
             response = self.chat_engine.chat("What is data quality testing?")
             self.assertIsInstance(response, dict)
-            self.assertIn('response', response)
-            self.assertIn('citations', response)
-            self.assertIsInstance(response['response'], str)
-            self.assertIsInstance(response['citations'], list)
-            print(f"✓ Chat query successful")
+            self.assertIn("response", response)
+            self.assertIn("citations", response)
+            self.assertIsInstance(response["response"], str)
+            self.assertIsInstance(response["citations"], list)
+            print("✓ Chat query successful")
             print(f"  Response length: {len(response['response'])} chars")
             print(f"  Citations count: {len(response['citations'])}")
         except Exception as e:
@@ -160,9 +163,9 @@ class TestChatEngineOperations(unittest.TestCase):
         try:
             response = self.chat_engine.chat("What is quantum computing?")
             self.assertIsInstance(response, dict)
-            self.assertIn('response', response)
+            self.assertIn("response", response)
             # Should return a message about no specific information
-            print(f"✓ Chat handles queries without context")
+            print("✓ Chat handles queries without context")
         except Exception as e:
             self.fail(f"Failed to handle query without context: {str(e)}")
 
@@ -171,7 +174,7 @@ class TestChatEngineOperations(unittest.TestCase):
         try:
             self.chat_engine.chat("First question")
             self.chat_engine.chat("Second question")
-            
+
             history = self.chat_engine.get_history()
             self.assertEqual(len(history), 2)
             print(f"✓ Chat history tracked correctly: {len(history)} entries")
@@ -183,7 +186,7 @@ class TestChatEngineOperations(unittest.TestCase):
         try:
             self.chat_engine.chat("Test question")
             self.chat_engine.clear_history()
-            
+
             history = self.chat_engine.get_history()
             self.assertEqual(len(history), 0)
             print("✓ Chat history cleared successfully")
@@ -205,44 +208,41 @@ class TestRAGEndpointCompatibility(unittest.TestCase):
         # Add test document
         test_content = "Test content about data validation"
         self.rag_system.add_document(test_content, {"filename": "test.txt"})
-        
+
         response = self.chat_engine.chat("test query")
-        
+
         # Frontend expects 'response' and 'citations' keys
-        self.assertIn('response', response)
-        self.assertIn('citations', response)
-        
+        self.assertIn("response", response)
+        self.assertIn("citations", response)
+
         # Check citations format
-        if len(response['citations']) > 0:
-            citation = response['citations'][0]
-            self.assertIn('id', citation)
-            self.assertIn('text', citation)
-            self.assertIn('metadata', citation)
+        if len(response["citations"]) > 0:
+            citation = response["citations"][0]
+            self.assertIn("id", citation)
+            self.assertIn("text", citation)
+            self.assertIn("metadata", citation)
             print("✓ Response format matches frontend expectations")
 
     def test_streaming_response_format(self):
         """Test that response can be formatted for streaming."""
         try:
             response = self.chat_engine.chat("test query")
-            
+
             # Simulate streaming format
-            words = response['response'].split()
+            words = response["response"].split()
             for word in words[:5]:  # Test first 5 words
-                stream_chunk = {
-                    'type': 'token',
-                    'content': word + ' '
-                }
+                stream_chunk = {"type": "token", "content": word + " "}
                 json_str = json.dumps(stream_chunk)
                 self.assertIsInstance(json_str, str)
-            
+
             # Test citations format
             citation_chunk = {
-                'type': 'citations',
-                'content': {'citations': response['citations']}
+                "type": "citations",
+                "content": {"citations": response["citations"]},
             }
             json_str = json.dumps(citation_chunk)
             self.assertIsInstance(json_str, str)
-            
+
             print("✓ Streaming response format is valid")
         except Exception as e:
             self.fail(f"Failed to format streaming response: {str(e)}")
@@ -255,7 +255,7 @@ class TestRAGDiagnostics(unittest.TestCase):
         """Test that storage directory has proper permissions."""
         config = RAGConfig.from_env()
         storage_path = config.storage_path
-        
+
         try:
             storage_path.mkdir(parents=True, exist_ok=True)
             # Try to write a test file
@@ -269,12 +269,12 @@ class TestRAGDiagnostics(unittest.TestCase):
     def test_document_persistence(self):
         """Test that documents persist across instances."""
         config = RAGConfig.from_env()
-        
+
         # First instance - add document
         rag1 = SimpleRAG(config)
         test_content = "Persistence test content"
         doc_id = rag1.add_document(test_content, {"filename": "persist.txt"})
-        
+
         # Second instance - should load the document
         rag2 = SimpleRAG(config)
         self.assertIn(doc_id, rag2.documents)
@@ -285,7 +285,7 @@ class TestRAGDiagnostics(unittest.TestCase):
         config = RAGConfig.from_env()
         rag_system = SimpleRAG(config)
         chat_engine = SimpleChatEngine(rag_system)
-        
+
         try:
             response = chat_engine.chat("")
             self.assertIsNotNone(response)
@@ -296,13 +296,13 @@ class TestRAGDiagnostics(unittest.TestCase):
 
 def run_diagnostic_suite():
     """Run all diagnostic tests and provide summary."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("RAG SYSTEM DIAGNOSTIC TEST SUITE")
-    print("="*70 + "\n")
-    
+    print("=" * 70 + "\n")
+
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
-    
+
     # Add all test classes
     suite.addTests(loader.loadTestsFromTestCase(TestRAGConfiguration))
     suite.addTests(loader.loadTestsFromTestCase(TestRAGSystemInitialization))
@@ -310,19 +310,21 @@ def run_diagnostic_suite():
     suite.addTests(loader.loadTestsFromTestCase(TestChatEngineOperations))
     suite.addTests(loader.loadTestsFromTestCase(TestRAGEndpointCompatibility))
     suite.addTests(loader.loadTestsFromTestCase(TestRAGDiagnostics))
-    
+
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
-    
-    print("\n" + "="*70)
+
+    print("\n" + "=" * 70)
     print("DIAGNOSTIC SUMMARY")
-    print("="*70)
+    print("=" * 70)
     print(f"Tests run: {result.testsRun}")
     print(f"Failures: {len(result.failures)}")
     print(f"Errors: {len(result.errors)}")
-    print(f"Success rate: {((result.testsRun - len(result.failures) - len(result.errors)) / result.testsRun * 100):.1f}%")
-    print("="*70 + "\n")
-    
+    print(
+        f"Success rate: {((result.testsRun - len(result.failures) - len(result.errors)) / result.testsRun * 100):.1f}%"
+    )
+    print("=" * 70 + "\n")
+
     return result
 
 

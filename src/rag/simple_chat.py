@@ -51,38 +51,112 @@ class SimpleChatEngine:
                 "Could you try rephrasing your question or provide more context?"
             )
 
-        # Simple template-based response
-        response = f"""Based on the available documentation, here's what I found:
+        # Extract and organize relevant information
+        relevant_info = self._extract_relevant_info(question, context)
 
-{self._extract_relevant_info(question, context)}
+        # Create a more structured response
+        if "data quality" in question.lower():
+            response = f"""Data Quality encompasses several key aspects:
 
-Please note: This response is based on the documents in the knowledge base. \
-You can refer to the citations for more detailed information."""
+{relevant_info}
+
+These aspects are crucial for maintaining reliable, accurate, and trustworthy data in any system."""
+        elif "validation" in question.lower():
+            response = f"""Data Validation involves several strategies:
+
+{relevant_info}
+
+These validation techniques help ensure data integrity and catch issues early in the data pipeline."""
+        elif "issues" in question.lower() or "problems" in question.lower():
+            response = f"""Common data quality issues include:
+
+{relevant_info}
+
+Identifying and addressing these issues is essential for maintaining data reliability."""
+        else:
+            response = f"""Based on the documentation:
+
+{relevant_info}
+
+This information comes from the knowledge base and should provide guidance for your data quality needs."""
 
         return response
 
     def _extract_relevant_info(self, question: str, context: str) -> str:
         """Extract relevant information from context."""
-        # Simple extraction - take first few sentences that might be relevant
-        sentences = context.split(". ")
+        # Clean up context and split into chunks
+        chunks = []
+        for citation in context.split("\n\n"):
+            if citation.strip() and len(citation.strip()) > 50:
+                # Remove citation markers like [1], [2], etc.
+                clean_chunk = citation.strip()
+                if clean_chunk.startswith("[") and "]" in clean_chunk:
+                    clean_chunk = clean_chunk.split("]", 1)[1].strip()
+                chunks.append(clean_chunk)
 
-        # Look for sentences that contain question keywords
-        question_words = set(question.lower().split())
-        relevant_sentences = []
+        # Look for key topics
+        question_lower = question.lower()
+        relevant_chunks = []
 
-        for sentence in sentences[:5]:  # Limit to first 5 sentences
-            sentence_words = set(sentence.lower().split())
-            if question_words.intersection(sentence_words):
-                relevant_sentences.append(sentence.strip())
+        for chunk in chunks[:4]:  # Limit to first 4 chunks
+            chunk_lower = chunk.lower()
 
-        if relevant_sentences:
-            return ". ".join(relevant_sentences[:3])  # Max 3 sentences
-        # Fallback: return first part of context
-        return (
-            sentences[0][:300] + "..."
-            if sentences
-            else "No specific information found."
-        )
+            # Score relevance based on keyword matches
+            relevance_score = 0
+            if "data quality" in question_lower and any(
+                term in chunk_lower for term in ["quality", "validation", "integrity"]
+            ):
+                relevance_score += 2
+            if "validation" in question_lower and any(
+                term in chunk_lower for term in ["validation", "check", "verify"]
+            ):
+                relevance_score += 2
+            if "issues" in question_lower and any(
+                term in chunk_lower
+                for term in ["error", "problem", "issue", "null", "duplicate"]
+            ):
+                relevance_score += 2
+            if "null" in question_lower and "null" in chunk_lower:
+                relevance_score += 3
+
+            # General keyword matching
+            question_words = set(question_lower.split())
+            chunk_words = set(chunk_lower.split())
+            if question_words.intersection(chunk_words):
+                relevance_score += 1
+
+            if relevance_score > 0:
+                relevant_chunks.append((relevance_score, chunk))
+
+        # Sort by relevance and format
+        if relevant_chunks:
+            relevant_chunks.sort(key=lambda x: x[0], reverse=True)
+            formatted_info = []
+
+            for i, (score, chunk) in enumerate(relevant_chunks[:3]):
+                # Format chunk nicely
+                sentences = chunk.split(". ")
+                if len(sentences) > 3:
+                    formatted_chunk = ". ".join(sentences[:3]) + "."
+                else:
+                    formatted_chunk = chunk
+
+                if not formatted_chunk.endswith("."):
+                    formatted_chunk += "."
+
+                formatted_info.append(f"• {formatted_chunk}")
+
+            return "\n\n".join(formatted_info)
+
+        # Fallback: use first chunk
+        if chunks:
+            first_chunk = chunks[0]
+            sentences = first_chunk.split(". ")
+            if len(sentences) > 2:
+                return f"• {'. '.join(sentences[:2])}."
+            return f"• {first_chunk}"
+
+        return "• No specific information found in the knowledge base."
 
     def clear_history(self):
         """Clear chat history."""

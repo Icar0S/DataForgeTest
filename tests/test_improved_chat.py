@@ -1,7 +1,6 @@
 """Quick test of improved RAG responses."""
 
 import requests
-import json
 import time
 
 
@@ -102,7 +101,7 @@ def test_improved_chat():
         # Small delay between requests
         time.sleep(1)
 
-    print(f"\n" + "=" * 70)
+    print("\n" + "=" * 70)
     print("✅ TEST COMPLETE!")
     print("=" * 70)
     print("If you see detailed responses above (not generic ones),")

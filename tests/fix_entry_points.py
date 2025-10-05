@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Script para corrigir arquivos entry_points.txt corrompidos que estão causando
 erro intermitente na importação do anthropic.
@@ -7,8 +6,6 @@ O problema está relacionado à sincronização do OneDrive que corrompe alguns
 arquivos entry_points.txt com erros de "operação na nuvem".
 """
 
-import os
-import shutil
 from pathlib import Path
 
 
@@ -37,7 +34,7 @@ def fix_corrupted_entry_points():
         if entry_points_file.exists():
             try:
                 # Tentar ler o arquivo
-                content = entry_points_file.read_text(encoding="utf-8")
+                entry_points_file.read_text(encoding="utf-8")
                 print(f"  ✓ {package_dir} está OK")
             except Exception as e:
                 print(f"  ❌ {package_dir} corrompido: {e}")
@@ -50,7 +47,7 @@ def fix_corrupted_entry_points():
                 except Exception as fix_error:
                     print(f"  ❌ Erro ao corrigir {package_dir}: {fix_error}")
         else:
-            print(f"  ℹ️  entry_points.txt não existe para {package_dir}")
+            print(f"[info] entry_points.txt não existe para {package_dir}")
 
     print("\n=== CORREÇÃO CONCLUÍDA ===")
 

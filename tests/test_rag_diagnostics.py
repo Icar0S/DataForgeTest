@@ -2,9 +2,7 @@
 
 import sys
 import os
-import json
 from pathlib import Path
-from urllib.parse import quote
 
 # Add project root to path for imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -154,7 +152,7 @@ class RAGDiagnostics:
             # Initialize config
             config = RAGConfig.from_env()
             self.add_success("INIT", "Config loaded")
-            print(f"✓ Config loaded")
+            print("✓ Config loaded")
             print(f"  Storage path: {config.storage_path}")
             print(f"  Chunk size: {config.chunk_size}")
             print(f"  Top K: {config.top_k}")
@@ -162,14 +160,14 @@ class RAGDiagnostics:
             # Initialize RAG
             rag_system = SimpleRAG(config)
             self.add_success("INIT", "RAG system initialized")
-            print(f"✓ RAG system initialized")
+            print("✓ RAG system initialized")
             print(f"  Documents: {len(rag_system.documents)}")
             print(f"  Chunks: {len(rag_system.document_chunks)}")
 
             # Initialize chat engine
             chat_engine = SimpleChatEngine(rag_system)
             self.add_success("INIT", "Chat engine initialized")
-            print(f"✓ Chat engine initialized")
+            print("✓ Chat engine initialized")
 
             # Test basic functionality
             test_content = "Test document about data quality"
@@ -186,12 +184,12 @@ class RAGDiagnostics:
             response = chat_engine.chat("What is data quality?")
             if response and "response" in response:
                 self.add_success("INIT", "Chat working")
-                print(f"✓ Chat working")
+                print("✓ Chat working")
                 print(f"  Response length: {len(response['response'])} chars")
                 print(f"  Citations: {len(response.get('citations', []))}")
             else:
                 self.add_warning("INIT", "Chat returned unexpected format")
-                print(f"⚠ Chat response format unexpected")
+                print("⚠ Chat response format unexpected")
 
         except Exception as e:
             self.add_issue("INIT", f"Initialization failed: {e}")
@@ -208,8 +206,6 @@ class RAGDiagnostics:
         try:
             # Check if Flask is available
             try:
-                from flask import Flask
-                from flask_cors import CORS
 
                 self.add_success("API", "Flask available")
                 print("✓ Flask available")
@@ -220,7 +216,6 @@ class RAGDiagnostics:
 
             # Check if routes module loads
             try:
-                from src.rag.routes_simple import rag_bp
 
                 self.add_success("API", "Routes blueprint loaded")
                 print("✓ Routes blueprint loaded")
@@ -310,8 +305,8 @@ class RAGDiagnostics:
             # Check if directory exists or can be created
             try:
                 storage_path.mkdir(parents=True, exist_ok=True)
-                self.add_success("STORAGE", f"Storage directory accessible")
-                print(f"✓ Storage directory accessible")
+                self.add_success("STORAGE", "Storage directory accessible")
+                print("✓ Storage directory accessible")
 
                 # Check write permissions
                 test_file = storage_path / ".test_write"
