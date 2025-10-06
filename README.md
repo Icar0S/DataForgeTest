@@ -415,7 +415,12 @@ python -m pytest tests/ -v
 python tests/test_rag_integration.py      # RAG system tests
 python tests/test_rag_api.py             # API endpoint tests  
 python tests/test_rag_diagnostics.py     # System diagnostics
-python tests/test_accuracy_backend.py    # Data accuracy tests
+
+# Data accuracy tests (31 tests total)
+python -m pytest tests/test_accuracy*.py -v                    # All accuracy tests
+python tests/test_accuracy_backend.py -v                       # Backend unit tests (9 tests)
+python tests/test_accuracy_integration.py -v                   # Basic integration (4 tests)
+python tests/test_accuracy_integration_robust.py -v            # Robust integration (18 tests)
 
 # Frontend tests
 cd frontend/frontend
@@ -441,8 +446,21 @@ python tests/test_connectivity.py
 - ✅ RAG system (14/14 tests passing, 100% success rate)
 - ✅ API endpoints (all endpoints functional)
 - ✅ Synthetic data generation (CSV download working)
-- ✅ Data accuracy validation (upload/compare/download cycle)
+- ✅ **Data accuracy validation (31/31 tests passing, 100% success rate)**
+  - Backend unit tests: 9 tests (normalization, comparison, tolerance)
+  - Basic integration: 4 tests (upload/compare/download workflows)
+  - Robust integration: 18 tests (multi-format, multi-column, edge cases, security)
 - ✅ Error handling and edge cases
+
+**Data Accuracy Test Coverage:**
+- File formats: CSV, XLSX, Parquet ✓
+- Multi-column keys and values ✓
+- Normalization options (accents, punctuation, case) ✓
+- Numeric formats (European/US) ✓
+- Duplicate policies (keep_last, sum, mean) ✓
+- Large datasets (1000+ rows) ✓
+- Security (path traversal, access control) ✓
+- Edge cases (empty data, special characters, missing columns) ✓
 
 **Frontend Components:**
 - ✅ React component rendering
