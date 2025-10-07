@@ -232,6 +232,45 @@ Single dataset cleaning and validation with automated data quality improvements.
 
 **Documentation**: [GOLD Feature Guide](docs/GOLD_FEATURE.md)
 
+### 3.2 📊 Dataset Metrics (NEW!)
+
+Comprehensive data quality analysis with automated metrics and visual dashboard for single dataset evaluation.
+
+**Key Features:**
+- **Multi-format support**: CSV, XLSX, XLS, Parquet uploads (up to 50MB)
+- **Four core quality dimensions**:
+  - **Completeness**: Missing values and data availability (30% weight)
+  - **Uniqueness**: Duplicate detection and record uniqueness (20% weight)
+  - **Validity**: Data type and format correctness (30% weight)
+  - **Consistency**: Format uniformity and pattern compliance (20% weight)
+- **Overall Quality Score**: Weighted average (0-100%) with color-coded rating
+- **Visual Dashboard**:
+  - Large quality score display
+  - Four metric cards with icons and percentages
+  - Dataset information panel (rows, columns, memory)
+  - Actionable recommendations panel
+- **Intelligent Recommendations**:
+  - High severity: Critical quality issues (e.g., completeness < 90%)
+  - Medium severity: Important improvements (e.g., duplicates, consistency < 80%)
+  - Low severity: Minor optimizations
+
+**Metrics Breakdown:**
+- **Completeness**: Percentage of non-null cells (overall + per column)
+- **Uniqueness**: Percentage of unique rows and duplicate count
+- **Validity**: Detection of invalid values (infinity, empty strings, type mismatches)
+- **Consistency**: Format uniformity based on data type patterns
+
+**Workflow:**
+1. Upload dataset via drag-drop or file selector
+2. System automatically analyzes all quality dimensions
+3. View comprehensive quality dashboard
+4. Review recommendations sorted by severity
+5. Take action based on insights
+
+**Access**: Home → Data Accuracy (dropdown) → Dataset Metrics
+
+**Documentation**: [Metrics Feature Guide](docs/METRICS_FEATURE.md)
+
 
 ### 4. 💬 Intelligent RAG Support System
 
