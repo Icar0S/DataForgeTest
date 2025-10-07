@@ -4,7 +4,7 @@ import json
 import uuid
 import time
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 import pandas as pd
@@ -21,9 +21,9 @@ from .processor import (
 
 def convert_to_json_serializable(obj):
     """Convert numpy/pandas types to JSON serializable types."""
-    if isinstance(obj, (np.integer, np.int64, np.int32)):
+    if isinstance(obj, np.integer):
         return int(obj)
-    elif isinstance(obj, (np.floating, np.float64, np.float32)):
+    elif isinstance(obj, np.floating):
         return float(obj)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
@@ -121,8 +121,9 @@ def upload_dataset():
         # Read dataset sample
         if file_ext == ".csv":
             from .processor import detect_encoding
+
             encoding, sep = detect_encoding(file_path)
-            df_sample = pd.read_csv(file_path, encoding=encoding, sep=sep, nrows=20)
+            df_sample = read_dataset(file_path, encoding=encoding, sep=sep, nrows=20)
             # Store encoding and separator for later use
             metadata = {"encoding": encoding, "sep": sep, "format": "csv"}
         elif file_ext in [".xlsx", ".xls"]:
@@ -148,13 +149,15 @@ def upload_dataset():
                     record[key] = None
 
         # Save metadata
-        metadata.update({
-            "sessionId": session_id,
-            "datasetId": dataset_id,
-            "originalFilename": safe_filename,
-            "uploadedAt": datetime.utcnow().isoformat(),
-        })
-        
+        metadata.update(
+            {
+                "sessionId": session_id,
+                "datasetId": dataset_id,
+                "originalFilename": safe_filename,
+                "uploadedAt": datetime.now(timezone.utc).isoformat(),
+            }
+        )
+
         with open(session_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2)
 
@@ -220,44 +223,42 @@ def clean_dataset():
             metadata = json.load(f)
 
         file_format = metadata.get("format")
-        
+
         # Get raw file
         raw_files = list(session_dir.glob("raw.*"))
         if not raw_files:
             return jsonify({"error": "Raw file not found"}), 404
-        
+
         raw_file = raw_files[0]
 
         # Initialize processing status
         processing_status[session_id] = {
             "state": "running",
             "progress": {"current": 0, "total": 100, "phase": "initializing"},
-            "startedAt": datetime.utcnow().isoformat(),
+            "startedAt": datetime.now(timezone.utc).isoformat(),
         }
 
         # Start cleaning process
         try:
             start_time = time.time()
-            
+
             # Read and clean dataset
             if file_format == "csv":
                 # Process CSV in chunks
                 encoding = metadata.get("encoding", "utf-8")
                 sep = metadata.get("sep", ",")
-                
-                result_df = process_csv_chunked(
+
+                process_csv_chunked(
                     raw_file, session_id, options, encoding, sep, chunksize
                 )
-                
+
             elif file_format in ["xlsx", "xls"]:
                 # Load Excel file entirely, then process in memory chunks
-                result_df = process_excel(raw_file, session_id, options, chunksize)
-                
+                process_excel(raw_file, session_id, options, chunksize)
+
             elif file_format == "parquet":
                 # Process Parquet in chunks
-                result_df = process_parquet_chunked(
-                    raw_file, session_id, options, chunksize
-                )
+                process_parquet_chunked(raw_file, session_id, options, chunksize)
             else:
                 processing_status[session_id]["state"] = "failed"
                 processing_status[session_id]["error"] = "Unsupported format"
@@ -265,7 +266,7 @@ def clean_dataset():
 
             # Generate report
             report = processing_status[session_id].get("report", {})
-            report["finishedAt"] = datetime.utcnow().isoformat()
+            report["finishedAt"] = datetime.now(timezone.utc).isoformat()
             report["durationSec"] = time.time() - start_time
 
             # Save report
@@ -278,31 +279,36 @@ def clean_dataset():
             processing_status[session_id]["progress"] = {
                 "current": 100,
                 "total": 100,
-                "phase": "completed"
+                "phase": "completed",
             }
 
             # Generate download links
-            download_links = {
-                "csv": f"/api/gold/download/{session_id}/gold_clean.csv"
-            }
-            
+            download_links = {"csv": f"/api/gold/download/{session_id}/gold_clean.csv"}
+
             # Add same format download if available
             if file_format == "csv":
                 download_links["sameFormat"] = download_links["csv"]
             elif file_format in ["xlsx", "xls"]:
                 if (session_dir / "gold_clean.xlsx").exists():
-                    download_links["sameFormat"] = f"/api/gold/download/{session_id}/gold_clean.xlsx"
+                    download_links["sameFormat"] = (
+                        f"/api/gold/download/{session_id}/gold_clean.xlsx"
+                    )
             elif file_format == "parquet":
                 if (session_dir / "gold_clean.parquet").exists():
-                    download_links["sameFormat"] = f"/api/gold/download/{session_id}/gold_clean.parquet"
+                    download_links["sameFormat"] = (
+                        f"/api/gold/download/{session_id}/gold_clean.parquet"
+                    )
 
-            return jsonify(
-                {
-                    "status": "completed",
-                    "progressUrl": f"/api/gold/status?sessionId={session_id}",
-                    "download": download_links,
-                }
-            ), 200
+            return (
+                jsonify(
+                    {
+                        "status": "completed",
+                        "progressUrl": f"/api/gold/status?sessionId={session_id}",
+                        "download": download_links,
+                    }
+                ),
+                200,
+            )
 
         except Exception as e:
             processing_status[session_id]["state"] = "failed"
@@ -316,14 +322,14 @@ def clean_dataset():
 def process_csv_chunked(file_path, session_id, options, encoding, sep, chunksize):
     """Process CSV file in chunks."""
     session_dir = config.storage_path / session_id
-    
+
     # First pass: analyze structure
     processing_status[session_id]["progress"]["phase"] = "analyzing"
-    df_first = pd.read_csv(file_path, encoding=encoding, sep=sep, nrows=1000)
-    
+    df_first = read_dataset(file_path, encoding=encoding, sep=sep, nrows=1000)
+
     # Get total rows
-    total_rows = sum(1 for _ in open(file_path, 'r', encoding=encoding)) - 1
-    
+    total_rows = sum(1 for _ in open(file_path, "r", encoding=encoding)) - 1
+
     # Normalize headers if requested
     column_mapping = {}
     if options.get("normalizeHeaders", True):
@@ -333,82 +339,83 @@ def process_csv_chunked(file_path, session_id, options, encoding, sep, chunksize
             normalized_cols.append(normalized)
             column_mapping[col] = normalized
         df_first.columns = normalized_cols
-    
+
     # Identify empty columns to drop
     columns_to_drop = []
     if options.get("dropEmptyColumns", True):
         # Need to check full file for empty columns
-        df_check = pd.read_csv(file_path, encoding=encoding, sep=sep)
+        df_check = read_dataset(file_path, encoding=encoding, sep=sep)
         if column_mapping:
-            df_check.columns = [column_mapping.get(col, col) for col in df_check.columns]
+            df_check.columns = [
+                column_mapping.get(col, col) for col in df_check.columns
+            ]
         for col in df_check.columns:
             if df_check[col].isna().all():
                 columns_to_drop.append(col)
-    
+
     # Get null counts before
     nulls_before = get_null_counts(df_first)
     columns_before = len(df_first.columns)
-    
+
     # Drop empty columns
-    df_first = df_first.drop(columns=columns_to_drop, errors='ignore')
-    
+    df_first = df_first.drop(columns=columns_to_drop, errors="ignore")
+
     # Process in chunks
     processing_status[session_id]["progress"]["phase"] = "cleaning"
-    
+
     chunks = []
     metrics = {"trimStrings": 0, "coerceNumeric": 0, "parseDates": 0}
-    
+
     chunk_reader = pd.read_csv(
         file_path, encoding=encoding, sep=sep, chunksize=chunksize
     )
-    
+
     total_chunks = (total_rows // chunksize) + 1
-    
+
     for i, chunk in enumerate(chunk_reader):
         processing_status[session_id]["progress"]["current"] = i + 1
         processing_status[session_id]["progress"]["total"] = total_chunks
-        
+
         # Apply column mapping
         if column_mapping:
             chunk.columns = [column_mapping.get(col, col) for col in chunk.columns]
-        
+
         # Drop empty columns
-        chunk = chunk.drop(columns=columns_to_drop, errors='ignore')
-        
+        chunk = chunk.drop(columns=columns_to_drop, errors="ignore")
+
         # Clean chunk
         cleaned_chunk, chunk_metrics = clean_dataframe_chunk(
             chunk, options, column_mapping=column_mapping, is_first_chunk=(i == 0)
         )
-        
+
         # Update metrics
         for key in metrics:
             metrics[key] += chunk_metrics.get(key, 0)
-        
+
         chunks.append(cleaned_chunk)
-    
+
     # Concatenate all chunks
     processing_status[session_id]["progress"]["phase"] = "finalizing"
     result_df = pd.concat(chunks, ignore_index=True)
-    
+
     # Drop duplicates if requested
-    rows_before_dedup = len(result_df)
     if options.get("dropDuplicates", False):
         result_df = result_df.drop_duplicates()
-    
+
     # Get null counts after
     nulls_after = get_null_counts(result_df)
-    
+
     # Save cleaned CSV
     output_csv = session_dir / "gold_clean.csv"
     result_df.to_csv(output_csv, index=False)
-    
+
     # Generate preview
     preview = result_df.head(50).to_dict(orient="records")
     for record in preview:
         for key, value in record.items():
             if pd.isna(value):
                 record[key] = None
-    
+
     # Build report
     report = {
         "rowsRead": int(total_rows),
@@ -424,24 +431,24 @@ def process_csv_chunked(file_path, session_id, options, encoding, sep, chunksize
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],
     }
-    
+
     processing_status[session_id]["report"] = report
-    
+
     return result_df
 
 
 def process_excel(file_path, session_id, options, chunksize):
     """Process Excel file."""
     session_dir = config.storage_path / session_id
-    
+
     processing_status[session_id]["progress"]["phase"] = "reading"
-    
+
     # Read entire Excel file
     df = pd.read_excel(file_path)
-    
+
     total_rows = len(df)
     columns_before = len(df.columns)
-    
+
     # Normalize headers
     column_mapping = {}
     if options.get("normalizeHeaders", True):
@@ -452,10 +459,10 @@ def process_excel(file_path, session_id, options, chunksize):
             normalized_cols.append(normalized)
             column_mapping[col] = normalized
         df.columns = normalized_cols
-    
+
     # Get null counts before
     nulls_before = get_null_counts(df)
-    
+
     # Drop empty columns
     columns_to_drop = []
     if options.get("dropEmptyColumns", True):
@@ -463,59 +470,59 @@ def process_excel(file_path, session_id, options, chunksize):
             if df[col].isna().all():
                 columns_to_drop.append(col)
         df = df.drop(columns=columns_to_drop)
-    
+
     # Process in memory chunks
     processing_status[session_id]["progress"]["phase"] = "cleaning"
-    
+
     metrics = {"trimStrings": 0, "coerceNumeric": 0, "parseDates": 0}
     chunks = []
-    
+
     total_chunks = (len(df) // chunksize) + 1
-    
+
     for i in range(0, len(df), chunksize):
         chunk_num = i // chunksize + 1
         processing_status[session_id]["progress"]["current"] = chunk_num
         processing_status[session_id]["progress"]["total"] = total_chunks
-        
-        chunk = df.iloc[i:i + chunksize].copy()
-        
+
+        chunk = df.iloc[i : i + chunksize].copy()
+
         # Clean chunk
         cleaned_chunk, chunk_metrics = clean_dataframe_chunk(
             chunk, options, is_first_chunk=(i == 0)
         )
-        
+
         # Update metrics
         for key in metrics:
             metrics[key] += chunk_metrics.get(key, 0)
-        
+
         chunks.append(cleaned_chunk)
-    
+
     # Concatenate chunks
     processing_status[session_id]["progress"]["phase"] = "finalizing"
     result_df = pd.concat(chunks, ignore_index=True)
-    
+
     # Drop duplicates if requested
     if options.get("dropDuplicates", False):
         result_df = result_df.drop_duplicates()
-    
+
     # Get null counts after
     nulls_after = get_null_counts(result_df)
-    
+
     # Save as CSV
     output_csv = session_dir / "gold_clean.csv"
     result_df.to_csv(output_csv, index=False)
-    
+
     # Also save as Excel
     output_xlsx = session_dir / "gold_clean.xlsx"
-    result_df.to_excel(output_xlsx, index=False, engine='openpyxl')
-    
+    result_df.to_excel(output_xlsx, index=False, engine="openpyxl")
+
     # Generate preview
     preview = result_df.head(50).to_dict(orient="records")
     for record in preview:
         for key, value in record.items():
             if pd.isna(value):
                 record[key] = None
-    
+
     # Build report
     report = {
         "rowsRead": int(total_rows),
@@ -531,24 +538,24 @@ def process_excel(file_path, session_id, options, chunksize):
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],
     }
-    
+
     processing_status[session_id]["report"] = report
-    
+
     return result_df
 
 
 def process_parquet_chunked(file_path, session_id, options, chunksize):
     """Process Parquet file in chunks."""
     session_dir = config.storage_path / session_id
-    
+
     processing_status[session_id]["progress"]["phase"] = "reading"
-    
+
     # Read parquet file
     df = pd.read_parquet(file_path)
-    
+
     total_rows = len(df)
     columns_before = len(df.columns)
-    
+
     # Normalize headers
     column_mapping = {}
     if options.get("normalizeHeaders", True):
@@ -558,10 +565,10 @@ def process_parquet_chunked(file_path, session_id, options, chunksize):
             normalized_cols.append(normalized)
             column_mapping[col] = normalized
         df.columns = normalized_cols
-    
+
     # Get null counts before
     nulls_before = get_null_counts(df)
-    
+
     # Drop empty columns
     columns_to_drop = []
     if options.get("dropEmptyColumns", True):
@@ -569,59 +576,59 @@ def process_parquet_chunked(file_path, session_id, options, chunksize):
             if df[col].isna().all():
                 columns_to_drop.append(col)
         df = df.drop(columns=columns_to_drop)
-    
+
     # Process in chunks
     processing_status[session_id]["progress"]["phase"] = "cleaning"
-    
+
     metrics = {"trimStrings": 0, "coerceNumeric": 0, "parseDates": 0}
     chunks = []
-    
+
     total_chunks = (len(df) // chunksize) + 1
-    
+
     for i in range(0, len(df), chunksize):
         chunk_num = i // chunksize + 1
         processing_status[session_id]["progress"]["current"] = chunk_num
         processing_status[session_id]["progress"]["total"] = total_chunks
-        
-        chunk = df.iloc[i:i + chunksize].copy()
-        
+
+        chunk = df.iloc[i : i + chunksize].copy()
+
         # Clean chunk
         cleaned_chunk, chunk_metrics = clean_dataframe_chunk(
             chunk, options, is_first_chunk=(i == 0)
         )
-        
+
         # Update metrics
         for key in metrics:
             metrics[key] += chunk_metrics.get(key, 0)
-        
+
         chunks.append(cleaned_chunk)
-    
+
     # Concatenate chunks
     processing_status[session_id]["progress"]["phase"] = "finalizing"
     result_df = pd.concat(chunks, ignore_index=True)
-    
+
     # Drop duplicates if requested
     if options.get("dropDuplicates", False):
         result_df = result_df.drop_duplicates()
-    
+
     # Get null counts after
     nulls_after = get_null_counts(result_df)
-    
+
     # Save as CSV
     output_csv = session_dir / "gold_clean.csv"
     result_df.to_csv(output_csv, index=False)
-    
+
     # Also save as Parquet
     output_parquet = session_dir / "gold_clean.parquet"
     result_df.to_parquet(output_parquet, index=False)
-    
+
     # Generate preview
     preview = result_df.head(50).to_dict(orient="records")
     for record in preview:
         for key, value in record.items():
             if pd.isna(value):
                 record[key] = None
-    
+
     # Build report
     report = {
         "rowsRead": int(total_rows),
@@ -637,9 +644,9 @@ def process_parquet_chunked(file_path, session_id, options, chunksize):
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],
     }
-    
+
     processing_status[session_id]["report"] = report
-    
+
     return result_df
 
 

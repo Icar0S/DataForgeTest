@@ -366,14 +366,16 @@ def compare_and_correct(
                     original_value = row[key_col]
                 else:
                     # Fallback to normalized value from composite key if can't find original
-                    original_value = composite_key.split("||")[key_columns.index(key_col)]
-                
+                    original_value = composite_key.split("||")[
+                        key_columns.index(key_col)
+                    ]
+
                 # Convert to native Python type for JSON serialization
                 if pd.isna(original_value):
                     key_values[key_col] = None
-                elif isinstance(original_value, (np.integer, np.int64, np.int32)):
+                elif isinstance(original_value, np.integer):
                     key_values[key_col] = int(original_value)
-                elif isinstance(original_value, (np.floating, np.float64, np.float32)):
+                elif isinstance(original_value, np.floating):
                     key_values[key_col] = float(original_value)
                 else:
                     key_values[key_col] = original_value
