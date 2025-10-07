@@ -18,6 +18,22 @@ from .processor import (
     get_null_counts,
 )
 
+
+def convert_to_json_serializable(obj):
+    """Convert numpy/pandas types to JSON serializable types."""
+    if isinstance(obj, (np.integer, np.int64, np.int32)):
+        return int(obj)
+    elif isinstance(obj, (np.floating, np.float64, np.float32)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_to_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_json_serializable(item) for item in obj]
+    return obj
+
+
 # Create blueprint
 gold_bp = Blueprint("gold", __name__, url_prefix="/api/gold")
 
@@ -395,15 +411,15 @@ def process_csv_chunked(file_path, session_id, options, encoding, sep, chunksize
     
     # Build report
     report = {
-        "rowsRead": total_rows,
-        "rowsWritten": len(result_df),
-        "columnsBefore": columns_before,
-        "columnsAfter": len(result_df.columns),
+        "rowsRead": int(total_rows),
+        "rowsWritten": int(len(result_df)),
+        "columnsBefore": int(columns_before),
+        "columnsAfter": int(len(result_df.columns)),
         "removedColumns": columns_to_drop,
-        "changedRows": metrics,
+        "changedRows": convert_to_json_serializable(metrics),
         "nullsPerColumn": {
-            "before": {k: int(v) for k, v in nulls_before.items()},
-            "after": {k: int(v) for k, v in nulls_after.items()},
+            "before": convert_to_json_serializable(nulls_before),
+            "after": convert_to_json_serializable(nulls_after),
         },
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],
@@ -502,15 +518,15 @@ def process_excel(file_path, session_id, options, chunksize):
     
     # Build report
     report = {
-        "rowsRead": total_rows,
-        "rowsWritten": len(result_df),
-        "columnsBefore": columns_before,
-        "columnsAfter": len(result_df.columns),
+        "rowsRead": int(total_rows),
+        "rowsWritten": int(len(result_df)),
+        "columnsBefore": int(columns_before),
+        "columnsAfter": int(len(result_df.columns)),
         "removedColumns": columns_to_drop,
-        "changedRows": metrics,
+        "changedRows": convert_to_json_serializable(metrics),
         "nullsPerColumn": {
-            "before": {k: int(v) for k, v in nulls_before.items()},
-            "after": {k: int(v) for k, v in nulls_after.items()},
+            "before": convert_to_json_serializable(nulls_before),
+            "after": convert_to_json_serializable(nulls_after),
         },
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],
@@ -608,15 +624,15 @@ def process_parquet_chunked(file_path, session_id, options, chunksize):
     
     # Build report
     report = {
-        "rowsRead": total_rows,
-        "rowsWritten": len(result_df),
-        "columnsBefore": columns_before,
-        "columnsAfter": len(result_df.columns),
+        "rowsRead": int(total_rows),
+        "rowsWritten": int(len(result_df)),
+        "columnsBefore": int(columns_before),
+        "columnsAfter": int(len(result_df.columns)),
         "removedColumns": columns_to_drop,
-        "changedRows": metrics,
+        "changedRows": convert_to_json_serializable(metrics),
         "nullsPerColumn": {
-            "before": {k: int(v) for k, v in nulls_before.items()},
-            "after": {k: int(v) for k, v in nulls_after.items()},
+            "before": convert_to_json_serializable(nulls_before),
+            "after": convert_to_json_serializable(nulls_after),
         },
         "samplePreview": preview,
         "startedAt": processing_status[session_id]["startedAt"],

@@ -31,8 +31,8 @@ def normalize_column_name(name: str, existing_names: List[str] = None) -> str:
     name = name.strip()
     # Strip accents
     name = strip_accents(name)
-    # Replace spaces with underscores
-    name = re.sub(r"\s+", "_", name)
+    # Replace spaces and hyphens with underscores
+    name = re.sub(r"[\s\-]+", "_", name)
     # Convert to lowercase
     name = name.lower()
     # Remove special characters except underscores
@@ -116,17 +116,22 @@ def parse_date(value: Any) -> Any:
     
     text = str(value).strip()
     
-    # Try to parse as datetime
+    # Try to parse as datetime with various methods
     try:
-        return pd.to_datetime(text, format='ISO8601', errors='coerce')
+        # First try ISO format
+        result = pd.to_datetime(text, format='ISO8601', errors='coerce')
+        if pd.notna(result):
+            return result
     except Exception:
-        # If it fails, try with infer_datetime_format
-        try:
-            result = pd.to_datetime(text, infer_datetime_format=True, errors='coerce')
-            if pd.notna(result):
-                return result
-        except Exception:
-            pass
+        pass
+    
+    # Try with infer_datetime_format
+    try:
+        result = pd.to_datetime(text, errors='coerce')
+        if pd.notna(result):
+            return result
+    except Exception:
+        pass
     
     # If all parsing fails, return original value
     return value
