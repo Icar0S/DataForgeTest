@@ -198,6 +198,41 @@ Compare and correct datasets using GOLD reference standards with automated norma
 
 **Supported Files**: Up to 50MB, 2M rows, CSV/XLSX/Parquet formats
 
+### 3.1 🌟 Test Dataset GOLD (NEW!)
+
+Single dataset cleaning and validation with automated data quality improvements.
+
+**Key Features:**
+- **Multi-format support**: CSV, XLSX, XLS, Parquet uploads (up to 50MB)
+- **Automated cleaning operations**:
+  - Remove empty columns (100% null)
+  - Normalize headers (lowercase, accents, special chars)
+  - Trim strings and remove invisible characters
+  - Coerce numeric values (handle US/European formats)
+  - Parse dates with best-effort approach
+  - Optional: Remove duplicate rows
+- **Chunked processing**: Handles large files efficiently (CSV/Parquet)
+- **Real-time progress**: Live updates with phase tracking
+- **Comprehensive reporting**:
+  - Row and column counts before/after
+  - Changes per operation type
+  - Null value reduction per column
+  - 50-row preview of cleaned data
+- **Multiple downloads**: CSV (always) + original format when supported
+
+**Workflow:**
+1. Upload dataset via drag-drop or file selector
+2. Review detected columns and sample data
+3. Configure cleaning options (checkboxes)
+4. Click "Generate GOLD" to process
+5. View detailed cleaning report
+6. Download cleaned dataset(s)
+
+**Access**: Home → Data Accuracy (dropdown) → Test Dataset GOLD
+
+**Documentation**: [GOLD Feature Guide](docs/GOLD_FEATURE.md)
+
+
 ### 4. 💬 Intelligent RAG Support System
 
 AI-powered documentation chat system with retrieval-augmented generation for contextual support and guidance.
@@ -268,6 +303,7 @@ DataForgeTest/
 │   ├── chatbot/             # PySpark code generation
 │   ├── synthetic/           # Synthetic data generation
 │   ├── accuracy/            # Data accuracy validation
+│   ├── gold/                # GOLD dataset testing
 │   └── rag/                # RAG support system
 ├── docs/                    # Comprehensive documentation
 ├── tests/                   # Test suites
@@ -293,6 +329,14 @@ DataForgeTest/
 - `POST /api/accuracy/compare-correct` - Compare and correct datasets
 - `GET /api/accuracy/download/:session/:file` - Download results
 - `GET /api/accuracy/health` - Service health check
+
+**GOLD Dataset Testing**
+- `POST /api/gold/upload` - Upload single dataset for cleaning
+- `POST /api/gold/clean` - Start cleaning process with options
+- `GET /api/gold/status?sessionId=...` - Get processing status and progress
+- `GET /api/gold/report?sessionId=...` - Get detailed cleaning report
+- `GET /api/gold/download/:session/:file` - Download cleaned dataset
+- `GET /api/gold/health` - Service health check
 
 **RAG Support System**
 - `POST /api/rag/chat` - Send chat messages
@@ -332,6 +376,12 @@ ACCURACY_STORAGE_PATH=./storage/accuracy
 ACCURACY_MAX_UPLOAD_MB=50
 ACCURACY_MAX_ROWS=2000000
 ACCURACY_REQUEST_TIMEOUT=120
+
+# GOLD Dataset Testing
+GOLD_STORAGE_PATH=./storage/gold
+GOLD_ALLOWED_FILE_TYPES=.csv,.xlsx,.xls,.parquet
+MAX_ROWS_WARN=500000
+GOLD_REQUEST_TIMEOUT=300
 
 # Flask Settings
 FLASK_ENV=development

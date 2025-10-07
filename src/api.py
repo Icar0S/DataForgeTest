@@ -12,6 +12,7 @@ from chatbot.main import process_chatbot_request
 from rag.routes_simple import rag_bp
 from accuracy.routes import accuracy_bp
 from synthetic.routes import synth_bp
+from gold.routes import gold_bp
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -20,6 +21,7 @@ CORS(app)  # Enable CORS for all routes
 app.register_blueprint(rag_bp)
 app.register_blueprint(accuracy_bp)
 app.register_blueprint(synth_bp)
+app.register_blueprint(gold_bp)
 
 
 @app.route("/", methods=["GET"])
