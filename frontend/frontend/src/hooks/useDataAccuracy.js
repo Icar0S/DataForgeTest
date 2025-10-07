@@ -128,14 +128,36 @@ const useDataAccuracy = () => {
     }
   }, [sessionId, goldFile, targetFile, mapping, options]);
 
-  const downloadFile = useCallback((url) => {
-    // Create a temporary link and click it
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = url.split('/').pop();
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const downloadFile = useCallback(async (url) => {
+    try {
+      // Fetch the file as a blob to ensure proper download
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+      
+      // Get the blob from response
+      const blob = await response.blob();
+      
+      // Extract filename from URL or Content-Disposition header
+      const filename = url.split('/').pop();
+      
+      // Create a blob URL and trigger download
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      setError(`Failed to download file: ${err.message}`);
+      console.error('Download error:', err);
+    }
   }, []);
 
   const reset = useCallback(() => {
