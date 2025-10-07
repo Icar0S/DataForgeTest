@@ -477,6 +477,7 @@ python tests/test_connectivity.py
 - [`docs/BACKEND_STRUCTURE.md`](docs/BACKEND_STRUCTURE.md) - Backend architecture guide
 - [`docs/IMPLEMENTATION_SUMMARY.md`](docs/IMPLEMENTATION_SUMMARY.md) - Complete feature overview
 - [`docs/ACCEPTANCE_CHECKLIST.md`](docs/ACCEPTANCE_CHECKLIST.md) - QA validation checklist
+- [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md) - **Common issues and solutions**
 
 **Feature-Specific:**
 - [`docs/SYNTHETIC_DATASET_FEATURE.md`](docs/SYNTHETIC_DATASET_FEATURE.md) - Synthetic data generation
