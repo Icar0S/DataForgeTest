@@ -121,13 +121,24 @@ const DataAccuracyDropdown = () => {
             </Link>
             <Link
               to="/data-accuracy/test-gold"
-              className="block px-6 py-3 text-white hover:bg-blue-600/20 transition-colors duration-200"
+              className="block px-6 py-3 text-white hover:bg-blue-600/20 transition-colors duration-200 border-b border-gray-700/50"
               onClick={() => setIsOpen(false)}
               onFocus={() => setIsOpen(true)}
             >
               <div className="font-medium">Test Dataset GOLD</div>
               <div className="text-sm text-gray-400 mt-1">
                 Clean and validate a single dataset
+              </div>
+            </Link>
+            <Link
+              to="/data-accuracy/metrics"
+              className="block px-6 py-3 text-white hover:bg-blue-600/20 transition-colors duration-200"
+              onClick={() => setIsOpen(false)}
+              onFocus={() => setIsOpen(true)}
+            >
+              <div className="font-medium">Dataset Metrics</div>
+              <div className="text-sm text-gray-400 mt-1">
+                Analyze data quality metrics
               </div>
             </Link>
           </motion.div>

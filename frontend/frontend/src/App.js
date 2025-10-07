@@ -8,6 +8,7 @@ import HomePage from './components/HomePage';
 import SupportPage from './pages/SupportPage';
 import DataAccuracy from './pages/DataAccuracy';
 import TestDatasetGold from './pages/TestDatasetGold';
+import DatasetMetrics from './pages/DatasetMetrics';
 import QaChecklist from './pages/QaChecklist';
 import GenerateDataset from './pages/GenerateDataset';
 import SupportButton from './components/SupportButton';
@@ -20,6 +21,7 @@ function App() {
           <Route path="/support-rag" element={<SupportPage />} />
           <Route path="/data-accuracy" element={<DataAccuracy />} />
           <Route path="/data-accuracy/test-gold" element={<TestDatasetGold />} />
+          <Route path="/data-accuracy/metrics" element={<DatasetMetrics />} />
           <Route path="/qa-checklist" element={<QaChecklist />} />
           <Route path="/generate-dataset" element={<GenerateDataset />} />
           <Route path="/" element={<HomePage />} />
