@@ -253,6 +253,10 @@ DataForgeTest follows a modern microservices architecture with clear separation 
 - Automated data validation pipelines
 
 **📁 Project Structure**
+
+<img width="1536" height="1024" alt="dataforgetest archtechture" src="https://github.com/user-attachments/assets/c1c5615b-a9d2-49ce-aa24-d407149d46f5" />
+
+
 ```
 DataForgeTest/
 ├── frontend/frontend/          # React application
