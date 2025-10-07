@@ -5,9 +5,7 @@ Verifica se o problema de "dataset.htm" foi corrigido.
 """
 
 import requests
-import json
 import time
-import os
 from pathlib import Path
 
 # Configuração da API
@@ -28,7 +26,7 @@ def test_csv_download():
         if response.status_code == 200:
             print(f"   ✓ API está rodando: {response.json()['message']}")
         else:
-            print(f"   ❌ API não está respondendo")
+            print("   ❌ API não está respondendo")
             return False
     except Exception as e:
         print(f"   ❌ Erro ao conectar na API: {e}")
@@ -110,13 +108,13 @@ def test_csv_download():
             content = download_response.text
             lines = content.strip().split("\n")
 
-            print(f"   ✓ Arquivo baixado com sucesso")
+            print("   ✓ Arquivo baixado com sucesso")
             print(f"   ✓ Linhas no arquivo: {len(lines)}")
             print(f"   ✓ Primeira linha (header): {lines[0] if lines else 'Vazio'}")
 
             # Verificar se parece com CSV
             if lines and "," in lines[0]:
-                print(f"   ✓ Conteúdo parece ser CSV válido")
+                print("   ✓ Conteúdo parece ser CSV válido")
 
                 # Salvar arquivo de teste para verificação manual
                 test_file = Path("test_download.csv")
@@ -125,8 +123,8 @@ def test_csv_download():
 
                 return True
             else:
-                print(f"   ❌ Conteúdo não parece ser CSV")
-                print(f"   Primeiras linhas:")
+                print("   ❌ Conteúdo não parece ser CSV")
+                print("   Primeiras linhas:")
                 for i, line in enumerate(lines[:3]):
                     print(f"     {i+1}: {line[:100]}...")
                 return False
@@ -205,7 +203,7 @@ if __name__ == "__main__":
     success1 = test_csv_download()
     success2 = test_download_headers()
 
-    print(f"\n=== RESULTADO DOS TESTES ===")
+    print("\n=== RESULTADO DOS TESTES ===")
     print(f"Teste de download completo: {'✓ PASSOU' if success1 else '❌ FALHOU'}")
     print(f"Teste de cabeçalhos: {'✓ PASSOU' if success2 else '❌ FALHOU'}")
 
