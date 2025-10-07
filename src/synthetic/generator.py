@@ -8,7 +8,6 @@ import re
 import time
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
-import anthropic
 
 
 class SyntheticDataGenerator:
@@ -23,7 +22,20 @@ class SyntheticDataGenerator:
         """
         self.api_key = api_key
         self.model = model
-        self.client = anthropic.Anthropic(api_key=api_key) if api_key else None
+        self.client = None
+        self._anthropic_available = None
+        
+        # Try to initialize anthropic client if API key is provided
+        if api_key:
+            try:
+                import anthropic
+                self.client = anthropic.Anthropic(api_key=api_key)
+                self._anthropic_available = True
+            except (ImportError, OSError) as e:
+                # Log the error but don't fail - will use mock data instead
+                print(f"Warning: Could not initialize Anthropic client: {e}")
+                print("Synthetic data generation will use mock data fallback")
+                self._anthropic_available = False
     
     def _build_prompt(
         self, 

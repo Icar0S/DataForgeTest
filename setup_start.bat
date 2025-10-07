@@ -45,12 +45,12 @@ if not exist "node_modules" (
 echo [4/6] Iniciando backend...
 start cmd /k "title Backend && cd %PROJECT_DIR%src && %PROJECT_DIR%.venv\Scripts\python.exe api.py"
 
-:: Aguardar backend inicializar com timeout
+:: Aguardar backend inicializar verificando health check
 echo [5/6] Aguardando backend inicializar...
 set /a counter=0
 :wait_backend
 timeout /t 1 /nobreak > nul
-netstat -an | find ":5000" > nul
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000/' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop; exit 0 } catch { exit 1 }" > nul 2>&1
 if %errorlevel% neq 0 (
     set /a counter+=1
     if %counter% lss 30 (
@@ -61,6 +61,8 @@ if %errorlevel% neq 0 (
         pause
         exit /b 1
     )
+) else (
+    echo Backend pronto!
 )
 
 :: Iniciar frontend
