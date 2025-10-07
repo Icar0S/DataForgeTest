@@ -293,7 +293,20 @@ def download_file(session_id, filename):
         if not file_path.exists():
             return jsonify({"error": "File not found"}), 404
 
-        return send_file(file_path, as_attachment=True, download_name=filename)
+        # Determine mimetype based on file extension
+        if filename.endswith('.csv'):
+            mimetype = 'text/csv'
+        elif filename.endswith('.json'):
+            mimetype = 'application/json'
+        else:
+            mimetype = 'application/octet-stream'
+
+        return send_file(
+            file_path, 
+            as_attachment=True, 
+            download_name=filename,
+            mimetype=mimetype
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
