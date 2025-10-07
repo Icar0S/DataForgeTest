@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Database, Sparkles } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Sparkles } from 'lucide-react';
 import RAGButton from './RAGButton';
 import DataAccuracyDropdown from './DataAccuracyDropdown';
 import { Link } from 'react-router-dom';

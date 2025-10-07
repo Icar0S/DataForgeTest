@@ -152,6 +152,7 @@ const TestDatasetGold = () => {
     if (file && !metadata) {
       handleUpload();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
   // Process dataset
