@@ -14,15 +14,22 @@ call "%PROJECT_DIR%.venv\Scripts\activate.bat"
 echo [1/3] Iniciando backend...
 start cmd /k "title Backend && cd %PROJECT_DIR%src && %PROJECT_DIR%.venv\Scripts\python.exe api.py"
 
-:: Aguardar backend (máximo 10 segundos)
+:: Aguardar backend verificando health check
 echo [2/3] Aguardando backend iniciar...
 set /a counter=0
 :wait_backend
 timeout /t 1 /nobreak > nul
-netstat -an | find ":5000" > nul
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000/' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop; exit 0 } catch { exit 1 }" > nul 2>&1
 if %errorlevel% neq 0 (
     set /a counter+=1
-    if %counter% lss 10 goto wait_backend
+    if %counter% lss 30 (
+        echo Aguardando backend... %counter%/30s
+        goto wait_backend
+    ) else (
+        echo AVISO: Backend nao respondeu em 30s, continuando mesmo assim...
+    )
+) else (
+    echo Backend pronto!
 )
 
 :: Iniciar frontend

@@ -22,8 +22,23 @@ call npm install > nul 2>&1
 echo Iniciando backend...
 start cmd /k "title Backend && cd %PROJECT_DIR%src && %PROJECT_DIR%.venv\Scripts\python.exe api.py"
 
-:: Aguardar alguns segundos para o backend inicializar
-timeout /t 5 /nobreak > nul
+:: Aguardar backend inicializar verificando health check
+echo Aguardando backend inicializar...
+set /a counter=0
+:wait_backend
+timeout /t 1 /nobreak > nul
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000/' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop; exit 0 } catch { exit 1 }" > nul 2>&1
+if %errorlevel% neq 0 (
+    set /a counter+=1
+    if %counter% lss 30 (
+        echo Aguardando backend... %counter%/30s
+        goto wait_backend
+    ) else (
+        echo AVISO: Backend nao respondeu em 30s, continuando mesmo assim...
+    )
+) else (
+    echo Backend pronto!
+)
 
 :: Iniciar frontend em uma nova janela
 echo Iniciando frontend...
