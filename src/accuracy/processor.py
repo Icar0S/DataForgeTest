@@ -285,10 +285,11 @@ def compare_and_correct(
         gold_df[col] = gold_df[col].apply(lambda x: coerce_numeric(x, options))
         target_df[col] = target_df[col].apply(lambda x: coerce_numeric(x, options))
 
-    # Merge datasets
+    # Merge datasets - include original key columns from gold for reporting
+    gold_merge_cols = ["__composite_key__"] + key_columns + value_columns
     merged = pd.merge(
         target_df,
-        gold_df[["__composite_key__"] + value_columns],
+        gold_df[gold_merge_cols],
         on="__composite_key__",
         how="outer",
         suffixes=("_target", "_gold"),
@@ -354,11 +355,28 @@ def compare_and_correct(
                 corrected_df["__composite_key__"] == composite_key, col
             ] = corrected_value
 
-            # Record difference
-            key_values = {
-                key_columns[i]: composite_key.split("||")[i]
-                for i in range(len(key_columns))
-            }
+            # Record difference - use original key values from target dataframe
+            key_values = {}
+            for key_col in key_columns:
+                # Get original value from target dataframe (before normalization)
+                # The key column might have _target suffix if it exists in both dataframes
+                if f"{key_col}_target" in row.index:
+                    original_value = row[f"{key_col}_target"]
+                elif key_col in row.index:
+                    original_value = row[key_col]
+                else:
+                    # Fallback to normalized value from composite key if can't find original
+                    original_value = composite_key.split("||")[key_columns.index(key_col)]
+                
+                # Convert to native Python type for JSON serialization
+                if pd.isna(original_value):
+                    key_values[key_col] = None
+                elif isinstance(original_value, (np.integer, np.int64, np.int32)):
+                    key_values[key_col] = int(original_value)
+                elif isinstance(original_value, (np.floating, np.float64, np.float32)):
+                    key_values[key_col] = float(original_value)
+                else:
+                    key_values[key_col] = original_value
 
             differences.append(
                 {
