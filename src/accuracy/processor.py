@@ -99,23 +99,68 @@ def coerce_numeric(value: Any, options: Dict[str, Any]) -> Any:
 
 
 def read_dataset(file_path: Path) -> pd.DataFrame:
-    """Read dataset from file with auto-detection."""
+    """Read dataset from file with auto-detection of encoding and separator."""
     suffix = file_path.suffix.lower()
 
     if suffix == ".csv":
-        # Try to detect encoding and separator
-        encodings = ["utf-8", "latin1", "iso-8859-1", "cp1252"]
+        # First, try to detect encoding
+        try:
+            import chardet
+
+            with open(file_path, "rb") as f:
+                raw_data = f.read(10000)  # Read first 10KB for detection
+                encoding_result = chardet.detect(raw_data)
+                detected_encoding = encoding_result["encoding"]
+                confidence = encoding_result["confidence"]
+
+                # Use detected encoding if confidence is high enough
+                if confidence > 0.7 and detected_encoding:
+                    try:
+                        df = pd.read_csv(file_path, encoding=detected_encoding)
+                        return df
+                    except Exception:
+                        pass
+        except ImportError:
+            # chardet not available, fall back to manual detection
+            pass
+
+        # Fallback: Try common encodings with different separators
+        encodings = [
+            "utf-8",
+            "utf-8-sig",
+            "latin1",
+            "iso-8859-1",
+            "cp1252",
+            "windows-1252",
+        ]
+        separators = [",", ";", "\t"]
+
         for encoding in encodings:
+            for sep in separators:
+                try:
+                    # Try to read a small sample first
+                    df_sample = pd.read_csv(
+                        file_path, encoding=encoding, sep=sep, nrows=5
+                    )
+                    # If successful and has multiple columns, use this configuration
+                    if len(df_sample.columns) > 1:
+                        df = pd.read_csv(file_path, encoding=encoding, sep=sep)
+                        return df
+                except Exception:
+                    continue
+
+        # Last resort: try with different encodings
+        try:
+            df = pd.read_csv(file_path, encoding="utf-8")
+            return df
+        except Exception:
             try:
-                # Try to detect separator
-                df = pd.read_csv(file_path, encoding=encoding, nrows=5)
-                # Re-read with detected settings
-                df = pd.read_csv(file_path, encoding=encoding)
+                df = pd.read_csv(file_path, encoding="latin1")
                 return df
             except Exception:
-                continue
-        # Last resort
-        return pd.read_csv(file_path)
+                # Final fallback
+                df = pd.read_csv(file_path, encoding="cp1252")
+                return df
 
     elif suffix == ".xlsx":
         return pd.read_excel(file_path)
@@ -131,8 +176,6 @@ def handle_duplicates(
     df: pd.DataFrame, key_columns: List[str], policy: str = "keep_last"
 ) -> pd.DataFrame:
     """Handle duplicate keys in dataframe."""
-    # Check for duplicates
-    duplicates = df.duplicated(subset=key_columns, keep=False)
 
     if policy == "keep_last":
         return df.drop_duplicates(subset=key_columns, keep="last")
@@ -143,7 +186,7 @@ def handle_duplicates(
 
         if non_key_numeric:
             grouped = df.groupby(key_columns, as_index=False).agg(
-                {col: "sum" for col in non_key_numeric}
+                dict.fromkeys(non_key_numeric, "sum")
             )
             return grouped
         else:
@@ -156,7 +199,7 @@ def handle_duplicates(
 
         if non_key_numeric:
             grouped = df.groupby(key_columns, as_index=False).agg(
-                {col: "mean" for col in non_key_numeric}
+                dict.fromkeys(non_key_numeric, "mean")
             )
             return grouped
         else:

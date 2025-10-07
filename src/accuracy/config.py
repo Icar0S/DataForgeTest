@@ -1,6 +1,5 @@
 """Configuration for Data Accuracy module."""
 
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List
@@ -9,7 +8,7 @@ from typing import List
 @dataclass
 class AccuracyConfig:
     """Configuration for Data Accuracy feature.
-    
+
     Args:
         storage_path: Path to store uploaded files and results
         max_upload_mb: Maximum upload file size in MB
@@ -17,7 +16,7 @@ class AccuracyConfig:
         max_rows: Maximum number of rows to process
         request_timeout: Maximum request timeout in seconds
     """
-    
+
     storage_path: Path = Path("./storage")
     max_upload_mb: int = 50
     allowed_file_types: List[str] = field(
@@ -25,15 +24,15 @@ class AccuracyConfig:
     )
     max_rows: int = 2_000_000
     request_timeout: int = 120
-    
+
     @classmethod
     def from_env(cls) -> "AccuracyConfig":
         """Create config from environment variables."""
         from dotenv import load_dotenv
         import os
-        
+
         load_dotenv()
-        
+
         # Get storage path and make it absolute
         storage_path = os.getenv("ACCURACY_STORAGE_PATH", "./storage")
         if not os.path.isabs(storage_path):
@@ -41,7 +40,7 @@ class AccuracyConfig:
             # Assuming this file is in src/accuracy/config.py
             project_root = Path(__file__).parent.parent.parent
             storage_path = project_root / storage_path
-        
+
         return cls(
             storage_path=Path(storage_path),
             max_upload_mb=int(os.getenv("MAX_UPLOAD_MB", "50")),
