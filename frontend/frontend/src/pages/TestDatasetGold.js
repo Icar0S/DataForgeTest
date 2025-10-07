@@ -49,10 +49,12 @@ const TestDatasetGold = () => {
             if (data.state === 'completed') {
               setIsProcessing(false);
               setReport(data.report);
+              setStatus(data);
               clearInterval(pollingRef.current);
             } else if (data.state === 'failed') {
               setIsProcessing(false);
               setError(data.error || 'Processing failed');
+              setStatus(data);
               clearInterval(pollingRef.current);
             }
           }
@@ -183,7 +185,17 @@ const TestDatasetGold = () => {
 
       const data = await response.json();
       if (data.status === 'completed') {
-        setReport(data.report || status?.report);
+        // Get the detailed report from the status endpoint
+        try {
+          const statusResponse = await fetch(`/api/gold/status?sessionId=${sessionId}`);
+          if (statusResponse.ok) {
+            const statusData = await statusResponse.json();
+            setReport(statusData.report);
+            setStatus(statusData);
+          }
+        } catch (statusErr) {
+          console.error('Failed to fetch report:', statusErr);
+        }
         setIsProcessing(false);
       }
     } catch (err) {
@@ -193,8 +205,36 @@ const TestDatasetGold = () => {
   };
 
   // Download file
-  const handleDownload = (filename) => {
-    window.location.href = `/api/gold/download/${sessionId}/${filename}`;
+  const handleDownload = async (filename) => {
+    if (!sessionId) return;
+
+    try {
+      const response = await fetch(`/api/gold/download/${sessionId}/${filename}`);
+      
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary anchor element and trigger download
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      
+      // Clean up
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+      setError(`Download failed: ${err.message}`);
+    }
   };
 
   // Reset
