@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Sparkles } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Sparkles, Brain, TrendingUp, Shield, Clock, Globe, BarChart3, MessageSquare, Eye } from 'lucide-react';
 import RAGButton from './RAGButton';
 import DataAccuracyDropdown from './DataAccuracyDropdown';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { fadeIn, staggerContainer, slideIn, scaleIn } from '../styles/animations
 
 const DataQualityLLMSystem = () => {
   const [selectedStructure, setSelectedStructure] = useState('synthetic');
+  const [selectedFeature, setSelectedFeature] = useState('dataQuality');
 
   const structures = {
     synthetic: {
@@ -132,7 +133,99 @@ const DataQualityLLMSystem = () => {
     }
   };
 
+  const futureFeatures = {
+    dataQuality: {
+      title: 'Data Quality & Validation',
+      icon: Shield,
+      color: 'bg-blue-600',
+      description: 'Advanced data quality validation with intelligent schema evolution and semantic scoring',
+      features: [
+        { name: 'Intelligent Schema Evolution Detection', desc: 'Use LLMs to automatically detect and suggest adaptations when data schemas evolve over time' },
+        { name: 'Semantic Data Quality Scoring', desc: 'Implement a comprehensive scoring system that evaluates data beyond syntactic checks, detecting semantic inconsistencies using domain knowledge embedded in your RAG system' },
+        { name: 'Auto-Generated Test Data', desc: 'Create realistic synthetic test datasets based on production data patterns while preserving privacy constraints' }
+      ]
+    },
+    performance: {
+      title: 'Performance & Scale Testing',
+      icon: TrendingUp,
+      color: 'bg-green-600',
+      description: 'Distributed load simulation and resource optimization for big data systems',
+      features: [
+        { name: 'Distributed Load Simulation', desc: 'Build automated test scenarios that simulate variable workloads across distributed nodes with configurable failure patterns' },
+        { name: 'Resource Utilization Predictor', desc: 'Use historical test results to predict resource needs for new data pipelines before deployment' },
+        { name: 'Elastic Scaling Test Harness', desc: 'Test how systems respond to dynamic resource allocation and deallocation in cloud environments' }
+      ]
+    },
+    mlAnalytics: {
+      title: 'ML & Analytics Testing',
+      icon: Brain,
+      color: 'bg-purple-600',
+      description: 'Machine learning model validation with drift detection and explainable results',
+      features: [
+        { name: 'Model Drift Early Warning System', desc: 'Continuously monitor production data against training data distributions to predict model performance issues before they occur' },
+        { name: 'Explainable Test Results', desc: 'Use LLMs to generate natural language explanations of why certain tests failed, with recommended actions' },
+        { name: 'Golden Dataset Repository', desc: 'Maintain versioned reference datasets for regression testing with automatic updates when approved data changes occur' }
+      ]
+    },
+    streaming: {
+      title: 'Streaming & Real-time',
+      icon: Clock,
+      color: 'bg-orange-600',
+      description: 'Real-time data processing validation with temporal testing and chaos engineering',
+      features: [
+        { name: 'Temporal Testing Framework', desc: 'Test time-windowed operations with artificially accelerated or decelerated time flows to identify edge cases' },
+        { name: 'Chaos Engineering Module', desc: 'Inject failures, network partitions, and latency into streaming systems to verify resilience' },
+        { name: 'Event Ordering Validator', desc: 'Verify that event processing maintains causal relationships and correctly handles out-of-order events' }
+      ]
+    },
+    integration: {
+      title: 'Integration & Heterogeneity',
+      icon: Globe,
+      color: 'bg-teal-600',
+      description: 'Cross-system consistency checking and automated contract testing',
+      features: [
+        { name: 'Contract Testing Automation', desc: 'Automatically generate and maintain API contracts from observed data flows, flagging violations' },
+        { name: 'Format Conversion Validator', desc: 'Verify data integrity across format conversions with special attention to edge cases like timezone handling, decimals, etc.' },
+        { name: 'Cross-system Consistency Checker', desc: 'Track data lineage across heterogeneous systems to ensure consistency throughout the data lifecycle' }
+      ]
+    },
+    dashboard: {
+      title: 'Dashboard & Visualization',
+      icon: BarChart3,
+      color: 'bg-pink-600',
+      description: 'Interactive dashboards with adaptive thresholds and pipeline health monitoring',
+      features: [
+        { name: 'Adaptive Test Threshold Dashboard', desc: 'Interactive dashboards showing historical test results with LLM-suggested threshold adjustments' },
+        { name: 'Data Pipeline Health Map', desc: 'Visual representation of end-to-end pipeline health with drill-down capabilities to pinpoint issues' },
+        { name: 'Test Coverage Analyzer', desc: 'Visually identify undertested components of your data pipeline based on complexity and importance metrics' }
+      ]
+    },
+    llmRag: {
+      title: 'LLM & RAG Features',
+      icon: MessageSquare,
+      color: 'bg-indigo-600',
+      description: 'Context-aware testing with natural language specifications and anomaly explanations',
+      features: [
+        { name: 'Context-Aware Test Generation', desc: 'Leverage your RAG system to automatically generate test cases based on business context and historical issues' },
+        { name: 'Natural Language Test Specification', desc: 'Allow users to define tests in natural language, which your system translates into executable test code' },
+        { name: 'Anomaly Explanation Generator', desc: 'When anomalies are detected, use LLMs to generate human-readable explanations of potential causes' }
+      ]
+    },
+    monitoring: {
+      title: 'Advanced Monitoring',
+      icon: Eye,
+      color: 'bg-red-600',
+      description: 'Intelligent monitoring with predictive analytics and automated alerting',
+      features: [
+        { name: 'Predictive Failure Detection', desc: 'Use machine learning to predict system failures before they occur based on historical patterns' },
+        { name: 'Smart Alert Correlation', desc: 'Correlate multiple alerts to identify root causes and reduce notification noise' },
+        { name: 'Automated Remediation Suggestions', desc: 'Provide actionable remediation steps based on similar historical incidents' }
+      ]
+    }
+  };
+
   const StructureIcon = structures[selectedStructure].icon;
+  const FeatureIcon = futureFeatures[selectedFeature].icon;
 
   return (
     <motion.div 
@@ -436,7 +529,7 @@ const DataQualityLLMSystem = () => {
         {/* Implementation Tips */}
         <motion.div 
           variants={fadeIn}
-          className="mt-12 mb-20 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50"
+          className="mt-12 bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50"
         >
           <h3 className="text-2xl font-bold text-white mb-6">💡 Implementation Guidelines</h3>
           <div className="grid md:grid-cols-2 gap-6">
@@ -486,6 +579,105 @@ const DataQualityLLMSystem = () => {
             </motion.div>
           </div>
         </motion.div>
+
+        {/* Future Features Section */}
+        <motion.div 
+          variants={fadeIn}
+          className="mt-12 bg-gradient-to-r from-indigo-900/50 to-blue-900/50 backdrop-blur-sm rounded-2xl p-8 border border-indigo-700/50"
+        >
+          <h3 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
+            <Sparkles className="text-blue-400" />
+            Future Features Roadmap
+          </h3>
+          <p className="text-blue-300 text-lg mb-8">
+            Innovative features planned to enhance your DataForgeTest platform
+          </p>
+
+          {/* Feature Navigation */}
+          <motion.div 
+            variants={staggerContainer}
+            className="mb-8"
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {Object.entries(futureFeatures).map(([key, feature]) => {
+                const Icon = feature.icon;
+                return (
+                  <motion.button
+                    key={key}
+                    variants={fadeIn}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => setSelectedFeature(key)}
+                    className={`p-4 rounded-xl transition-all ${
+                      selectedFeature === key
+                        ? `${feature.color} shadow-lg shadow-blue-500/20`
+                        : 'bg-gray-800/50 hover:bg-gray-800 border border-gray-700'
+                    }`}
+                  >
+                    <Icon className="w-6 h-6 text-white mx-auto mb-2" />
+                    <div className="text-xs font-medium text-center leading-tight">
+                      {feature.title}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+
+          {/* Selected Feature Details */}
+          <motion.div 
+            key={selectedFeature}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-gray-900/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50"
+          >
+            <div className="flex items-start gap-4 mb-6">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className={`p-3 rounded-xl ${futureFeatures[selectedFeature].color}`}
+              >
+                <FeatureIcon className="w-8 h-8 text-white" />
+              </motion.div>
+              <div>
+                <h4 className="text-2xl font-bold text-white mb-2">
+                  {futureFeatures[selectedFeature].title}
+                </h4>
+                <p className="text-blue-300 text-lg">
+                  {futureFeatures[selectedFeature].description}
+                </p>
+              </div>
+            </div>
+
+            <motion.div 
+              variants={staggerContainer}
+              className="space-y-4"
+            >
+              {futureFeatures[selectedFeature].features.map((feature, idx) => (
+                <motion.div
+                  key={feature.name}
+                  variants={fadeIn}
+                  whileHover={{ scale: 1.01 }}
+                  className="bg-gray-800/50 rounded-xl p-5 hover:bg-gray-800/70 transition-colors border border-gray-700/50"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+                    <div className="flex-1">
+                      <h5 className="text-blue-200 font-semibold text-lg mb-2">
+                        {feature.name}
+                      </h5>
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {feature.desc}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </motion.div>
+
+        <div className="mb-20"></div>
       </motion.div>
     </motion.div>
   );
