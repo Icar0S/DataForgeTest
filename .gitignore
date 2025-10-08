@@ -19,3 +19,6 @@ output/
 # Ignore RAG storage and test data
 storage/
 .env
+
+# Ignore uploads directory
+uploads/
