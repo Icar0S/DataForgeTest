@@ -62,7 +62,7 @@ const DatasetMetrics = () => {
     e.stopPropagation();
     setDragActive(false);
     
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       handleFileChange(e.dataTransfer.files[0]);
     }
   };
@@ -208,17 +208,19 @@ const DatasetMetrics = () => {
             </h2>
 
             {!file ? (
-              <div
+              <button
+                type="button"
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer ${
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer w-full ${
                   dragActive
                     ? 'border-purple-500 bg-purple-500/10'
                     : 'border-gray-600 hover:border-purple-500'
                 }`}
-                onClick={() => fileInputRef.current?.click()}
+                aria-label="Arraste seu dataset aqui ou pressione Enter para selecionar um arquivo"
               >
                 <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-300 text-lg mb-2">
@@ -241,7 +243,7 @@ const DatasetMetrics = () => {
                 >
                   Selecionar Arquivo
                 </button>
-              </div>
+              </button>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg">
@@ -387,7 +389,7 @@ const DatasetMetrics = () => {
                 <div className="space-y-3">
                   {report.recommendations.map((rec, idx) => (
                     <div
-                      key={idx}
+                      key={`${rec.category}-${rec.severity}-${idx}`}
                       className="flex items-start gap-3 p-4 bg-gray-900/50 rounded-lg border border-gray-700/30"
                     >
                       <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${getSeverityColor(rec.severity)}`} />

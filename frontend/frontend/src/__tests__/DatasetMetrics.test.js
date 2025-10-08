@@ -3,7 +3,6 @@
  * Tests core rendering functionality and user interactions
  */
 
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
@@ -219,8 +218,9 @@ describe('DatasetMetrics Component', () => {
       
       await waitFor(() => {
         expect(screen.getByText('Recomendações')).toBeInTheDocument();
-        expect(screen.getByText('Dataset has missing values')).toBeInTheDocument();
       });
+      
+      expect(screen.getByText('Dataset has missing values')).toBeInTheDocument();
     });
 
     test('allows analyzing new dataset', async () => {

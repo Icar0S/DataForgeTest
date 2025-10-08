@@ -17,13 +17,25 @@ def convert_to_json_serializable(obj):
     if isinstance(obj, np.integer):
         return int(obj)
     elif isinstance(obj, np.floating):
-        return float(obj)
+        # Handle NaN, inf, -inf values
+        if np.isnan(obj):
+            return None
+        elif np.isinf(obj):
+            return None
+        else:
+            return float(obj)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, dict):
         return {k: convert_to_json_serializable(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [convert_to_json_serializable(item) for item in obj]
+    elif isinstance(obj, float):
+        # Handle Python float NaN and inf values
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        else:
+            return obj
     return obj
 
 
@@ -157,7 +169,7 @@ def analyze_dataset():
 
         # Get file path
         file_path = Path(processing_status[session_id]["file_path"])
-        
+
         if not file_path.exists():
             return jsonify({"error": "File not found"}), 404
 
@@ -166,7 +178,7 @@ def analyze_dataset():
 
         # Generate quality report
         report = generate_quality_report(df)
-        
+
         # Convert to JSON serializable
         report = convert_to_json_serializable(report)
 

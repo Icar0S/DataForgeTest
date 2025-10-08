@@ -65,7 +65,7 @@ describe('QaChecklist Component', () => {
     renderComponent(<QaChecklist />);
     
     const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
-    const nextButton = screen.getByText('Próxima').closest('button');
+    const nextButton = screen.getByRole('button', { name: /Próxima/i });
     
     // Answer first question
     fireEvent.change(textarea, { target: { value: 'my_dataset' } });
@@ -116,7 +116,7 @@ describe('QaChecklist Component', () => {
   test('Previous button is disabled on first question', () => {
     renderComponent(<QaChecklist />);
     
-    const prevButton = screen.getByText('Anterior').closest('button');
+    const prevButton = screen.getByRole('button', { name: /Anterior/i });
     expect(prevButton).toBeDisabled();
   });
 
@@ -124,7 +124,7 @@ describe('QaChecklist Component', () => {
     renderComponent(<QaChecklist />);
     
     const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
-    const nextButton = screen.getByText('Próxima').closest('button');
+    const nextButton = screen.getByRole('button', { name: /Próxima/i });
     
     // Answer and move to second question
     fireEvent.change(textarea, { target: { value: 'my_dataset' } });
@@ -133,7 +133,7 @@ describe('QaChecklist Component', () => {
     expect(screen.getByText(/What is the source of the data/)).toBeInTheDocument();
     
     // Go back
-    const prevButton = screen.getByText('Anterior').closest('button');
+    const prevButton = screen.getByRole('button', { name: /Anterior/i });
     fireEvent.click(prevButton);
     
     // Should be back to first question
@@ -160,7 +160,7 @@ describe('QaChecklist Component', () => {
     // There are 14 questions total (3+3+3+4+1)
     for (let i = 0; i < 13; i++) {
       fireEvent.change(textarea, { target: { value: `answer${i}` } });
-      const nextButton = screen.getByText('Próxima').closest('button');
+      const nextButton = screen.getByRole('button', { name: /Próxima/i });
       fireEvent.click(nextButton);
     }
     
@@ -169,7 +169,7 @@ describe('QaChecklist Component', () => {
     
     // Fill and submit
     fireEvent.change(textarea, { target: { value: 'start_date:<:end_date' } });
-    const submitButton = screen.getByText('Gerar DSL e PySpark').closest('button');
+    const submitButton = screen.getByRole('button', { name: /Gerar DSL e PySpark/i });
     fireEvent.click(submitButton);
     
     // Should show success message and results
@@ -185,7 +185,7 @@ describe('QaChecklist Component', () => {
     renderComponent(<QaChecklist />);
     
     const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
-    const nextButton = screen.getByText('Próxima').closest('button');
+    const nextButton = screen.getByRole('button', { name: /Próxima/i });
     
     // Answer first question and move forward
     fireEvent.change(textarea, { target: { value: 'my_dataset' } });
@@ -206,12 +206,11 @@ describe('QaChecklist Component', () => {
   test('handles responsive layout classes', () => {
     renderComponent(<QaChecklist />);
     
-    const containers = document.querySelectorAll('.max-w-5xl');
-    expect(containers.length).toBeGreaterThan(0);
-    
-    const container = containers[0];
-    expect(container).toHaveClass('max-w-5xl');
-    expect(container).toHaveClass('lg:max-w-7xl');
+    // Find the main container with the responsive classes
+    const mainElement = screen.getByRole('main');
+    expect(mainElement).toBeInTheDocument();
+    expect(mainElement).toHaveClass('max-w-5xl');
+    expect(mainElement).toHaveClass('lg:max-w-7xl');
   });
 
   test('textarea has proper accessibility attributes', () => {
@@ -235,13 +234,13 @@ describe('QaChecklist Component', () => {
     // Navigate to last question
     for (let i = 0; i < 13; i++) {
       fireEvent.change(textarea, { target: { value: `answer${i}` } });
-      const nextButton = screen.getByText('Próxima').closest('button');
+      const nextButton = screen.getByRole('button', { name: /Próxima/i });
       fireEvent.click(nextButton);
     }
     
     // Submit on last question
     fireEvent.change(textarea, { target: { value: 'start_date:<:end_date' } });
-    const submitButton = screen.getByText('Gerar DSL e PySpark').closest('button');
+    const submitButton = screen.getByRole('button', { name: /Gerar DSL e PySpark/i });
     fireEvent.click(submitButton);
     
     // Should show error
@@ -254,7 +253,7 @@ describe('QaChecklist Component', () => {
     renderComponent(<QaChecklist />);
     
     const textarea = screen.getByPlaceholderText(/Digite sua resposta/);
-    const nextButton = screen.getByText('Próxima').closest('button');
+    const nextButton = screen.getByRole('button', { name: /Próxima/i });
     
     // Answer first question
     fireEvent.change(textarea, { target: { value: 'my_dataset' } });
@@ -265,7 +264,7 @@ describe('QaChecklist Component', () => {
     fireEvent.click(nextButton);
     
     // Go back twice
-    const prevButton = screen.getByText('Anterior').closest('button');
+    const prevButton = screen.getByRole('button', { name: /Anterior/i });
     fireEvent.click(prevButton);
     fireEvent.click(prevButton);
     
