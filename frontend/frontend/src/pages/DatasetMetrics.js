@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Upload, TrendingUp, AlertCircle, CheckCircle, Activity, Database } from 'lucide-react';
+import { ArrowLeft, Upload, TrendingUp, AlertCircle, CheckCircle, Activity, Database, BarChart3, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../styles/animations';
 
@@ -13,6 +13,11 @@ const DatasetMetrics = () => {
   const [error, setError] = useState(null);
   const [report, setReport] = useState(null);
   const [dragActive, setDragActive] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    problematicColumns: true,
+    columnDetails: false,
+    statistics: false,
+  });
 
   // Refs
   const fileInputRef = useRef(null);
@@ -152,6 +157,14 @@ const DatasetMetrics = () => {
     if (severity === 'high') return 'text-red-400';
     if (severity === 'medium') return 'text-yellow-400';
     return 'text-blue-400';
+  };
+
+  // Toggle section expansion
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
   return (
@@ -381,6 +394,216 @@ const DatasetMetrics = () => {
                 </div>
               </div>
             </div>
+
+            {/* Data Type Distribution */}
+            {report.data_type_distribution && (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 className="w-5 h-5 text-purple-400" />
+                  <h3 className="text-xl font-bold text-white">Distribuição de Tipos de Dados</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {Object.entries(report.data_type_distribution).map(([type, count]) => (
+                    <div key={type} className="bg-gray-900/50 rounded-lg p-4 text-center">
+                      <p className="text-gray-400 text-sm mb-1 capitalize">{type}</p>
+                      <p className="text-2xl font-bold text-purple-400">{count}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Problematic Columns */}
+            {report.problematic_columns && (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                <button
+                  onClick={() => toggleSection('problematicColumns')}
+                  className="w-full flex items-center justify-between mb-4 hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-red-400" />
+                    <h3 className="text-xl font-bold text-white">Colunas Problemáticas</h3>
+                  </div>
+                  {expandedSections.problematicColumns ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {expandedSections.problematicColumns && (
+                  <div className="space-y-4">
+                    {/* Completeness Issues */}
+                    {report.problematic_columns.completeness.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          Completude
+                        </h4>
+                        <div className="space-y-2">
+                          {report.problematic_columns.completeness.slice(0, 5).map((col, idx) => (
+                            <div key={idx} className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="text-white font-medium">{col.column}</p>
+                                <p className="text-gray-400 text-xs">
+                                  {col.missing_count} valores faltantes de {col.total_count} ({(col.missing_count / col.total_count * 100).toFixed(1)}%)
+                                </p>
+                              </div>
+                              <div className={`text-xl font-bold ${getQualityColor(col.score)}`}>
+                                {col.score.toFixed(1)}%
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Uniqueness Issues */}
+                    {report.problematic_columns.uniqueness.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-blue-400" />
+                          Unicidade
+                        </h4>
+                        <div className="space-y-2">
+                          {report.problematic_columns.uniqueness.slice(0, 5).map((col, idx) => (
+                            <div key={idx} className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="text-white font-medium">{col.column}</p>
+                                <p className="text-gray-400 text-xs">
+                                  {col.unique_count} valores únicos de {col.total_count} ({(col.unique_count / col.total_count * 100).toFixed(1)}%)
+                                </p>
+                              </div>
+                              <div className={`text-xl font-bold ${getQualityColor(col.score)}`}>
+                                {col.score.toFixed(1)}%
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Validity Issues */}
+                    {report.problematic_columns.validity.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-yellow-400" />
+                          Validade
+                        </h4>
+                        <div className="space-y-2">
+                          {report.problematic_columns.validity.slice(0, 5).map((col, idx) => (
+                            <div key={idx} className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="text-white font-medium">{col.column}</p>
+                                <p className="text-gray-400 text-xs">
+                                  {col.invalid_count} valores inválidos de {col.total_count} ({(col.invalid_count / col.total_count * 100).toFixed(1)}%)
+                                </p>
+                              </div>
+                              <div className={`text-xl font-bold ${getQualityColor(col.score)}`}>
+                                {col.score.toFixed(1)}%
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Consistency Issues */}
+                    {report.problematic_columns.consistency.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                          <Activity className="w-4 h-4 text-purple-400" />
+                          Consistência
+                        </h4>
+                        <div className="space-y-2">
+                          {report.problematic_columns.consistency.slice(0, 5).map((col, idx) => (
+                            <div key={idx} className="bg-gray-900/50 rounded-lg p-3 flex items-center justify-between">
+                              <div className="flex-1">
+                                <p className="text-white font-medium">{col.column}</p>
+                                <p className="text-gray-400 text-xs">Tipo: {col.data_type}</p>
+                              </div>
+                              <div className={`text-xl font-bold ${getQualityColor(col.score)}`}>
+                                {col.score.toFixed(1)}%
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* No issues found */}
+                    {report.problematic_columns.completeness.length === 0 &&
+                     report.problematic_columns.uniqueness.length === 0 &&
+                     report.problematic_columns.validity.length === 0 &&
+                     report.problematic_columns.consistency.length === 0 && (
+                      <div className="text-center py-8">
+                        <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-3" />
+                        <p className="text-gray-300">Nenhuma coluna problemática encontrada! Todas as colunas atendem aos critérios de qualidade.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Column Statistics */}
+            {report.column_statistics && (
+              <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-700/50">
+                <button
+                  onClick={() => toggleSection('statistics')}
+                  className="w-full flex items-center justify-between mb-4 hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex items-center gap-2">
+                    <Info className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-xl font-bold text-white">Estatísticas por Coluna</h3>
+                  </div>
+                  {expandedSections.statistics ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+
+                {expandedSections.statistics && (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="border-b border-gray-700">
+                        <tr>
+                          <th className="text-left py-3 px-4 text-gray-300 font-semibold">Coluna</th>
+                          <th className="text-left py-3 px-4 text-gray-300 font-semibold">Tipo</th>
+                          <th className="text-left py-3 px-4 text-gray-300 font-semibold">Não Nulos</th>
+                          <th className="text-left py-3 px-4 text-gray-300 font-semibold">Detalhes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(report.column_statistics).map(([col, stats], idx) => (
+                          <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-700/20">
+                            <td className="py-3 px-4 text-white font-medium">{col}</td>
+                            <td className="py-3 px-4 text-gray-300">{stats.data_type}</td>
+                            <td className="py-3 px-4 text-gray-300">{stats.non_null_count.toLocaleString()}</td>
+                            <td className="py-3 px-4">
+                              {stats.min !== undefined && (
+                                <div className="text-xs text-gray-400">
+                                  Min: {typeof stats.min === 'number' ? stats.min.toFixed(2) : stats.min} | 
+                                  Max: {typeof stats.max === 'number' ? stats.max.toFixed(2) : stats.max} | 
+                                  Média: {stats.mean?.toFixed(2)}
+                                </div>
+                              )}
+                              {stats.min_length !== undefined && (
+                                <div className="text-xs text-gray-400">
+                                  Comprimento: {stats.min_length}-{stats.max_length} (média: {stats.avg_length?.toFixed(1)}) | 
+                                  Únicos: {stats.unique_values}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recommendations */}
             {report.recommendations && report.recommendations.length > 0 && (
