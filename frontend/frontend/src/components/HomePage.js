@@ -251,7 +251,9 @@ const DataQualityLLMSystem = () => {
             variants={fadeIn}
             className="text-xl md:text-2xl text-purple-300 mb-8"
           >
-            Advanced Data-Intensive Systems Testing with LLMs and Automated PySpark Validation
+            Advanced data quality testing with metrics, LLM + RAG support, and
+            <br />
+            automated PySpark code generation
           </motion.p>
           <div className="flex gap-4 justify-center flex-wrap">
             <motion.div
