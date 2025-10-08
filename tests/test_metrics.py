@@ -159,12 +159,29 @@ class TestMetricsProcessor:
         assert "recommendations" in report
         assert "overall_quality_score" in report
         assert "generated_at" in report
+        assert "problematic_columns" in report
+        assert "column_statistics" in report
+        assert "data_type_distribution" in report
 
         # Quality score should be between 0 and 100
         assert 0 <= report["overall_quality_score"] <= 100
 
         # Should have recommendations for low completeness
         assert len(report["recommendations"]) > 0
+
+        # Check problematic columns structure
+        assert "completeness" in report["problematic_columns"]
+        assert "uniqueness" in report["problematic_columns"]
+        assert "validity" in report["problematic_columns"]
+        assert "consistency" in report["problematic_columns"]
+
+        # Check column statistics
+        assert "col1" in report["column_statistics"]
+        assert "col2" in report["column_statistics"]
+
+        # Check data type distribution
+        assert isinstance(report["data_type_distribution"], dict)
+        assert len(report["data_type_distribution"]) > 0
 
 
 class TestMetricsConfig:
