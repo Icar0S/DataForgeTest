@@ -260,7 +260,7 @@ See [utilities/README.md](utilities/README.md) for details.
 
 ## Frontend Integration
 
-The frontend (React) is in the `frontend/frontend/` directory and communicates with this backend via REST API.
+The frontend (React) is in the `frontend//` directory and communicates with this backend via REST API.
 
 Frontend makes requests to:
 - `/ask` - For chatbot interactions

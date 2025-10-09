@@ -211,7 +211,7 @@ pytest tests/test_metrics.py -v
 ### Frontend Tests
 Run the frontend tests:
 ```bash
-cd frontend/frontend
+cd frontend/
 npm test -- DatasetMetrics.test.js
 ```
 

@@ -270,7 +270,7 @@ python -m pytest tests/test_synthetic_backend.py -v
 
 ### Frontend Tests
 ```bash
-cd frontend/frontend
+cd frontend/
 npm test -- GenerateDataset.test.js
 ```
 

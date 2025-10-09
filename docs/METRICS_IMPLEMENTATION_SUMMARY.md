@@ -81,12 +81,12 @@ Successfully implemented a comprehensive Dataset Metrics feature that provides a
 ### Frontend (React)
 
 **Files Created:**
-- `frontend/frontend/src/pages/DatasetMetrics.js` - Main page component (16,726 bytes)
-- `frontend/frontend/src/__tests__/DatasetMetrics.test.js` - Test suite (9,566 bytes)
+- `frontend//src/pages/DatasetMetrics.js` - Main page component (16,726 bytes)
+- `frontend//src/__tests__/DatasetMetrics.test.js` - Test suite (9,566 bytes)
 
 **Files Modified:**
-- `frontend/frontend/src/App.js` - Added route for `/data-accuracy/metrics`
-- `frontend/frontend/src/components/DataAccuracyDropdown.js` - Added dropdown menu option
+- `frontend//src/App.js` - Added route for `/data-accuracy/metrics`
+- `frontend//src/components/DataAccuracyDropdown.js` - Added dropdown menu option
 
 **UI Components:**
 - File upload with drag-and-drop
@@ -157,7 +157,7 @@ python -m pytest tests/test_metrics.py -v
 
 ### Frontend Testing
 ```bash
-cd frontend/frontend
+cd frontend/
 CI=true npm test -- DatasetMetrics.test.js --watchAll=false
 # Result: 13/13 tests passing in 1.964s
 # Coverage: 75.26% statements, 56.25% branches

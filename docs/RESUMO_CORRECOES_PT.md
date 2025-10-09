@@ -86,7 +86,7 @@ Note as diferenças:
    - `src/accuracy/routes.py` - Endpoint de download com tipos MIME corretos
 
 2. **Frontend:**
-   - `frontend/frontend/src/hooks/useDataAccuracy.js` - Função de download melhorada
+   - `frontend//src/hooks/useDataAccuracy.js` - Função de download melhorada
 
 3. **Testes (novos):**
    - `tests/test_accuracy_multiple_keys.py` - Testes para múltiplas colunas chave

@@ -225,16 +225,16 @@ Backend:
 - `tests/test_synthetic_backend.py`
 
 Frontend:
-- `frontend/frontend/src/pages/GenerateDataset.js`
-- `frontend/frontend/src/__tests__/GenerateDataset.test.js`
+- `frontend//src/pages/GenerateDataset.js`
+- `frontend//src/__tests__/GenerateDataset.test.js`
 
 Documentation:
 - `docs/SYNTHETIC_DATASET_FEATURE.md`
 
 ### Modified (5 files)
 - `src/api.py` - Registered blueprint
-- `frontend/frontend/src/App.js` - Added route
-- `frontend/frontend/src/components/HomePage.js` - Added button
+- `frontend//src/App.js` - Added route
+- `frontend//src/components/HomePage.js` - Added button
 - `README.md` - Added feature section
 - `.env.example` - Added configuration
 - `requirements.txt` - Added dependencies

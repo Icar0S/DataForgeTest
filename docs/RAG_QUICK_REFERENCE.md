@@ -151,7 +151,7 @@ python tests/test_rag_diagnostics.py
 cd src && python api.py
 
 # 4. In another terminal, start frontend
-cd frontend/frontend && npm start
+cd frontend/ && npm start
 
 # 5. Open http://localhost:3000
 ```

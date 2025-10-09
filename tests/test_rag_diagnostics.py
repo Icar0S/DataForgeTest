@@ -253,7 +253,7 @@ class RAGDiagnostics:
         print("-" * 70)
 
         # Check if ChatWindow.js exists
-        chat_window = Path("frontend/frontend/src/components/ChatWindow.js")
+        chat_window = Path("frontend//src/components/ChatWindow.js")
         if chat_window.exists():
             self.add_success("FRONTEND", "ChatWindow.js exists")
             print("✓ ChatWindow.js exists")
@@ -281,7 +281,7 @@ class RAGDiagnostics:
             print("✗ ChatWindow.js NOT FOUND")
 
         # Check SupportPage.js
-        support_page = Path("frontend/frontend/src/pages/SupportPage.js")
+        support_page = Path("frontend//src/pages/SupportPage.js")
         if support_page.exists():
             self.add_success("FRONTEND", "SupportPage.js exists")
             print("✓ SupportPage.js exists")

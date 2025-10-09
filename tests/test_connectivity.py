@@ -84,7 +84,7 @@ def test_backend_connectivity():
 
     # Test 4: Frontend proxy configuration
     print("\n4. FRONTEND PROXY:")
-    package_json = Path("frontend/frontend/package.json")
+    package_json = Path("frontend//package.json")
     if package_json.exists():
         with open(package_json) as f:
             content = f.read()
@@ -118,7 +118,7 @@ def test_frontend_files():
     print("=" * 70)
 
     # Check ChatWindow.js
-    chat_window = Path("frontend/frontend/src/components/ChatWindow.js")
+    chat_window = Path("frontend//src/components/ChatWindow.js")
     if chat_window.exists():
         print("\n✓ ChatWindow.js exists")
         with open(chat_window) as f:

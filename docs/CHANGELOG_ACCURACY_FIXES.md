@@ -83,7 +83,7 @@ for key_col in key_columns:
 
 **Code Changes**:
 
-**Frontend** (`frontend/frontend/src/hooks/useDataAccuracy.js`):
+**Frontend** (`frontend//src/hooks/useDataAccuracy.js`):
 ```javascript
 // Before: Simple link download
 const downloadFile = useCallback((url) => {
@@ -203,7 +203,7 @@ Keys: {"ano": 2023, "mes": 1, "uf": "RJ"}
 
 1. `src/accuracy/processor.py` - Core comparison logic
 2. `src/accuracy/routes.py` - Download endpoint with MIME types
-3. `frontend/frontend/src/hooks/useDataAccuracy.js` - Download functionality
+3. `frontend//src/hooks/useDataAccuracy.js` - Download functionality
 4. `tests/test_accuracy_multiple_keys.py` - New test suite (created)
 5. `tests/manual_test_user_scenario.py` - Manual demonstration script (created)
 

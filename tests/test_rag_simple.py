@@ -84,7 +84,7 @@ def check_rag_system():
 
     # 5. Check frontend
     print("\n5. FRONTEND CHECK:")
-    chat_window = Path("frontend/frontend/src/components/ChatWindow.js")
+    chat_window = Path("frontend//src/components/ChatWindow.js")
     if chat_window.exists():
         print("✓ ChatWindow.js exists")
         with open(chat_window) as f:

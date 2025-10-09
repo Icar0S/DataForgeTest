@@ -8,7 +8,7 @@ The QA Checklist feature was modified to be a general RAG chat interface, which 
 
 ## Changes Made
 
-### Frontend: `frontend/frontend/src/pages/QaChecklist.js`
+### Frontend: `frontend//src/pages/QaChecklist.js`
 
 **Complete rewrite** from a RAG chat interface to a multi-step questionnaire form.
 
@@ -61,7 +61,7 @@ The QA Checklist feature was modified to be a general RAG chat interface, which 
      ```
    - Receives back: dsl, pyspark_code, errors, warnings
 
-### Tests: `frontend/frontend/src/components/__tests__/QaChecklist.test.js`
+### Tests: `frontend//src/components/__tests__/QaChecklist.test.js`
 
 **Complete test suite rewrite** to match new form-based behavior.
 
@@ -164,8 +164,8 @@ See screenshot: https://github.com/user-attachments/assets/1df7bff2-051d-4ec7-8d
 - No longer uses react-markdown
 
 ### File Changes
-- Modified: `frontend/frontend/src/pages/QaChecklist.js` (complete rewrite)
-- Modified: `frontend/frontend/src/components/__tests__/QaChecklist.test.js` (complete rewrite)
+- Modified: `frontend//src/pages/QaChecklist.js` (complete rewrite)
+- Modified: `frontend//src/components/__tests__/QaChecklist.test.js` (complete rewrite)
 
 ### Lines of Code
 - QaChecklist.js: ~380 lines (was ~237)

@@ -15,7 +15,7 @@ This document provides implementation details for the QA Checklist Testing featu
 - **Removed**: `onStartChat` prop dependency (no longer needed)
 
 #### QaChecklist.js (New Page)
-- **Location**: `frontend/frontend/src/pages/QaChecklist.js`
+- **Location**: `frontend//src/pages/QaChecklist.js`
 - **Layout**:
   - Full-screen responsive design using `h-screen`
   - Fixed header with "Voltar" (Back) button and "Limpar" (Clear) button
@@ -40,7 +40,7 @@ This document provides implementation details for the QA Checklist Testing featu
 ### 2. Testing
 
 #### QaChecklist.test.js (New Test Suite)
-- **Location**: `frontend/frontend/src/components/__tests__/QaChecklist.test.js`
+- **Location**: `frontend//src/components/__tests__/QaChecklist.test.js`
 - **Coverage**: 15 comprehensive tests
   - Component rendering
   - Auto-focus functionality
@@ -56,7 +56,7 @@ This document provides implementation details for the QA Checklist Testing featu
   - Form submission
 
 #### react-router-dom Mock
-- **Location**: `frontend/frontend/src/__mocks__/react-router-dom.js`
+- **Location**: `frontend//src/__mocks__/react-router-dom.js`
 - **Purpose**: Resolve Jest module resolution issues with react-router-dom v7
 - **Components Mocked**: Link, BrowserRouter, Routes, Route, navigation hooks
 
@@ -167,14 +167,14 @@ Tested and verified in:
 ## Files Modified/Created
 
 ### Created:
-- `frontend/frontend/src/pages/QaChecklist.js` (245 lines)
-- `frontend/frontend/src/components/__tests__/QaChecklist.test.js` (279 lines)
-- `frontend/frontend/src/__mocks__/react-router-dom.js` (14 lines)
+- `frontend//src/pages/QaChecklist.js` (245 lines)
+- `frontend//src/components/__tests__/QaChecklist.test.js` (279 lines)
+- `frontend//src/__mocks__/react-router-dom.js` (14 lines)
 - `IMPLEMENTATION_NOTES.md` (this file)
 
 ### Modified:
-- `frontend/frontend/src/components/HomePage.js` (button → Link, removed onStartChat)
-- `frontend/frontend/src/App.js` (simplified, added /qa-checklist route)
+- `frontend//src/components/HomePage.js` (button → Link, removed onStartChat)
+- `frontend//src/App.js` (simplified, added /qa-checklist route)
 - `README.md` (added QA Checklist section)
 
 ## Metrics
