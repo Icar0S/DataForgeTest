@@ -28,7 +28,7 @@ if %errorlevel% neq 0 (
 
 :: Verificar e instalar dependências do frontend
 echo [3/6] Verificando dependências do frontend...
-cd "%PROJECT_DIR%frontend\frontend"
+cd "%PROJECT_DIR%frontend\"
 if not exist "node_modules" (
     echo Instalando dependências do frontend...
     call npm install
@@ -67,7 +67,7 @@ if %errorlevel% neq 0 (
 
 :: Iniciar frontend
 echo [6/6] Iniciando frontend...
-start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\frontend && npm start"
+start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\ && npm start"
 
 :: Aguardar frontend inicializar
 echo Aguardando frontend inicializar...

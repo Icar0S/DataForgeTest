@@ -22,11 +22,11 @@ timeout /t 1 /nobreak > nul
 powershell -Command "try { $response = Invoke-WebRequest -Uri 'http://localhost:5000/' -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop; exit 0 } catch { exit 1 }" > nul 2>&1
 if %errorlevel% neq 0 (
     set /a counter+=1
-    if %counter% lss 10 (
-        echo Aguardando backend... %counter%/10s
+    if %counter% lss 5 (
+        echo Aguardando backend... %counter%/5s
         goto wait_backend
     ) else (
-        echo AVISO: Backend nao respondeu em 10s, continuando mesmo assim...
+        echo AVISO: Backend nao respondeu em 5s, continuando mesmo assim...
     )
 ) else (
     echo Backend pronto!
@@ -34,7 +34,7 @@ if %errorlevel% neq 0 (
 
 :: Iniciar frontend
 echo [3/3] Iniciando frontend...
-start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\frontend && npm start"
+start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\ && npm start"
 
 echo.
 echo Serviços iniciados!

@@ -15,7 +15,7 @@ pip install -r requirements.txt > nul 2>&1
 
 :: Instalar dependências do frontend se necessário
 echo Verificando dependencias do frontend...
-cd "%PROJECT_DIR%frontend\frontend"
+cd "%PROJECT_DIR%frontend\"
 call npm install > nul 2>&1
 
 :: Iniciar backend em uma nova janela
@@ -42,7 +42,7 @@ if %errorlevel% neq 0 (
 
 :: Iniciar frontend em uma nova janela
 echo Iniciando frontend...
-start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\frontend && npm start"
+start cmd /k "title Frontend && cd %PROJECT_DIR%frontend\ && npm start"
 
 :: Abrir o navegador após alguns segundos
 timeout /t 5 /nobreak > nul
