@@ -80,7 +80,7 @@ cp .env.example .env
 
 3. **Frontend Setup**
 ```bash
-cd frontend/frontend
+cd frontend
 npm install
 ```
 
@@ -94,7 +94,7 @@ python api.py
 
 Terminal 2 (Frontend):
 ```bash
-cd frontend/frontend
+cd frontend
 npm start
 ```
 
@@ -333,7 +333,7 @@ DataForgeTest follows a modern microservices architecture with clear separation 
 
 ```
 DataForgeTest/
-├── frontend/frontend/          # React application
+├── frontend/                  # React application
 │   ├── src/components/        # UI components
 │   ├── src/pages/            # Application pages
 │   └── public/               # Static assets
@@ -461,7 +461,7 @@ source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 pip install -r requirements.txt
 
 # Frontend development  
-cd frontend/frontend
+cd frontend
 npm install
 npm start
 ```
@@ -473,7 +473,7 @@ npm start
 pylint src/**/*.py
 
 # Frontend testing
-cd frontend/frontend
+cd frontend
 npm test
 
 # Type checking
@@ -516,7 +516,7 @@ python tests/test_accuracy_integration.py -v                   # Basic integrati
 python tests/test_accuracy_integration_robust.py -v            # Robust integration (18 tests)
 
 # Frontend tests
-cd frontend/frontend
+cd frontend
 npm test
 ```
 
@@ -617,7 +617,7 @@ pip install gunicorn
 gunicorn -w 4 -b 0.0.0.0:5000 src.api:app
 
 # Frontend (build and serve)
-cd frontend/frontend
+cd frontend
 npm run build
 # Serve build/ directory with your preferred web server
 ```

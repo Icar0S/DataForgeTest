@@ -1,11 +1,27 @@
-# Testes de Integração RAG
+# Frontend Tests
 
-Este diretório contém testes de integração completos para o sistema RAG (Retrieval-Augmented Generation) do Data Quality Chatbot.
+Este diretório contém testes completos para o frontend do DataForgeTest.
 
 ## ✅ Status Atual dos Testes
 
-**Última execução**: 2 de outubro de 2025  
-**Resultado**: ✅ **22/22 testes passaram** (1 teste do App.test.js temporariamente desabilitado)
+**Última execução**: Outubro 2025  
+**Resultado**: ✅ **132/133 testes passaram** (1 teste do App.test.js temporariamente desabilitado)
+
+## 📊 Cobertura de Testes
+
+**Overall Coverage:**
+- **Statements**: 57.5%
+- **Branches**: 40.39%
+- **Functions**: 45.91%
+- **Lines**: 57.61%
+
+**Component Coverage Highlights:**
+- `SupportButton.js`: 100% ✅
+- `SupportPage.js`: 100% ✅
+- `QaChecklist.js`: 90.69% ✅
+- `ChatWindow.js`: 89.23% ✅
+- `HomePage.js`: 88.88% ✅
+- `GenerateDataset.js`: 81.75% ✅
 
 ## Estrutura dos Testes
 
@@ -73,7 +89,7 @@ Este script executa:
 
 ### Executar Testes Específicos
 ```bash
-cd frontend/frontend
+cd frontend
 
 # Testes do ChatWindow (11 testes)
 npm test -- --testPathPattern=ChatWindow.test.js --watchAll=false --verbose
@@ -187,27 +203,37 @@ jest.mock('framer-motion', () => ({
 
 ## Métricas de Cobertura Atual
 
-### Resultados da Última Execução (02/10/2025)
+### Resultados da Última Execução (Outubro 2025)
 ```
----------------------|---------|----------|---------|---------|--------------------
-File                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s  
----------------------|---------|----------|---------|---------|--------------------
-All files            |   36.93 |    20.68 |   39.53 |   36.09 |                   
- src/components      |   69.04 |    56.25 |   57.69 |    67.5 |                   
-  ChatWindow.js      |   89.23 |    64.28 |   93.75 |   88.52 | 9-10,71-73,104-105
- src/pages           |     100 |      100 |     100 |     100 |                   
-  SupportPage.js     |     100 |      100 |     100 |     100 |                   
----------------------|---------|----------|---------|---------|--------------------
+--------------------------|---------|----------|---------|---------|-------------------------
+File                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s       
+--------------------------|---------|----------|---------|---------|-------------------------
+All files                 |    57.5 |    40.39 |   45.91 |   57.61 |                         
+ src/components           |    80.8 |     67.3 |   68.18 |   80.16 |                         
+  ChatWindow.js           |   89.23 |    64.28 |   93.75 |   88.52 | 9-10,71-73,104-105      
+  DataAccuracyDropdown.js |   62.85 |    61.11 |   33.33 |   62.85 | 14,21-22,39-40,48       
+  HomePage.js             |   88.88 |      100 |   77.77 |   88.88 | 325,612                 
+  SupportButton.js        |     100 |      100 |     100 |     100 |                         
+ src/pages                |   60.76 |    43.96 |   50.45 |    61.4 |                         
+  DatasetMetrics.js       |   68.57 |     40.2 |   41.66 |   71.13 |                         
+  GenerateDataset.js      |   81.57 |    65.35 |   68.42 |   81.75 |                         
+  QaChecklist.js          |   90.69 |       75 |   91.66 |   91.46 | 101-106,136,164         
+  SupportPage.js          |     100 |      100 |     100 |     100 |                         
+  TestDatasetGold.js      |    18.3 |    11.01 |   14.81 |   18.79 |                         
+--------------------------|---------|----------|---------|---------|-------------------------
 ```
 
 ### Componentes Principais
-- ✅ **ChatWindow.js**: 89.23% statements, 93.75% functions (Excelente!)
+- ✅ **SupportButton.js**: 100% cobertura completa (Perfeito!)
 - ✅ **SupportPage.js**: 100% cobertura completa (Perfeito!)
+- ✅ **QaChecklist.js**: 90.69% statements, 91.66% functions (Excelente!)
+- ✅ **ChatWindow.js**: 89.23% statements, 93.75% functions (Excelente!)
+- ✅ **HomePage.js**: 88.88% statements, 77.77% functions (Muito Bom!)
 
 ### Status dos Testes
-- **Test Suites**: 3 passou, 1 pulado (App.test.js)
-- **Tests**: 22 passou, 1 pulado
-- **Total de Testes RAG**: 22/22 ✅
+- **Test Suites**: 11 passou, 1 pulado (App.test.js)
+- **Tests**: 132 passou, 1 pulado
+- **Total de Testes**: 132/133 ✅
 
 ## Relatórios de Cobertura
 
