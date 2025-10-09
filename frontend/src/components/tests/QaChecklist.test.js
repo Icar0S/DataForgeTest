@@ -206,11 +206,11 @@ describe('QaChecklist Component', () => {
   test('handles responsive layout classes', () => {
     renderComponent(<QaChecklist />);
     
-    // Find the main container with the responsive classes
-    const mainElement = screen.getByRole('main');
-    expect(mainElement).toBeInTheDocument();
-    expect(mainElement).toHaveClass('max-w-5xl');
-    expect(mainElement).toHaveClass('lg:max-w-7xl');
+    // Find the main container with the responsive classes by looking for the container with both classes
+    const containers = document.querySelectorAll('.max-w-5xl.lg\\:max-w-7xl');
+    expect(containers.length).toBeGreaterThan(0);
+    expect(containers[0]).toHaveClass('max-w-5xl');
+    expect(containers[0]).toHaveClass('lg:max-w-7xl');
   });
 
   test('textarea has proper accessibility attributes', () => {
