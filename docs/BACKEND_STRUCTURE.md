@@ -8,22 +8,55 @@ This document describes the organization of the backend Python code.
 /
 ├── src/                    # Main backend source code
 │   ├── api.py             # Flask API entry point
+│   ├── accuracy/          # Data accuracy validation
+│   │   ├── config.py
+│   │   ├── processor.py
+│   │   └── routes.py
 │   ├── chatbot/           # Interactive chatbot for data quality rules
+│   │   ├── main.py
+│   │   ├── questions.py
+│   │   └── answers.py
 │   ├── code_generator/    # PySpark code generation
+│   │   └── pyspark_generator.py
 │   ├── dsl_parser/        # DSL (Domain Specific Language) parsing
-│   └── rag/               # RAG (Retrieval-Augmented Generation) system
+│   │   └── generator.py
+│   ├── gold/              # GOLD dataset testing
+│   │   ├── config.py
+│   │   ├── processor.py
+│   │   ├── routes.py
+│   │   └── services/      # ✨ Business logic layer
+│   │       ├── file_processor.py
+│   │       └── serialization_utils.py
+│   ├── metrics/           # Data quality metrics
+│   │   ├── config.py
+│   │   ├── processor.py
+│   │   ├── routes.py
+│   │   └── services/      # ✨ Metric calculation layer
+│   │       ├── completeness.py
+│   │       ├── consistency.py
+│   │       ├── file_reader.py
+│   │       ├── uniqueness.py
+│   │       └── validity.py
+│   ├── rag/               # RAG (Retrieval-Augmented Generation) system
+│   │   ├── (Simple & Full implementations)
+│   │   └── README.md
+│   └── synthetic/         # Synthetic data generation
+│       ├── config.py
+│       ├── generator.py
+│       ├── routes.py
+│       └── validators.py
 │
 ├── tests/                 # Automated test suite
-│   ├── test_code_quality.py      # Code quality validation tests
-│   ├── test_connectivity.py      # Frontend-backend connectivity tests
-│   ├── test_generator.py         # DSL generation tests
-│   ├── test_improved_chat.py     # Chat functionality tests
-│   ├── test_pyspark_generator.py # PySpark code generation tests
-│   ├── test_rag_api.py           # RAG API endpoint tests
-│   ├── test_rag_diagnostics.py   # RAG diagnostic tests
-│   ├── test_rag_direct.py        # Direct RAG system tests
-│   ├── test_rag_integration.py   # RAG integration tests
-│   └── test_rag_simple.py        # Simple RAG tests
+│   ├── test_accuracy_*.py          # Accuracy module tests
+│   ├── test_code_quality.py        # Code quality validation tests
+│   ├── test_connectivity.py        # Frontend-backend connectivity tests
+│   ├── test_generator.py           # DSL generation tests
+│   ├── test_gold.py                # GOLD module tests
+│   ├── test_improved_chat.py       # Chat functionality tests
+│   ├── test_metrics.py             # Metrics module tests
+│   ├── test_pyspark_generator.py   # PySpark code generation tests
+│   ├── test_rag_*.py               # RAG system tests
+│   └── test_synthetic_backend.py   # Synthetic data tests
 │
 └── utilities/             # Development and maintenance utilities
     ├── clean_knowledge_base.py
@@ -39,6 +72,40 @@ This document describes the organization of the backend Python code.
 
 ### src/api.py
 Main Flask application entry point. Registers all blueprints and handles CORS.
+
+### src/gold/
+GOLD dataset testing feature for data cleaning and validation.
+- `routes.py` - Flask blueprint with API endpoints
+- `processor.py` - Data processing utilities
+- `config.py` - Configuration management
+- `services/` - **Business logic layer**
+  - `file_processor.py` - CSV/Excel/Parquet file processing
+  - `serialization_utils.py` - JSON serialization helpers
+
+### src/metrics/
+Data quality metrics calculation.
+- `routes.py` - Flask blueprint with API endpoints
+- `processor.py` - Metric orchestration
+- `config.py` - Configuration management
+- `services/` - **Metric calculation layer**
+  - `file_reader.py` - Robust file reading utilities
+  - `completeness.py` - Completeness metric calculations
+  - `uniqueness.py` - Uniqueness metric calculations
+  - `validity.py` - Validity metric calculations
+  - `consistency.py` - Consistency metric calculations
+
+### src/accuracy/
+Data accuracy validation and correction.
+- `routes.py` - Flask blueprint with API endpoints
+- `processor.py` - Data comparison and normalization logic
+- `config.py` - Configuration management
+
+### src/synthetic/
+Synthetic data generation using LLM.
+- `routes.py` - Flask blueprint with API endpoints
+- `generator.py` - Data generation logic
+- `validators.py` - Validation utilities
+- `config.py` - Configuration management
 
 ### src/chatbot/
 Interactive chatbot that guides users through defining data quality rules.
@@ -87,6 +154,32 @@ gunicorn -w 4 -b 0.0.0.0:5000 src.api:app
 ### Main Chatbot API
 - `GET /` - Health check
 - `POST /ask` - Process user answers and generate DSL/PySpark code
+
+### GOLD Dataset API
+- `GET /api/gold/health` - Health check
+- `POST /api/gold/upload` - Upload dataset file
+- `POST /api/gold/clean` - Clean dataset with options
+- `GET /api/gold/status` - Get processing status
+- `GET /api/gold/report` - Get cleaning report
+- `GET /api/gold/download/<session_id>/<filename>` - Download cleaned file
+
+### Metrics API
+- `GET /api/metrics/health` - Health check
+- `POST /api/metrics/upload` - Upload dataset file
+- `POST /api/metrics/analyze` - Analyze dataset and generate metrics
+- `GET /api/metrics/report?sessionId=<id>` - Retrieve report
+
+### Accuracy API
+- `GET /api/accuracy/health` - Health check
+- `POST /api/accuracy/upload/gold` - Upload GOLD dataset
+- `POST /api/accuracy/upload/target` - Upload target dataset
+- `POST /api/accuracy/compare` - Compare and generate corrections
+- `GET /api/accuracy/report/<session_id>` - Get comparison report
+- `GET /api/accuracy/download/<session_id>/<filename>` - Download results
+
+### Synthetic Data API
+- `GET /api/synthetic/health` - Health check
+- `POST /api/synthetic/generate` - Generate synthetic data
 
 ### RAG System API
 - `POST /api/rag/chat` - Chat with AI assistant
