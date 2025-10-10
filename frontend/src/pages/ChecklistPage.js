@@ -7,7 +7,6 @@ import {
   HelpCircle, 
   Save, 
   Sparkles, 
-  Download,
   X,
   FileText,
   FileDown
