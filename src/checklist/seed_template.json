@@ -1,0 +1,159 @@
+{
+  "name": "Big Data QA Checklist (DataForgeTest)",
+  "dimensions": [
+    {
+      "id": "unit_integration",
+      "name": "Unit & Integration",
+      "items": [
+        {
+          "id": "UNIT_1",
+          "code": "UNIT_1",
+          "title": "Validar a lógica de serviço e regras isoladamente usando ferramentas de teste compatíveis com Spark (por exemplo, DTC, JUnit, MRUnit).",
+          "manual": "Escreva testes unitários que isolem regras de negócio e transformações; utilize frameworks compatíveis para pipelines Spark e mocks para IO.",
+          "references": ["[15]", "[1]"],
+          "priority_weight": 2
+        },
+        {
+          "id": "UNIT_2",
+          "code": "UNIT_2",
+          "title": "Garantir a simulação correta do SparkSession em JVMs e contêineres de teste isolados.",
+          "manual": "Inicialize SparkSession em ambiente de teste com configurações determinísticas; evite dependências de cluster externo.",
+          "references": ["[15]", "[1]"],
+          "priority_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "functional_workflow",
+      "name": "Functional & Workflow",
+      "items": [
+        {
+          "id": "FUNC_1",
+          "code": "FUNC_1",
+          "title": "Testar fluxos de trabalho de Big Data de ponta a ponta, desde a ingestão até a geração de relatórios.",
+          "manual": "Simule ingestão, transformação e saída; valide contratos e dados finais por amostragem e reconciliação.",
+          "references": ["[1]"],
+          "priority_weight": 2
+        },
+        {
+          "id": "FUNC_2",
+          "code": "FUNC_2",
+          "title": "Aplicar testes de reconciliação de entidades orientados a modelos para obter consistência de visualização unificada em todas as fontes.",
+          "manual": "Defina entidades canônicas e reconcilie atributos entre fontes heterogêneas.",
+          "references": ["[1]"],
+          "priority_weight": 2
+        }
+      ]
+    },
+    {
+      "id": "performance_load",
+      "name": "Performance & Load",
+      "items": [
+        {
+          "id": "PERF_1",
+          "code": "PERF_1",
+          "title": "Use métricas específicas da carga de trabalho (por exemplo, tempo de conclusão da tarefa, taxa de transferência) com métricas do Spark, Hive ou Hadoop.",
+          "manual": "Colete métricas de execução por estágio/tarefa e analise gargalos; estabeleça metas por cenário.",
+          "references": ["[1]", "[15]"],
+          "priority_weight": 4
+        },
+        {
+          "id": "PERF_2",
+          "code": "PERF_2",
+          "title": "Valide a reutilização de RDDs armazenados em cache/pontos de verificação com rastreamento de hash sob DTC para simular ciclos de teste realistas.",
+          "manual": "Garanta cache/checkpoint corretos e consistentes; use hashes para verificar reutilização e evitar recomputações indevidas.",
+          "references": ["[1]", "[15]"],
+          "priority_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "security_privacy",
+      "name": "Security & Privacy",
+      "items": [
+        {
+          "id": "SEC_1",
+          "code": "SEC_1",
+          "title": "Realizar testes de failover e injeção de falhas em nós e clusters de dados.",
+          "manual": "Simule falhas de nó/rede/armazenamento e valide resiliência e recuperação.",
+          "references": ["[1]"],
+          "priority_weight": 5
+        },
+        {
+          "id": "SEC_2",
+          "code": "SEC_2",
+          "title": "Validar as políticas de criptografia, controle de acesso e anonimização para conformidade (por exemplo, LGPD).",
+          "manual": "Audite KMS/ACLs/mascaração; verifique logs de acesso e retenção.",
+          "references": ["[1]"],
+          "priority_weight": 5
+        }
+      ]
+    },
+    {
+      "id": "data_quality_etl",
+      "name": "Data Quality & ETL",
+      "items": [
+        {
+          "id": "DQ_1",
+          "code": "DQ_1",
+          "title": "Use testes de transformação e validação reversa para garantir a correção do ETL.",
+          "manual": "Valide transformações com casos positivos/negativos; use round-trip checks quando possível.",
+          "references": ["[1]", "[14]"],
+          "priority_weight": 4
+        },
+        {
+          "id": "DQ_2",
+          "code": "DQ_2",
+          "title": "Verifique a integridade, a duplicação, a validade temporal e o alinhamento das regras de negócios.",
+          "manual": "Defina regras de qualidade (completude, unicidade, atualidade) e relatórios de violações.",
+          "references": ["[1]", "[14]"],
+          "priority_weight": 4
+        }
+      ]
+    },
+    {
+      "id": "cicd_automation",
+      "name": "CI/CD & Automation",
+      "items": [
+        {
+          "id": "CI_1",
+          "code": "CI_1",
+          "title": "Use testes de transformação e validação reversa para garantir a correção do ETL.",
+          "manual": "Automatize no pipeline CI; gates para bloquear regressões de transformação.",
+          "references": ["[15]", "[14]"],
+          "priority_weight": 3
+        },
+        {
+          "id": "CI_2",
+          "code": "CI_2",
+          "title": "Verifique a integridade, a duplicação, a validade temporal e o alinhamento das regras de negócios.",
+          "manual": "Automatize validações de dados como estágios de pipeline (pré e pós deploy).",
+          "references": ["[15]", "[14]"],
+          "priority_weight": 3
+        }
+      ]
+    },
+    {
+      "id": "observability_monitoring",
+      "name": "Observability & Monitoring",
+      "items": [
+        {
+          "id": "OBS_1",
+          "code": "OBS_1",
+          "title": "Implementar painéis (por exemplo, Prometheus + Grafana) para visibilidade em tempo real da cobertura e das falhas dos testes.",
+          "manual": "Exponha métricas de execução de testes e qualidade de dados; painéis por serviço/pipeline.",
+          "references": ["[1]", "[14]"],
+          "priority_weight": 3
+        },
+        {
+          "id": "OBS_2",
+          "code": "OBS_2",
+          "title": "Usar logs e métricas de teste para disparar alertas automatizados para regressão e detecção de anomalias.",
+          "manual": "Crie alertas baseados em limiares/séries temporais; integre com incidentes.",
+          "references": ["[1]", "[14]"],
+          "priority_weight": 3
+        }
+      ]
+    }
+  ]
+}

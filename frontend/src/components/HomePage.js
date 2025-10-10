@@ -275,6 +275,20 @@ const DataQualityLLMSystem = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
+              <Link
+                to="/checklist"
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 flex items-center gap-2"
+                aria-label="Checklist Support QA"
+              >
+                <CheckCircle className="w-5 h-5" />
+                Checklist Support QA
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <DataAccuracyDropdown />
             </motion.div>
             <motion.div
