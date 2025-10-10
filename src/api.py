@@ -14,6 +14,7 @@ from accuracy.routes import accuracy_bp
 from synthetic.routes import synth_bp
 from gold.routes import gold_bp
 from metrics.routes import metrics_bp
+from checklist.routes import checklist_bp
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -24,6 +25,7 @@ app.register_blueprint(accuracy_bp)
 app.register_blueprint(synth_bp)
 app.register_blueprint(gold_bp)
 app.register_blueprint(metrics_bp)
+app.register_blueprint(checklist_bp)
 
 
 @app.route("/", methods=["GET"])
