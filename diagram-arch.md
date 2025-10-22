@@ -1,7 +1,7 @@
 ```mermaid
 flowchart LR
   %% FRONTEND
-  subgraph Frontend [Frontend Layer]
+  subgraph Frontend [Frontend Layer - React]
     direction TB
     A1[Real-Time Rieclay Interface]
     A2[File Upload System - File Progress]
