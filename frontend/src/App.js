@@ -12,6 +12,7 @@ import DatasetMetrics from './pages/DatasetMetrics';
 import QaChecklist from './pages/QaChecklist';
 import ChecklistPage from './pages/ChecklistPage';
 import GenerateDataset from './pages/GenerateDataset';
+import AdvancedPySparkGenerator from './pages/AdvancedPySparkGenerator';
 import SupportButton from './components/SupportButton';
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/qa-checklist" element={<QaChecklist />} />
           <Route path="/checklist" element={<ChecklistPage />} />
           <Route path="/generate-dataset" element={<GenerateDataset />} />
+          <Route path="/pyspark/advanced" element={<AdvancedPySparkGenerator />} />
           <Route path="/" element={<HomePage />} />
         </Routes>
         {/* Add support button on all pages except support page */}
