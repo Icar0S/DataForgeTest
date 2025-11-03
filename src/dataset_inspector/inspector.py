@@ -198,13 +198,16 @@ def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Di
     options = options or {}
     sample_size = options.get('sample_size', SAMPLE_SIZE)
     
-    # Try to read as JSON lines first, then as regular JSON
+    # Try to read as regular JSON first (array of objects), then as JSON lines
+    json_type = 'json'
     try:
-        df = pd.read_json(file_path, lines=True)
-        json_type = 'jsonl'
-    except ValueError:
         df = pd.read_json(file_path)
-        json_type = 'json'
+    except ValueError:
+        try:
+            df = pd.read_json(file_path, lines=True)
+            json_type = 'jsonl'
+        except ValueError:
+            raise ValueError("Unable to parse JSON file")
     
     # Generate metadata
     metadata = {
