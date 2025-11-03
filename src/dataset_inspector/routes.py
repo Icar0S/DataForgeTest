@@ -121,15 +121,20 @@ def inspect_uploaded_dataset():
                 metadata['file_size_bytes'] = file_size
                 
                 return jsonify(metadata), 200
-            except Exception as e:
-                return jsonify({"error": f"Failed to inspect dataset: {str(e)}"}), 500
+            except ValueError as e:
+                # Controlled error - safe to expose
+                return jsonify({"error": str(e)}), 400
+            except Exception:
+                # Unknown error - don't expose details
+                return jsonify({"error": "Failed to inspect dataset. Please check the file format and try again."}), 500
             finally:
                 # Clean up temporary file
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
     
-    except Exception as e:
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    except Exception:
+        # Unknown error - don't expose details
+        return jsonify({"error": "An unexpected error occurred during file upload"}), 500
 
 
 @dataset_inspector_bp.route("/generate-dsl", methods=["POST"])
@@ -160,8 +165,12 @@ def generate_dsl_endpoint():
         
         return jsonify({"dsl": dsl}), 200
     
-    except Exception as e:
-        return jsonify({"error": f"Failed to generate DSL: {str(e)}"}), 500
+    except ValueError as e:
+        # Controlled error - safe to expose
+        return jsonify({"error": str(e)}), 400
+    except Exception:
+        # Unknown error - don't expose details
+        return jsonify({"error": "Failed to generate DSL"}), 500
 
 
 @dataset_inspector_bp.route("/generate-pyspark", methods=["POST"])
@@ -196,5 +205,9 @@ def generate_pyspark_endpoint():
             "filename": filename
         }), 200
     
-    except Exception as e:
-        return jsonify({"error": f"Failed to generate PySpark code: {str(e)}"}), 500
+    except ValueError as e:
+        # Controlled error - safe to expose
+        return jsonify({"error": str(e)}), 400
+    except Exception:
+        # Unknown error - don't expose details
+        return jsonify({"error": "Failed to generate PySpark code"}), 500
