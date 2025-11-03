@@ -1,6 +1,7 @@
 """DSL generator from dataset metadata."""
 
 from typing import Dict, Any, List
+from .inspector import map_pandas_type_to_spark
 
 
 def generate_dsl_from_metadata(metadata: Dict[str, Any], user_edits: Dict[str, Any] = None) -> Dict[str, Any]:
@@ -43,8 +44,8 @@ def generate_dsl_from_metadata(metadata: Dict[str, Any], user_edits: Dict[str, A
         null_ratio = col.get('null_ratio', 0.0)
         unique_ratio = col.get('unique_ratio', 0.0)
         
-        # Map type for PySpark
-        spark_type = map_pandas_to_spark_type(col_type)
+        # Map type for PySpark using shared function from inspector
+        spark_type = map_pandas_type_to_spark(col_type)
         
         # Check if user edited this column
         user_col_edits = user_edits.get('columns', {}).get(col_name, {})
@@ -153,26 +154,3 @@ def generate_dsl_from_metadata(metadata: Dict[str, Any], user_edits: Dict[str, A
     }
     
     return dsl
-
-
-def map_pandas_to_spark_type(pandas_type: str) -> str:
-    """Map pandas dtype to PySpark type string.
-    
-    Args:
-        pandas_type: Pandas dtype string
-        
-    Returns:
-        PySpark type string
-    """
-    type_mapping = {
-        'int64': 'long',
-        'int32': 'integer',
-        'float64': 'double',
-        'float32': 'float',
-        'object': 'string',
-        'string': 'string',
-        'bool': 'boolean',
-        'datetime64[ns]': 'timestamp',
-    }
-    
-    return type_mapping.get(pandas_type, 'string')

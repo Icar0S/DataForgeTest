@@ -1,10 +1,8 @@
 """Tests for DSL generator module."""
 
 import pytest
-from src.dataset_inspector.dsl_generator import (
-    generate_dsl_from_metadata,
-    map_pandas_to_spark_type
-)
+from src.dataset_inspector.dsl_generator import generate_dsl_from_metadata
+from src.dataset_inspector.inspector import map_pandas_type_to_spark
 
 
 def test_generate_dsl_basic():
@@ -164,15 +162,15 @@ def test_generate_dsl_with_cross_validations():
 
 def test_map_pandas_to_spark_type():
     """Test pandas to Spark type mapping."""
-    assert map_pandas_to_spark_type('int64') == 'long'
-    assert map_pandas_to_spark_type('int32') == 'integer'
-    assert map_pandas_to_spark_type('float64') == 'double'
-    assert map_pandas_to_spark_type('float32') == 'float'
-    assert map_pandas_to_spark_type('object') == 'string'
-    assert map_pandas_to_spark_type('string') == 'string'
-    assert map_pandas_to_spark_type('bool') == 'boolean'
-    assert map_pandas_to_spark_type('datetime64[ns]') == 'timestamp'
-    assert map_pandas_to_spark_type('unknown_type') == 'string'
+    assert map_pandas_type_to_spark('int64') == 'long'
+    assert map_pandas_type_to_spark('int32') == 'integer'
+    assert map_pandas_type_to_spark('float64') == 'double'
+    assert map_pandas_type_to_spark('float32') == 'float'
+    assert map_pandas_type_to_spark('object') == 'string'
+    assert map_pandas_type_to_spark('string') == 'string'
+    assert map_pandas_type_to_spark('bool') == 'boolean'
+    assert map_pandas_type_to_spark('datetime64[ns]') == 'timestamp'
+    assert map_pandas_type_to_spark('unknown_type') == 'string'
 
 
 def test_generate_dsl_creates_dataset_section():

@@ -1,14 +1,10 @@
 """Flask routes for dataset inspection and advanced PySpark generation."""
 
 import os
-import sys
 import tempfile
 from pathlib import Path
 from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from dataset_inspector.inspector import inspect_dataset, MAX_FILE_SIZE_MB
 from dataset_inspector.dsl_generator import generate_dsl_from_metadata
