@@ -8,9 +8,15 @@ import pytest
 from io import BytesIO
 from flask import Flask
 
-# Import the blueprint
+# Import the blueprint - using relative import path
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from pathlib import Path
+
+# Add src to path if not already there (for test discovery)
+src_path = Path(__file__).parent.parent / 'src'
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
+
 from dataset_inspector.routes import dataset_inspector_bp
 
 

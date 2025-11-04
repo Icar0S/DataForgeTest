@@ -13,7 +13,6 @@ from code_generator.pyspark_generator import generate_pyspark_code
 
 # Configure logger
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 # Create blueprint
