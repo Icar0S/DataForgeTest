@@ -1,5 +1,6 @@
 """Dataset inspection module for automatic schema and statistics inference."""
 
+import os
 import pandas as pd
 import pyarrow.parquet as pq
 import json
@@ -114,20 +115,45 @@ def inspect_csv(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dic
         
     Returns:
         Dictionary with file metadata, schema, and statistics
+        
+    Raises:
+        ValueError: If file cannot be read or parsed as CSV
     """
     options = options or {}
     
+    # Validate file exists
+    if not os.path.exists(file_path):
+        raise ValueError(f"File not found: {file_path}")
+    
     # Auto-detect or use provided options
-    encoding = options.get('encoding') or detect_encoding(file_path)
-    delimiter = options.get('delimiter') or detect_csv_delimiter(file_path, encoding)
+    try:
+        encoding = options.get('encoding') or detect_encoding(file_path)
+    except Exception as e:
+        raise ValueError(f"Failed to detect file encoding: {e}")
+    
+    try:
+        delimiter = options.get('delimiter') or detect_csv_delimiter(file_path, encoding)
+    except Exception as e:
+        raise ValueError(f"Failed to detect CSV delimiter: {e}")
+    
     header = options.get('header', True)
     sample_size = options.get('sample_size', SAMPLE_SIZE)
     
     # Read the file
-    if header:
-        df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter)
-    else:
-        df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter, header=None)
+    try:
+        if header:
+            df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter)
+        else:
+            df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter, header=None)
+    except Exception as e:
+        raise ValueError(f"Failed to parse CSV file: {e}")
+    
+    # Validate dataframe
+    if df.empty:
+        raise ValueError("CSV file contains no data rows")
+    
+    if len(df.columns) == 0:
+        raise ValueError("CSV file contains no columns")
     
     # Generate metadata
     metadata = {
@@ -160,12 +186,29 @@ def inspect_parquet(file_path: str, options: Optional[Dict[str, Any]] = None) ->
         
     Returns:
         Dictionary with file metadata, schema, and statistics
+        
+    Raises:
+        ValueError: If file cannot be read or parsed as Parquet
     """
     options = options or {}
     sample_size = options.get('sample_size', SAMPLE_SIZE)
     
+    # Validate file exists
+    if not os.path.exists(file_path):
+        raise ValueError(f"File not found: {file_path}")
+    
     # Read the file
-    df = pd.read_parquet(file_path)
+    try:
+        df = pd.read_parquet(file_path)
+    except Exception as e:
+        raise ValueError(f"Failed to parse Parquet file: {e}")
+    
+    # Validate dataframe
+    if df.empty:
+        raise ValueError("Parquet file contains no data rows")
+    
+    if len(df.columns) == 0:
+        raise ValueError("Parquet file contains no columns")
     
     # Generate metadata
     metadata = {
@@ -194,9 +237,16 @@ def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Di
         
     Returns:
         Dictionary with file metadata, schema, and statistics
+        
+    Raises:
+        ValueError: If file cannot be read or parsed as JSON
     """
     options = options or {}
     sample_size = options.get('sample_size', SAMPLE_SIZE)
+    
+    # Validate file exists
+    if not os.path.exists(file_path):
+        raise ValueError(f"File not found: {file_path}")
     
     # Try to read as regular JSON first (array of objects), then as JSON lines
     json_type = 'json'
@@ -206,8 +256,17 @@ def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Di
         try:
             df = pd.read_json(file_path, lines=True)
             json_type = 'jsonl'
-        except ValueError:
-            raise ValueError("Unable to parse JSON file")
+        except Exception as e:
+            raise ValueError(f"Unable to parse JSON file. Not a valid JSON array or JSON Lines format: {e}")
+    except Exception as e:
+        raise ValueError(f"Failed to parse JSON file: {e}")
+    
+    # Validate dataframe
+    if df.empty:
+        raise ValueError("JSON file contains no data rows")
+    
+    if len(df.columns) == 0:
+        raise ValueError("JSON file contains no columns")
     
     # Generate metadata
     metadata = {
