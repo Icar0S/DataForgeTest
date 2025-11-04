@@ -14,6 +14,7 @@ DataForgeTest is a comprehensive solution for automating data quality testing in
 - **📊 Data Accuracy Validation** - Compare and correct datasets using GOLD reference standards  
 - **💬 Intelligent RAG Support System** - Chat with documentation using retrieval-augmented generation
 - **⚡ PySpark Code Generation** - Automated generation of data quality validation scripts
+- **🔍 Advanced PySpark Generator** - Upload datasets for automatic schema detection and intelligent code generation
 - **🌐 Modern Web Interface** - React-based frontend with responsive design and dark theme
 - **🔧 RESTful API Architecture** - Modular Flask backend with comprehensive error handling
 
@@ -123,6 +124,40 @@ Interactive chat interface for generating PySpark data quality validation code t
 
 **API Integration:**
 - Uses streaming endpoint: `GET /api/rag/chat?message=<query>`
+
+### 1.5. 🔍 Advanced PySpark Code Generator
+
+**NEW!** Upload datasets for automatic schema detection, DSL generation, and intelligent PySpark code creation.
+
+**Workflow:**
+1. **Upload Dataset** - Support for CSV, JSON, JSONL, Parquet (max 100MB)
+2. **Auto-Detection** - Automatic schema inference, statistics, and data type detection
+3. **Review & Edit** - Interactive metadata editing with column-level controls
+4. **DSL Generation** - Automatic creation of Data Specification Language
+5. **Code Generation** - Production-ready PySpark code with validations
+
+**Features:**
+- **Intelligent Schema Inference** - Automatic detection of types, nullability, uniqueness
+- **Column Statistics** - Min/max, null ratio, unique ratio, sample values
+- **Auto-Generated Validations** - Not-null, uniqueness, range, format checks
+- **Interactive Editing** - Mark columns as required/unique, set custom validations
+- **Code Export** - Copy to clipboard or download as .py file
+- **Google Colab Ready** - Generated code works out-of-the-box in Colab
+
+**Supported Formats:**
+- CSV (with auto-detection of delimiter, encoding, header)
+- JSON / JSONL
+- Parquet
+
+📖 **[Full Documentation](docs/ADVANCED_PYSPARK_GENERATOR.md)**
+
+**Screenshots:**
+
+![Dropdown Menu](https://github.com/user-attachments/assets/518d4e1f-ff3a-431f-b56e-b52c2c6c096d)
+*New dropdown menu with "Generate Advanced PySpark Code" option*
+
+![Upload Step](https://github.com/user-attachments/assets/58384374-92cb-461a-871e-4dfe64de257d)
+*Step 1: Upload and configure dataset*
 
 ### 2. 🎲 Synthetic Dataset Generation
 
