@@ -1,11 +1,9 @@
 """Dataset inspection module for automatic schema and statistics inference."""
 
 import os
+from typing import Dict, Any, Optional
 import pandas as pd
-import pyarrow.parquet as pq
-import json
 import chardet
-from typing import Dict, Any, List, Optional, Tuple
 
 
 # Constants
@@ -16,10 +14,10 @@ PREVIEW_ROWS = 10
 
 def detect_encoding(file_path: str) -> str:
     """Detect file encoding using chardet.
-    
+
     Args:
         file_path: Path to the file
-        
+
     Returns:
         Detected encoding string (e.g., 'utf-8', 'latin-1')
     """
@@ -31,18 +29,18 @@ def detect_encoding(file_path: str) -> str:
 
 def detect_csv_delimiter(file_path: str, encoding: str) -> str:
     """Detect CSV delimiter by trying common delimiters.
-    
+
     Args:
         file_path: Path to the CSV file
         encoding: File encoding
-        
+
     Returns:
         Detected delimiter character
     """
     delimiters = [',', ';', '\t', '|']
     max_columns = 0
     best_delimiter = ','
-    
+
     for delimiter in delimiters:
         try:
             df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter, nrows=5)
@@ -52,18 +50,18 @@ def detect_csv_delimiter(file_path: str, encoding: str) -> str:
                 best_delimiter = delimiter
         except Exception:
             continue
-    
+
     return best_delimiter
 
 
 def infer_column_statistics(df: pd.DataFrame, column: str, sample_size: int = SAMPLE_SIZE) -> Dict[str, Any]:
     """Infer statistics for a single column.
-    
+
     Args:
         df: DataFrame containing the column
         column: Column name
         sample_size: Number of rows to sample for statistics
-        
+
     Returns:
         Dictionary with column statistics
     """
@@ -72,10 +70,9 @@ def infer_column_statistics(df: pd.DataFrame, column: str, sample_size: int = SA
         sample_df = df.sample(n=sample_size, random_state=42)
     else:
         sample_df = df
-    
+
     col_data = sample_df[column]
-    total_rows = len(df)
-    
+
     stats = {
         'name': column,
         'type': str(col_data.dtype),
@@ -84,7 +81,6 @@ def infer_column_statistics(df: pd.DataFrame, column: str, sample_size: int = SA
         'unique_count': int(col_data.nunique()),
         'unique_ratio': float(col_data.nunique() / len(col_data)) if len(col_data) > 0 else 0.0,
     }
-    
     # Add type-specific statistics
     if pd.api.types.is_numeric_dtype(col_data):
         non_null = col_data.dropna()
@@ -102,43 +98,43 @@ def infer_column_statistics(df: pd.DataFrame, column: str, sample_size: int = SA
             # Get sample values (up to 5 most common)
             value_counts = non_null.value_counts().head(5)
             stats['sample_values'] = [str(v) for v in value_counts.index.tolist()]
-    
+
     return stats
 
 
 def inspect_csv(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Inspect a CSV file and extract metadata.
-    
+
     Args:
         file_path: Path to the CSV file
         options: Optional dict with delimiter, encoding, header, sample_size
-        
+
     Returns:
         Dictionary with file metadata, schema, and statistics
-        
+
     Raises:
         ValueError: If file cannot be read or parsed as CSV
     """
     options = options or {}
-    
+
     # Validate file exists
     if not os.path.exists(file_path):
         raise ValueError(f"File not found: {file_path}")
-    
+
     # Auto-detect or use provided options
     try:
         encoding = options.get('encoding') or detect_encoding(file_path)
     except Exception as e:
-        raise ValueError(f"Failed to detect file encoding: {e}")
-    
+        raise ValueError(f"Failed to detect file encoding: {e}") from e
+
     try:
         delimiter = options.get('delimiter') or detect_csv_delimiter(file_path, encoding)
     except Exception as e:
-        raise ValueError(f"Failed to detect CSV delimiter: {e}")
-    
+        raise ValueError(f"Failed to detect CSV delimiter: {e}") from e
+
     header = options.get('header', True)
     sample_size = options.get('sample_size', SAMPLE_SIZE)
-    
+
     # Read the file
     try:
         if header:
@@ -146,15 +142,15 @@ def inspect_csv(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dic
         else:
             df = pd.read_csv(file_path, encoding=encoding, delimiter=delimiter, header=None)
     except Exception as e:
-        raise ValueError(f"Failed to parse CSV file: {e}")
-    
+        raise ValueError(f"Failed to parse CSV file: {e}") from e
+
     # Validate dataframe
     if df.empty:
         raise ValueError("CSV file contains no data rows")
-    
+
     if len(df.columns) == 0:
         raise ValueError("CSV file contains no columns")
-    
+
     # Generate metadata
     metadata = {
         'format': 'csv',
@@ -168,48 +164,48 @@ def inspect_csv(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dic
         'columns': [],
         'preview': df.head(PREVIEW_ROWS).to_dict(orient='records'),
     }
-    
+
     # Infer statistics for each column
     for column in df.columns:
         col_stats = infer_column_statistics(df, column, sample_size)
         metadata['columns'].append(col_stats)
-    
+
     return metadata
 
 
 def inspect_parquet(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Inspect a Parquet file and extract metadata.
-    
+
     Args:
         file_path: Path to the Parquet file
         options: Optional dict with sample_size
-        
+
     Returns:
         Dictionary with file metadata, schema, and statistics
-        
+
     Raises:
         ValueError: If file cannot be read or parsed as Parquet
     """
     options = options or {}
     sample_size = options.get('sample_size', SAMPLE_SIZE)
-    
+
     # Validate file exists
     if not os.path.exists(file_path):
         raise ValueError(f"File not found: {file_path}")
-    
+
     # Read the file
     try:
         df = pd.read_parquet(file_path)
     except Exception as e:
-        raise ValueError(f"Failed to parse Parquet file: {e}")
-    
+        raise ValueError(f"Failed to parse Parquet file: {e}") from e
+
     # Validate dataframe
     if df.empty:
         raise ValueError("Parquet file contains no data rows")
-    
+
     if len(df.columns) == 0:
         raise ValueError("Parquet file contains no columns")
-    
+
     # Generate metadata
     metadata = {
         'format': 'parquet',
@@ -219,35 +215,35 @@ def inspect_parquet(file_path: str, options: Optional[Dict[str, Any]] = None) ->
         'columns': [],
         'preview': df.head(PREVIEW_ROWS).to_dict(orient='records'),
     }
-    
+
     # Infer statistics for each column
     for column in df.columns:
         col_stats = infer_column_statistics(df, column, sample_size)
         metadata['columns'].append(col_stats)
-    
+
     return metadata
 
 
 def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Inspect a JSON file and extract metadata.
-    
+
     Args:
         file_path: Path to the JSON file
         options: Optional dict with sample_size
-        
+
     Returns:
         Dictionary with file metadata, schema, and statistics
-        
+
     Raises:
         ValueError: If file cannot be read or parsed as JSON
     """
     options = options or {}
     sample_size = options.get('sample_size', SAMPLE_SIZE)
-    
+
     # Validate file exists
     if not os.path.exists(file_path):
         raise ValueError(f"File not found: {file_path}")
-    
+
     # Try to read as regular JSON first (array of objects), then as JSON lines
     json_type = 'json'
     try:
@@ -257,17 +253,19 @@ def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Di
             df = pd.read_json(file_path, lines=True)
             json_type = 'jsonl'
         except Exception as e:
-            raise ValueError(f"Unable to parse JSON file. Not a valid JSON array or JSON Lines format: {e}")
+            raise ValueError(
+                f"Unable to parse JSON file. Not a valid JSON array or JSON Lines format: {e}"
+            ) from e
     except Exception as e:
-        raise ValueError(f"Failed to parse JSON file: {e}")
-    
+        raise ValueError(f"Failed to parse JSON file: {e}") from e
+
     # Validate dataframe
     if df.empty:
         raise ValueError("JSON file contains no data rows")
-    
+
     if len(df.columns) == 0:
         raise ValueError("JSON file contains no columns")
-    
+
     # Generate metadata
     metadata = {
         'format': 'json',
@@ -279,47 +277,46 @@ def inspect_json(file_path: str, options: Optional[Dict[str, Any]] = None) -> Di
         'columns': [],
         'preview': df.head(PREVIEW_ROWS).to_dict(orient='records'),
     }
-    
+
     # Infer statistics for each column
     for column in df.columns:
         col_stats = infer_column_statistics(df, column, sample_size)
         metadata['columns'].append(col_stats)
-    
+
     return metadata
 
 
 def inspect_dataset(file_path: str, file_format: str, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Inspect a dataset file and extract metadata.
-    
+
     Args:
         file_path: Path to the dataset file
         file_format: Format of the file ('csv', 'parquet', 'json')
         options: Optional dict with format-specific options
-        
+
     Returns:
         Dictionary with file metadata, schema, and statistics
-        
+
     Raises:
         ValueError: If format is not supported
     """
     file_format = file_format.lower()
-    
+
     if file_format == 'csv':
         return inspect_csv(file_path, options)
-    elif file_format == 'parquet':
+    if file_format == 'parquet':
         return inspect_parquet(file_path, options)
-    elif file_format == 'json':
+    if file_format == 'json':
         return inspect_json(file_path, options)
-    else:
-        raise ValueError(f"Unsupported file format: {file_format}")
+    raise ValueError(f"Unsupported file format: {file_format}")
 
 
 def map_pandas_type_to_spark(pandas_type: str) -> str:
     """Map pandas dtype to PySpark type.
-    
+
     Args:
         pandas_type: Pandas dtype string
-        
+
     Returns:
         PySpark type string
     """
@@ -333,5 +330,5 @@ def map_pandas_type_to_spark(pandas_type: str) -> str:
         'bool': 'boolean',
         'datetime64[ns]': 'timestamp',
     }
-    
+
     return type_mapping.get(pandas_type, 'string')
