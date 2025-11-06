@@ -355,7 +355,10 @@ const AdvancedPySparkGenerator = () => {
               <thead>
                 <tr className="border-b border-gray-700">
                   {metadata?.columns?.map((col, idx) => (
-                    <th key={idx} className="px-4 py-2 text-left text-gray-300 font-medium whitespace-nowrap min-w-[120px] max-w-[200px]">
+                    <th 
+                      key={idx} 
+                      className="px-4 py-2 text-left text-gray-300 font-medium whitespace-nowrap min-w-[120px] max-w-[200px]"
+                    >
                       <div className="truncate" title={col.name}>
                         {col.name}
                       </div>

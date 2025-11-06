@@ -15,9 +15,6 @@ def generate_pyspark_code(dsl):
     detected_options = dsl.get("dataset", {}).get("detected_options", {})
     encoding = detected_options.get("encoding", "utf-8")
     delimiter = detected_options.get("delimiter", ",")
-    
-    # Escape special characters in delimiter for display
-    delimiter_display = "\\t" if delimiter == "\t" else delimiter
 
     # Initialize the code with Colab setup and helper functions
     code = """# Data Quality Validation Script
