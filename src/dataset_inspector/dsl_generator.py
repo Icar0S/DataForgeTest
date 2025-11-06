@@ -150,7 +150,8 @@ def generate_dsl_from_metadata(metadata: Dict[str, Any], user_edits: Dict[str, A
     dsl['dataset'] = {
         'name': dataset_name,
         'format': file_format,
-        'has_header': detected_options.get('header', True)
+        'has_header': detected_options.get('header', True),
+        'detected_options': detected_options
     }
     
     return dsl

@@ -10,6 +10,11 @@ def generate_pyspark_code(dsl):
     dataset_name = dsl.get("dataset", {}).get("name", "data")
     data_format = dsl.get("dataset", {}).get("format", "").lower()
     has_header = dsl.get("dataset", {}).get("has_header", False)
+    
+    # Get detected options (encoding and delimiter)
+    detected_options = dsl.get("dataset", {}).get("detected_options", {})
+    encoding = detected_options.get("encoding", "utf-8")
+    delimiter = detected_options.get("delimiter", ",")
 
     # Initialize the code with Colab setup and helper functions
     code = """# Data Quality Validation Script
@@ -68,7 +73,8 @@ try:
         df = spark.read.format("csv") \\
             .option("header", "{has_header}") \\
             .option("inferSchema", "true") \\
-            .option("delimiter", ",") \\
+            .option("delimiter", "{delimiter}") \\
+            .option("encoding", "{encoding}") \\
             .load(file_name)
     elif "{data_format}" == "json":
         df = spark.read.json(file_name)
@@ -98,6 +104,8 @@ print("\\n--- Applying Data Quality Rules ---")
         data_format_upper=data_format.upper(),
         data_format=data_format,
         has_header=str(has_header).lower(),
+        encoding=encoding,
+        delimiter=delimiter,
     )
 
     # Process each rule

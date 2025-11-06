@@ -14,8 +14,8 @@ const AdvancedPySparkGenerator = () => {
   // Step 1: Upload
   const [file, setFile] = useState(null);
   const [uploadOptions, setUploadOptions] = useState({
-    delimiter: ',',
-    encoding: 'utf-8',
+    delimiter: 'auto',
+    encoding: 'auto',
     header: true,
     sample_size: 10000
   });
@@ -53,8 +53,13 @@ const AdvancedPySparkGenerator = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('delimiter', uploadOptions.delimiter);
-      formData.append('encoding', uploadOptions.encoding);
+      // Only send delimiter and encoding if they're not auto-detect
+      if (uploadOptions.delimiter !== 'auto') {
+        formData.append('delimiter', uploadOptions.delimiter);
+      }
+      if (uploadOptions.encoding !== 'auto') {
+        formData.append('encoding', uploadOptions.encoding);
+      }
       formData.append('header', uploadOptions.header.toString());
       formData.append('sample_size', uploadOptions.sample_size.toString());
 
@@ -235,6 +240,7 @@ const AdvancedPySparkGenerator = () => {
                 onChange={(e) => setUploadOptions({...uploadOptions, delimiter: e.target.value})}
                 className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
               >
+                <option value="auto">Auto-detect (Recommended)</option>
                 <option value=",">Comma (,)</option>
                 <option value=";">Semicolon (;)</option>
                 <option value="\t">Tab</option>
@@ -248,9 +254,11 @@ const AdvancedPySparkGenerator = () => {
                 onChange={(e) => setUploadOptions({...uploadOptions, encoding: e.target.value})}
                 className="w-full px-3 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-purple-500 focus:outline-none"
               >
+                <option value="auto">Auto-detect (Recommended)</option>
                 <option value="utf-8">UTF-8</option>
                 <option value="latin-1">Latin-1</option>
                 <option value="cp1252">Windows-1252</option>
+                <option value="iso-8859-1">ISO-8859-1</option>
               </select>
             </div>
             <div className="col-span-2">
@@ -316,16 +324,44 @@ const AdvancedPySparkGenerator = () => {
           </div>
         </div>
 
+        {/* Detected Options */}
+        {metadata?.detected_options && (
+          <div className="p-4 bg-green-900/20 border border-green-700/50 rounded-lg">
+            <h4 className="text-sm font-semibold text-green-300 mb-2">Auto-detected Settings</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm text-gray-300">
+              {metadata.detected_options.encoding && (
+                <div>
+                  <span className="text-gray-400">Encoding:</span>{' '}
+                  <span className="font-medium">{metadata.detected_options.encoding}</span>
+                </div>
+              )}
+              {metadata.detected_options.delimiter && (
+                <div>
+                  <span className="text-gray-400">Delimiter:</span>{' '}
+                  <span className="font-medium">
+                    {metadata.detected_options.delimiter === '\t' ? 'Tab' : metadata.detected_options.delimiter}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Preview */}
         <div>
           <h3 className="text-xl font-semibold text-white mb-3">Data Preview</h3>
           <div className="overflow-x-auto bg-gray-900/50 rounded-lg border border-gray-700">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-max">
               <thead>
                 <tr className="border-b border-gray-700">
                   {metadata?.columns?.map((col, idx) => (
-                    <th key={idx} className="px-4 py-2 text-left text-gray-300 font-medium">
-                      {col.name}
+                    <th 
+                      key={idx} 
+                      className="px-4 py-2 text-left text-gray-300 font-medium whitespace-nowrap min-w-[120px] max-w-[200px]"
+                    >
+                      <div className="truncate" title={col.name}>
+                        {col.name}
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -334,7 +370,7 @@ const AdvancedPySparkGenerator = () => {
                 {metadata?.preview?.slice(0, 5).map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-700/50">
                     {metadata?.columns?.map((col, colIdx) => (
-                      <td key={colIdx} className="px-4 py-2 text-gray-400">
+                      <td key={colIdx} className="px-4 py-2 text-gray-400 whitespace-nowrap">
                         {String(row[col.name] ?? 'null')}
                       </td>
                     ))}
