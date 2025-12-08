@@ -8,8 +8,8 @@ import logging
 from typing import Dict, Any, Optional, List
 import ollama
 
-from ..config import DebtGuardianConfig
-from ..schemas import TechnicalDebtInstance, TechnicalDebtReport
+from debt_guardian.config import DebtGuardianConfig
+from debt_guardian.schemas.td_schema import TechnicalDebtInstance, TechnicalDebtReport
 
 logger = logging.getLogger(__name__)
 

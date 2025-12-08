@@ -10,8 +10,8 @@ import os
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from debt_guardian import DebtGuardianConfig
-from debt_guardian.schemas import (
+from debt_guardian.config import DebtGuardianConfig
+from debt_guardian.schemas.td_schema import (
     TechnicalDebtInstance,
     TechnicalDebtReport,
     CodeLocation,
@@ -177,6 +177,7 @@ class TestIntegration:
     def test_ollama_connection(self):
         """Test connection to Ollama"""
         from debt_guardian.llm_client import OllamaClient
+        from debt_guardian.config import DebtGuardianConfig
         
         config = DebtGuardianConfig()
         try:
@@ -188,7 +189,8 @@ class TestIntegration:
     
     def test_detector_initialization(self):
         """Test detector initialization"""
-        from debt_guardian import DebtDetector
+        from debt_guardian.detector import DebtDetector
+        from debt_guardian.config import DebtGuardianConfig
         
         config = DebtGuardianConfig()
         try:

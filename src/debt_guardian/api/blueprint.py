@@ -10,9 +10,9 @@ from flask import Blueprint, request, jsonify
 from pathlib import Path
 from datetime import datetime
 
-from ..config import DebtGuardianConfig
-from ..detector import DebtDetector
-from ..schemas import TechnicalDebtReport
+from debt_guardian.config import DebtGuardianConfig
+from debt_guardian.detector import DebtDetector
+from debt_guardian.schemas.td_schema import TechnicalDebtReport
 
 logger = logging.getLogger(__name__)
 

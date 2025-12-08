@@ -5,8 +5,8 @@ Implements Step 3 from the paper: LLM output validation.
 """
 import logging
 from typing import Optional
-from ..config import DebtGuardianConfig
-from ..schemas import TechnicalDebtInstance
+from debt_guardian.config import DebtGuardianConfig
+from debt_guardian.schemas.td_schema import TechnicalDebtInstance
 
 logger = logging.getLogger(__name__)
 

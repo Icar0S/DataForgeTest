@@ -12,17 +12,17 @@ from datetime import datetime
 from typing import List, Dict, Optional, Set
 from pathlib import Path
 
-from .config import DebtGuardianConfig
-from .llm_client import OllamaClient
-from .prompts import PromptTemplates
-from .schemas import (
+from debt_guardian.config import DebtGuardianConfig
+from debt_guardian.llm_client import OllamaClient
+from debt_guardian.prompts.templates import PromptTemplates
+from debt_guardian.schemas.td_schema import (
     TechnicalDebtInstance,
     TechnicalDebtReport,
     BatchDebtReport,
     CodeLocation
 )
-from .utils import GitAnalyzer
-from .validators.output_validator import OutputValidator
+from debt_guardian.utils.git_utils import GitAnalyzer
+from debt_guardian.validators.output_validator import OutputValidator
 
 logger = logging.getLogger(__name__)
 

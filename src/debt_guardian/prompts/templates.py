@@ -8,7 +8,7 @@ Implements various prompting strategies from the paper:
 - Granular prompting
 """
 from typing import List, Dict, Optional
-from ..schemas import TechnicalDebtType
+from debt_guardian.schemas.td_schema import TechnicalDebtType
 
 
 class PromptTemplates:
