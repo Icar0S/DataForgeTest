@@ -1,0 +1,240 @@
+{
+  "reports": [
+    {
+      "commit_sha": "65583b7beb10ca62ebee6a5d21d150842b10b028",
+      "file_path": "multiple_files",
+      "detected_debts": [
+        {
+          "debt_type": "design",
+          "symptom": "Use of magic strings for model name instead of a constant.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 10,
+            "end_line": 10
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Define a constant for the model name and use it throughout the code.",
+          "code_snippet": "MODEL_NAME = \"qwen2.5-coder:7b\""
+        },
+        {
+          "debt_type": "documentation",
+          "symptom": "The code lacks comments explaining the purpose of each function and its parameters.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 10,
+            "end_line": 23
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add docstrings to each function explaining its purpose, parameters, and return values.",
+          "code_snippet": "def check_dependency(module_name, import_name=None):"
+        },
+        {
+          "debt_type": "documentation",
+          "symptom": "The code lacks comments explaining the purpose of each variable and its usage.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 10,
+            "end_line": 23
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add comments to explain the purpose of each variable and its usage.",
+          "code_snippet": "sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))"
+        },
+        {
+          "debt_type": "documentation",
+          "symptom": "The code lacks comments explaining the purpose of each conditional block.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 10,
+            "end_line": 23
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add comments to explain the purpose of each conditional block.",
+          "code_snippet": "if import_name is None:"
+        },
+        {
+          "debt_type": "test",
+          "symptom": "The code does not contain any unit tests.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 1,
+            "end_line": 230
+          },
+          "severity": "critical",
+          "confidence": 1.0,
+          "suggested_remediation": "Add unit tests for each function to ensure they work as expected.",
+          "code_snippet": ""
+        },
+        {
+          "debt_type": "design",
+          "symptom": "Redundant import statements for unused types.",
+          "location": {
+            "file_path": "src/debt_guardian/llm_client.py",
+            "start_line": 13,
+            "end_line": 14
+          },
+          "severity": "low",
+          "confidence": 0.95,
+          "suggested_remediation": "Remove unused import statements.",
+          "code_snippet": "from typing import List"
+        },
+        {
+          "debt_type": "defect",
+          "symptom": "The variable `models_response` is not used anywhere in the `_verify_model_available` method, leading to potential confusion and unnecessary code.",
+          "location": {
+            "file_path": "src/debt_guardian/llm_client.py",
+            "start_line": 21,
+            "end_line": 23
+          },
+          "severity": "low",
+          "confidence": 0.95,
+          "suggested_remediation": "Remove the unused variable `models_response`.",
+          "code_snippet": "models_response = self.client.list()\n# Extract model names from the ListResponse object\nmodel_names = [m.model for m in models_response.models]"
+        },
+        {
+          "debt_type": "documentation",
+          "symptom": "The docstring for the `generate_structured` method does not specify the expected format parameter.",
+          "location": {
+            "file_path": "src/debt_guardian/llm_client.py",
+            "start_line": 103,
+            "end_line": 105
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add a description of the `expected_format` parameter in the docstring.",
+          "code_snippet": "def generate_structured(\n    self,\n    prompt: str,\n    system_prompt: Optional[str] = None,\n-   expected_format: str = \"json\"\n):"
+        },
+        {
+          "debt_type": "test",
+          "symptom": "No tests are provided for the OllamaClient class methods.",
+          "location": {
+            "file_path": "src/debt_guardian/llm_client.py",
+            "start_line": 3,
+            "end_line": 145
+          },
+          "severity": "critical",
+          "confidence": 0.95,
+          "suggested_remediation": "Add unit tests for each method in the OllamaClient class, covering various scenarios including edge cases and error handling.",
+          "code_snippet": "class OllamaClient:\n    # ... (methods omitted for brevity)"
+        }
+      ],
+      "analysis_timestamp": "2025-12-08T18:41:58.933412",
+      "model_used": "qwen2.5-coder:7b",
+      "prompting_strategy": "zero-shot+granular",
+      "total_lines_analyzed": 507
+    },
+    {
+      "commit_sha": "c9f5a02a6b46734b21665ffcee034a2e10671aa5",
+      "file_path": "multiple_files",
+      "detected_debts": [],
+      "analysis_timestamp": "2025-12-08T18:41:58.979486",
+      "model_used": "qwen2.5-coder:7b",
+      "prompting_strategy": "zero-shot+granular",
+      "total_lines_analyzed": 340
+    },
+    {
+      "commit_sha": "2dc7438f7882cca40eeee0fcd06b0916365649f9",
+      "file_path": "multiple_files",
+      "detected_debts": [
+        {
+          "debt_type": "design",
+          "symptom": "The script is tightly coupled with specific versions and configurations, making it difficult to adapt to changes.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 14,
+            "end_line": 238
+          },
+          "severity": "medium",
+          "confidence": 0.9,
+          "suggested_remediation": "Refactor the script to use environment variables or configuration files for version and setup details, allowing for easier updates.",
+          "code_snippet": "check_python_version()\ncheck_dependency(\"Flask\")\ncheck_dependency(\"pydantic\")\ncheck_dependency(\"ollama\")\ncheck_dependency(\"GitPython\", \"git\")\ncheck_dependency(\"guardrails-ai\", \"guardrails\")"
+        },
+        {
+          "debt_type": "design",
+          "symptom": "The script uses hard-coded strings for external commands and URLs, which can lead to issues if the tools or services change.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 14,
+            "end_line": 238
+          },
+          "severity": "medium",
+          "confidence": 0.9,
+          "suggested_remediation": "Use constants or configuration files to store external commands and URLs, making it easier to update them without changing the code.",
+          "code_snippet": "subprocess.run(\n    [\"ollama\", \"--version\"],\n    capture_output=True,\n    text=True,\n    timeout=5\n)\nrequests.get(\"http://localhost:11434/api/tags\", timeout=2)"
+        },
+        {
+          "debt_type": "design",
+          "symptom": "The script uses global variables and mutable state, which can lead to unexpected behavior if not managed carefully.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 14,
+            "end_line": 238
+          },
+          "severity": "medium",
+          "confidence": 0.9,
+          "suggested_remediation": "Refactor the script to use functions and avoid global variables, passing necessary data as parameters.",
+          "code_snippet": "all_ok = True\n\n# Phase 1: Python environment\nprint_header(\"Phase 1: Python Environment\")\nall_ok &= check_python_version()\n\n# Phase 2: Python dependencies\nprint_header(\"Phase 2: Python Dependencies\")\nall_ok &= check_dependency(\"Flask\")\nall_ok &= check_dependency(\"pydantic\")\nall_ok &= check_dependency(\"ollama\")\nall_ok &= check_dependency(\"GitPython\", \"git\")\nall_ok &= check_dependency(\"guardrails-ai\", \"guardrails\")"
+        },
+        {
+          "debt_type": "defect",
+          "symptom": "The script assumes that Ollama is installed and running on localhost:11434 without any error handling or fallback mechanism.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 120,
+            "end_line": 125
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add error handling and fallback mechanisms for the Ollama service check.",
+          "code_snippet": "try:\n    import requests\n    response = requests.get(\"http://localhost:11434/api/tags\", timeout=2)\n    ok = response.status_code == 200\n    print_check(\"Ollama service running\", ok, \n               \"Ollama is running\" if ok else \"Run: ollama serve\")\n    return ok\nexcept Exception:\n    print_check(\"Ollama service running\", False, \"Run: ollama serve\")\n    return False"
+        },
+        {
+          "debt_type": "documentation",
+          "symptom": "The docstring for the `print_check` function does not provide enough detail about its parameters and return value.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 13,
+            "end_line": 20
+          },
+          "severity": "medium",
+          "confidence": 0.85,
+          "suggested_remediation": "Add a detailed docstring explaining the parameters and return value of `print_check`.",
+          "code_snippet": "def print_check(item, status, message=\"\"):"
+        },
+        {
+          "debt_type": "test",
+          "symptom": "No unit tests are provided to verify the functionality of individual functions and components.",
+          "location": {
+            "file_path": "check_setup.py",
+            "start_line": 1,
+            "end_line": 238
+          },
+          "severity": "high",
+          "confidence": 0.95,
+          "suggested_remediation": "Add unit tests for each function and component to ensure they work as expected.",
+          "code_snippet": ""
+        }
+      ],
+      "analysis_timestamp": "2025-12-08T18:42:32.295302",
+      "model_used": "qwen2.5-coder:7b",
+      "prompting_strategy": "zero-shot+granular",
+      "total_lines_analyzed": 620
+    }
+  ],
+  "summary": {
+    "total_commits": 3,
+    "analyzed_commits": 3,
+    "total_debts": 15,
+    "debt_by_type": {
+      "design": 5,
+      "documentation": 5,
+      "test": 3,
+      "defect": 2
+    },
+    "high_severity_total": 3
+  }
+}
