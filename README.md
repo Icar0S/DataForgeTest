@@ -17,6 +17,7 @@ DataForgeTest is a comprehensive solution for automating data quality testing in
 - **🔍 Advanced PySpark Generator** - Upload datasets for automatic schema detection and intelligent code generation
 - **🌐 Modern Web Interface** - React-based frontend with responsive design and dark theme
 - **🔧 RESTful API Architecture** - Modular Flask backend with comprehensive error handling
+- **🔬 DebtGuardian (Experimental)** - LLM-based technical debt detection using local AI models
 
 ## 📋 Table of Contents
 
@@ -378,11 +379,50 @@ DataForgeTest/
 │   ├── synthetic/           # Synthetic data generation
 │   ├── accuracy/            # Data accuracy validation
 │   ├── gold/                # GOLD dataset testing
-│   └── rag/                # RAG support system
+│   ├── rag/                 # RAG support system
+│   └── debt_guardian/       # Technical debt detection (experimental)
 ├── docs/                    # Comprehensive documentation
 ├── tests/                   # Test suites
 └── storage/                 # Data storage
 ```
+
+### 🔬 Experimental: DebtGuardian
+
+**NEW!** AI-powered technical debt detection using local LLM (Qwen2.5-Coder:7b via Ollama).
+
+**Key Features:**
+- 🎯 **77% Recall**: Based on research paper performance
+- 🏠 **Local AI**: Runs entirely on your machine via Ollama
+- 📊 **7 TD Types**: Design, documentation, defects, tests, compatibility, build, requirement
+- 🔄 **Git Integration**: Analyze commits and repository history
+- 🎨 **Multiple Strategies**: Zero-shot, few-shot, batch, granular prompting
+- 🗳️ **Majority Voting**: Boost recall by ~8%
+
+**Quick Start:**
+```bash
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Pull model (one-time, ~5GB)
+ollama pull qwen2.5-coder:7b
+
+# Start Ollama
+ollama serve
+
+# Install dependencies
+pip install ollama pydantic gitpython guardrails-ai
+
+# Run example
+python examples/analyze_sample.py
+```
+
+**Documentation:**
+- [Setup & Testing Guide](SETUP_TESTING_GUIDE.md)
+- [Full Documentation](docs/DEBT_GUARDIAN.md)
+- [Quick Start](docs/DEBT_GUARDIAN_QUICKSTART.md)
+- [Module README](src/debt_guardian/README.md)
+
+**Note**: This is an experimental feature on the `copilot/setup-experimental-llm-framework` branch for testing before broader deployment.
 
 ## 📡 API Reference
 
