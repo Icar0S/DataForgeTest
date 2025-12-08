@@ -10,3 +10,8 @@ pyarrow
 xlsxwriter
 chardet
 reportlab
+# DebtGuardian Framework Dependencies
+ollama
+pydantic>=2.0.0
+guardrails-ai
+GitPython
