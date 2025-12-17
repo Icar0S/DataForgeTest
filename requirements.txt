@@ -10,3 +10,5 @@ pyarrow
 xlsxwriter
 chardet
 reportlab
+gunicorn
+requests
