@@ -4,7 +4,6 @@ services:
     env: docker
     region: oregon
     plan: starter
-    buildCommand: docker build -t dataforgetest-backend .
     healthCheckPath: /
     envVars:
       - key: FLASK_ENV

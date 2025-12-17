@@ -29,9 +29,16 @@ export const getApiUrl = (path) => {
   const cleanPath = path.startsWith('/') ? path.slice(1) : path;
   
   // In development, return the path as-is (proxy will handle it)
-  // In production, prepend the API URL
   if (config.isDevelopment) {
     return `/${cleanPath}`;
+  }
+  
+  // In production, check if API URL is configured
+  if (config.isProduction && !config.apiUrl) {
+    console.warn(
+      'REACT_APP_API_URL is not set in production. API calls may fail. ' +
+      'Please configure the backend URL in Vercel environment variables or use vercel.json rewrites.'
+    );
   }
   
   return config.apiUrl ? `${config.apiUrl}/${cleanPath}` : `/${cleanPath}`;
