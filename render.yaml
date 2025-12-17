@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: dataforgetest-backend
+    env: docker
+    region: oregon
+    plan: starter
+    healthCheckPath: /
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: False
+      - key: LLM_MODEL
+        value: claude-3-haiku-20240307
+      - key: LLM_API_KEY
+        sync: false
+      - key: SYNTH_MAX_ROWS
+        value: 1000000
+      - key: ACCURACY_MAX_UPLOAD_MB
+        value: 50
+      - key: GOLD_REQUEST_TIMEOUT
+        value: 300
+    disk:
+      name: storage
+      mountPath: /app/storage
+      sizeGB: 1

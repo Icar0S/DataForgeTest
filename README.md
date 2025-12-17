@@ -644,24 +644,116 @@ Interactive API documentation available at:
 
 ## 🚀 Deployment
 
-### Production Deployment
+### Frontend Deployment
+
+The frontend is already deployed on Vercel at:
+- **Production URL**: https://data-forge-test.vercel.app/
+
+### Backend Deployment
+
+#### Quick Start with Docker
+
+The easiest way to deploy the backend is using Docker:
 
 ```bash
-# Backend (using gunicorn)
-pip install gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 src.api:app
+# Build the Docker image
+docker build -t dataforgetest-backend .
 
-# Frontend (build and serve)
-cd frontend
-npm run build
-# Serve build/ directory with your preferred web server
+# Run the container
+docker run -d \
+  --name dataforgetest-backend \
+  -p 5000:5000 \
+  -e LLM_API_KEY=your-anthropic-api-key \
+  -v $(pwd)/storage:/app/storage \
+  dataforgetest-backend
 ```
 
-### Docker Support (Coming Soon)
+#### Docker Compose (Recommended)
+
+For easier management and local development:
 
 ```bash
-# Will be available in future releases
-docker-compose up --build
+# 1. Copy environment file
+cp .env.example .env
+
+# 2. Edit .env with your configuration
+# Set your LLM_API_KEY and other settings
+
+# 3. Start services
+docker-compose up -d --build
+
+# 4. View logs
+docker-compose logs -f backend
+
+# 5. Stop services
+docker-compose down
+```
+
+#### Traditional Deployment (without Docker)
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with gunicorn (production)
+cd src
+gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 api:app
+
+# Or run with Flask (development)
+python api.py
+```
+
+#### Cloud Platform Deployment
+
+The backend can be deployed to various cloud platforms:
+
+- **Render.com** - Automatically detects Dockerfile
+- **Railway.app** - One-click Docker deployment  
+- **Google Cloud Run** - Serverless container deployment
+- **AWS ECS** - Enterprise container orchestration
+- **DigitalOcean App Platform** - Simple container hosting
+
+**📖 Detailed deployment guide**: See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for step-by-step instructions for each platform.
+
+#### Environment Configuration
+
+Required environment variables for production:
+
+```env
+# LLM Configuration
+LLM_API_KEY=your-anthropic-api-key-here
+LLM_MODEL=claude-3-haiku-20240307
+
+# Flask Settings
+FLASK_ENV=production
+FLASK_DEBUG=False
+```
+
+See `.env.example` for complete configuration options.
+
+#### Health Check
+
+After deployment, verify the backend is running:
+
+```bash
+curl https://your-backend-url.com/
+# Expected: {"status": "Backend is running", "message": "Data Quality Chatbot API"}
+```
+
+#### Connecting Frontend to Backend
+
+After deploying the backend, update the frontend environment variable on Vercel:
+
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Add: `REACT_APP_API_URL=https://your-backend-url.com`
+3. Redeploy the frontend
+
+Or for local development, update `frontend/package.json`:
+
+```json
+{
+  "proxy": "https://your-backend-url.com"
+}
 ```
 
 ## 🤝 Contributing

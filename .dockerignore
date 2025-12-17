@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Frontend
+frontend/
+node_modules/
+
+# Test files
+tests/
+*.test.py
+test_*.py
+*_test.py
+
+# Batch files
+*.bat
+
+# Development files
+.env.example
+.pylintrc
+
+# Data files (these should be mounted as volumes)
+data/
+output/
+
+# Frontend build files
+package.json
+package-lock.json
+
+# CI/CD
+.github/
+
+# Figures
+figures/
+
+# Utilities
+utilities/
+
+# Integration tests
+run_integration_tests.bat
