@@ -3,39 +3,52 @@
 import csv
 import io
 import json
+import os
 import random
 import re
+import sys
 import time
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from llm_client import create_llm_client
 
 
 class SyntheticDataGenerator:
     """Generates synthetic data using LLM."""
     
-    def __init__(self, api_key: str, model: str = "claude-3-haiku-20240307"):
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None, provider: Optional[str] = None):
         """Initialize generator.
         
         Args:
-            api_key: Anthropic API key
-            model: Model name to use
+            api_key: API key for Anthropic (optional, can use env var)
+            model: Model name to use (optional, can use env var)
+            provider: LLM provider ('anthropic' or 'ollama', optional, defaults to env var or 'ollama')
         """
-        self.api_key = api_key
-        self.model = model
-        self.client = None
-        self._anthropic_available = None
+        self.llm_client = None
+        self._llm_available = False
         
-        # Try to initialize anthropic client if API key is provided
-        if api_key:
-            try:
-                import anthropic
-                self.client = anthropic.Anthropic(api_key=api_key)
-                self._anthropic_available = True
-            except (ImportError, OSError) as e:
-                # Log the error but don't fail - will use mock data instead
-                print(f"Warning: Could not initialize Anthropic client: {e}")
-                print("Synthetic data generation will use mock data fallback")
-                self._anthropic_available = False
+        # Try to initialize LLM client
+        try:
+            # Determine provider
+            provider = provider or os.getenv("LLM_PROVIDER", "ollama")
+            
+            # Create LLM client based on provider
+            self.llm_client = create_llm_client(
+                provider=provider,
+                api_key=api_key,
+                model=model,
+            )
+            self._llm_available = True
+            print(f"✅ LLM client initialized for synthetic data generation (provider: {provider})")
+        except (ImportError, ValueError) as e:
+            # Log the error but don't fail - will use mock data instead
+            print(f"⚠️  Could not initialize LLM client: {e}")
+            print("Synthetic data generation will use mock data fallback")
+            self._llm_available = False
     
     def _build_prompt(
         self, 
@@ -297,8 +310,8 @@ Requirements:
         """
         logs = []
         
-        if not self.client:
-            logs.append("ERROR: No API key configured, using mock data")
+        if not self._llm_available or not self.llm_client:
+            logs.append("ERROR: No LLM configured, using mock data")
             return self._generate_mock_data(schema, num_rows), logs
         
         # Build prompt
@@ -310,17 +323,13 @@ Requirements:
             try:
                 logs.append(f"Calling LLM (attempt {attempt + 1}/{max_retries})...")
                 
-                # Call LLM
-                message = self.client.messages.create(
-                    model=self.model,
+                # Call LLM using abstraction layer
+                response_text = self.llm_client.generate(
+                    messages=[{"role": "user", "content": prompt}],
                     max_tokens=4096,
                     temperature=0.7 if seed is None else 0.3,
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ]
                 )
                 
-                response_text = message.content[0].text
                 logs.append(f"Received response ({len(response_text)} chars)")
                 
                 # Parse CSV response

@@ -4,6 +4,7 @@ Flask-Cors
 pandas
 numpy
 anthropic
+ollama
 python-dotenv
 openpyxl
 pyarrow
