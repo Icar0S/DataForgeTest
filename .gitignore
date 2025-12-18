@@ -18,6 +18,9 @@ output/
 
 # Ignore RAG storage and test data
 storage/
+# EXCEPT: Keep the documents.json with RAG data
+!storage/vectorstore/
+!storage/vectorstore/documents.json
 .env
 
 # Ignore uploads directory
