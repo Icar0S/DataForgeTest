@@ -1,6 +1,7 @@
 """Simple RAG routes for Flask."""
 
 import json
+import os
 from pathlib import Path
 from flask import Blueprint, request, jsonify, Response
 from werkzeug.utils import secure_filename
@@ -22,6 +23,10 @@ total_chunks = sum(len(chunks) for chunks in rag_system.document_chunks.values()
 print(
     f"RAG System initialized: {len(rag_system.documents)} documents, {total_chunks} chunks"
 )
+print(f"Storage path: {config.storage_path}")
+print(f"Documents file: {config.storage_path / 'documents.json'}")
+print(f"File exists: {(config.storage_path / 'documents.json').exists()}")
+print(f"Current working directory: {os.getcwd()}")
 
 
 @rag_bp.route("/debug", methods=["GET"])
@@ -29,10 +34,16 @@ def debug_rag():
     """Debug endpoint to check RAG system state."""
     total_chunks = sum(len(chunks) for chunks in rag_system.document_chunks.values())
 
+    docs_file = config.storage_path / "documents.json"
+
     return jsonify(
         {
             "documents_count": len(rag_system.documents),
             "chunks_count": total_chunks,
+            "storage_path": str(config.storage_path),
+            "docs_file_path": str(docs_file),
+            "docs_file_exists": docs_file.exists(),
+            "cwd": os.getcwd(),
             "documents": [
                 {
                     "id": doc_id[:8] + "...",
