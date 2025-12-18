@@ -1,15 +1,38 @@
-"""Simple chat functionality."""
+"""Simple chat functionality with Claude API."""
 
+import os
 from typing import Dict, List
 
 
 class SimpleChatEngine:
-    """Simple chat engine with RAG context."""
+    """Simple chat engine with RAG context and Claude LLM."""
 
     def __init__(self, rag_system):
         """Initialize chat engine."""
         self.rag = rag_system
         self.chat_history = []
+
+        # Get Claude API key from environment
+        self.api_key = os.getenv("LLM_API_KEY")
+        self.model = os.getenv("LLM_MODEL", "claude-3-haiku-20240307")
+        self.use_llm = bool(self.api_key)
+
+        if self.use_llm:
+            try:
+                import anthropic
+
+                self.client = anthropic.Anthropic(api_key=self.api_key)
+                print(f"✅ Claude API initialized with model: {self.model}")
+            except ImportError:
+                print(
+                    "⚠️  anthropic package not installed. Install with: pip install anthropic"
+                )
+                self.use_llm = False
+            except Exception as e:
+                print(f"⚠️  Failed to initialize Claude API: {e}")
+                self.use_llm = False
+        else:
+            print("⚠️  No LLM_API_KEY found. Using simple template responses.")
 
     def chat(self, message: str) -> Dict:
         """Process a chat message with RAG context."""
@@ -33,8 +56,11 @@ class SimpleChatEngine:
 
         context_str = "\n\n".join(context_parts)
 
-        # Simple response generation (without external API)
-        response = self._generate_simple_response(message, context_str)
+        # Generate response using LLM or fallback to simple response
+        if self.use_llm:
+            response = self._generate_llm_response(message, context_str, citations)
+        else:
+            response = self._generate_simple_response(message, context_str)
 
         # Store in history
         self.chat_history.append(
@@ -42,6 +68,46 @@ class SimpleChatEngine:
         )
 
         return {"response": response, "citations": citations, "sources": search_results}
+
+    def _generate_llm_response(
+        self, question: str, context: str, citations: List[Dict]
+    ) -> str:
+        """Generate response using Claude API with RAG context."""
+        if not context.strip():
+            # No context found - let Claude answer from general knowledge
+            system_prompt = """You are a helpful AI assistant specialized in data quality, 
+big data testing, and data validation. Answer questions based on your knowledge."""
+            user_message = question
+        else:
+            # Use RAG context
+            system_prompt = """You are a helpful AI assistant with access to documentation 
+about data quality testing, big data, Spark, and data validation.
+
+Use the provided context to answer questions. Cite sources using [1], [2], etc. 
+when referencing the context. Be concise and practical."""
+
+            user_message = f"""Context from documentation:
+
+{context}
+
+Question: {question}
+
+Please answer based on the context above. Use citations [1], [2], etc. when referencing the context."""
+
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=1024,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_message}],
+            )
+
+            return response.content[0].text
+
+        except Exception as e:
+            print(f"❌ Claude API error: {e}")
+            # Fallback to simple response
+            return self._generate_simple_response(question, context)
 
     def _generate_simple_response(self, question: str, context: str) -> str:
         """Generate a simple response based on context."""
