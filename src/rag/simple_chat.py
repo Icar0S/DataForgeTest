@@ -1,13 +1,16 @@
 """Simple chat functionality with LLM support (Anthropic Claude or Ollama)."""
 
 import os
-import sys
 from typing import Dict, List
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from llm_client import get_default_llm_client
+# Use relative import instead of sys.path manipulation
+try:
+    from ..llm_client import get_default_llm_client
+except ImportError:
+    # Fallback for when run directly (not as package)
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from llm_client import get_default_llm_client
 
 
 class SimpleChatEngine:

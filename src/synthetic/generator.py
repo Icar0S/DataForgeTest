@@ -6,15 +6,18 @@ import json
 import os
 import random
 import re
-import sys
 import time
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from llm_client import create_llm_client
+# Use relative import instead of sys.path manipulation
+try:
+    from ..llm_client import create_llm_client
+except ImportError:
+    # Fallback for when run directly (not as package)
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from llm_client import create_llm_client
 
 
 class SyntheticDataGenerator:
