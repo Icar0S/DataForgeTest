@@ -316,9 +316,9 @@ AI-powered documentation chat system with retrieval-augmented generation for con
 - **Contextual responses**: Structured answers based on query type
 - **Streaming chat interface**: Real-time response generation
 - **Document management**: Upload, index, and manage documentation
-- **Multiple implementations**:
-  - **Simple RAG**: Keyword-based search (default, no API key required)
-  - **Full RAG**: LLM-powered with Claude Sonnet (requires API key)
+- **Flexible LLM support**:
+  - **Ollama** (Default): Open-source LLMs running locally - **NO COSTS** 🎉
+  - **Anthropic Claude**: Cloud-based LLM - requires API credits
 
 **Quick Test:**
 ```bash
@@ -330,12 +330,32 @@ python tests/test_rag_api.py
 python tests/test_rag_diagnostics.py
 ```
 
-**Enable Full AI Mode:**
-1. Add API key to `.env`: `LLM_API_KEY=your-anthropic-key`
-2. Install: `pip install llama-index-llms-anthropic`
+**LLM Configuration:**
+
+**Option 1: Ollama (Recommended - Free & Local)**
+1. Install Ollama: [ollama.com/download](https://ollama.com/download)
+2. Pull a model: `ollama pull qwen2.5-coder:7b`
+3. Configure `.env`:
+   ```env
+   LLM_PROVIDER=ollama
+   LLM_MODEL=qwen2.5-coder:7b
+   OLLAMA_BASE_URL=http://localhost:11434
+   ```
+4. Restart backend
+
+**Option 2: Anthropic Claude (Requires Credits)**
+1. Get API key from [console.anthropic.com](https://console.anthropic.com)
+2. Configure `.env`:
+   ```env
+   LLM_PROVIDER=anthropic
+   LLM_MODEL=claude-3-haiku-20240307
+   LLM_API_KEY=your-api-key-here
+   ```
 3. Restart backend
 
-**Current Status**: ✅ Simple RAG active with 6 documents, structured responses
+**📖 Full Setup Guide**: [docs/OLLAMA_SETUP.md](docs/OLLAMA_SETUP.md)
+
+**Current Status**: ✅ Ollama support with qwen2.5-coder:7b model
 
 ## 🏗️ Architecture Overview
 
@@ -357,7 +377,7 @@ DataForgeTest follows a modern microservices architecture with clear separation 
 **🔧 Backend (Python + Flask)**
 - Modular blueprint architecture
 - RESTful API with comprehensive error handling
-- LLM integration (Anthropic Claude)
+- LLM integration (Ollama for local open-source LLMs or Anthropic Claude)
 - Multi-format file processing
 - Automated data validation pipelines
 
@@ -428,9 +448,17 @@ DataForgeTest/
 Create `.env` file (copy from `.env.example`):
 
 ```bash
-# LLM Configuration (Anthropic Claude)
-LLM_API_KEY=your-anthropic-api-key-here
-LLM_MODEL=claude-3-haiku-20240307
+# LLM Configuration
+# Choose provider: 'ollama' (default, free) or 'anthropic' (requires credits)
+LLM_PROVIDER=ollama
+
+# Ollama Configuration (for open-source LLMs)
+LLM_MODEL=qwen2.5-coder:7b
+OLLAMA_BASE_URL=http://localhost:11434
+
+# Anthropic Configuration (optional, only if LLM_PROVIDER=anthropic)
+# LLM_API_KEY=your-anthropic-api-key-here
+# LLM_MODEL=claude-3-haiku-20240307
 
 # RAG System
 VECTOR_STORE_PATH=./storage/vectorstore
