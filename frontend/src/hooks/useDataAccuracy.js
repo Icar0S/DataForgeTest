@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { getApiUrl } from '../config/api';
 
 const useDataAccuracy = () => {
   const [sessionId, setSessionId] = useState(null);
@@ -39,7 +40,7 @@ const useDataAccuracy = () => {
         ...(sessionId && { sessionId })
       });
 
-      const response = await fetch(`/api/accuracy/upload?${queryParams}`, {
+      const response = await fetch(getApiUrl(`/api/accuracy/upload?${queryParams}`), {
         method: 'POST',
         body: formData
       });
@@ -99,7 +100,7 @@ const useDataAccuracy = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/accuracy/compare-correct', {
+      const response = await fetch(getApiUrl('/api/accuracy/compare-correct'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, FileText, CheckCircle, Code, Copy, Download, Chevron
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { motion } from 'framer-motion';
+import { getApiUrl } from '../config/api';
 
 const AdvancedPySparkGenerator = () => {
   // Step management
@@ -63,7 +64,7 @@ const AdvancedPySparkGenerator = () => {
       formData.append('header', uploadOptions.header.toString());
       formData.append('sample_size', uploadOptions.sample_size.toString());
 
-      const response = await fetch('/api/datasets/inspect', {
+      const response = await fetch(getApiUrl('/api/datasets/inspect'), {
         method: 'POST',
         body: formData,
       });
@@ -88,7 +89,7 @@ const AdvancedPySparkGenerator = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/datasets/generate-dsl', {
+      const response = await fetch(getApiUrl('/api/datasets/generate-dsl'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,7 +131,7 @@ const AdvancedPySparkGenerator = () => {
         }
       }
 
-      const response = await fetch('/api/datasets/generate-pyspark', {
+      const response = await fetch(getApiUrl('/api/datasets/generate-pyspark'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

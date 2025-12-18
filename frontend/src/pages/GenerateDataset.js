@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Trash2, Eye, Download, AlertCircle, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../styles/animations';
+import { getApiUrl } from '../config/api';
 
 const COLUMN_TYPES = [
   'string', 'integer', 'float', 'boolean', 'date', 'datetime',
@@ -123,7 +124,7 @@ const GenerateDataset = () => {
     setPreviewData(null);
 
     try {
-      const response = await fetch('/api/synth/preview', {
+      const response = await fetch(getApiUrl('/api/synth/preview'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -164,7 +165,7 @@ const GenerateDataset = () => {
     setIsGenerating(true);
 
     try {
-      const response = await fetch('/api/synth/generate', {
+      const response = await fetch(getApiUrl('/api/synth/generate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
