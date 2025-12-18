@@ -18,18 +18,21 @@ rag_system = SimpleRAG(config)
 chat_engine = SimpleChatEngine(rag_system)
 
 # Debug: Print RAG initialization info
+total_chunks = sum(len(chunks) for chunks in rag_system.document_chunks.values())
 print(
-    f"RAG System initialized: {len(rag_system.documents)} documents, {len(rag_system.document_chunks)} chunks"
+    f"RAG System initialized: {len(rag_system.documents)} documents, {total_chunks} chunks"
 )
 
 
 @rag_bp.route("/debug", methods=["GET"])
 def debug_rag():
     """Debug endpoint to check RAG system state."""
+    total_chunks = sum(len(chunks) for chunks in rag_system.document_chunks.values())
+
     return jsonify(
         {
             "documents_count": len(rag_system.documents),
-            "chunks_count": len(rag_system.document_chunks),
+            "chunks_count": total_chunks,
             "documents": [
                 {
                     "id": doc_id[:8] + "...",

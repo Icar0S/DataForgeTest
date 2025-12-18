@@ -4,6 +4,7 @@ import { MessageCircle, Send, Trash2, X } from 'react-feather';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { getApiUrl } from '../config/api';
 
 const CodeComponent = ({node, inline, className, children, ...props}) => {
   const match = /language-(\w+)/.exec(className || '');
@@ -55,53 +56,73 @@ const ChatWindow = ({ onClose }) => {
     try {
       setIsLoading(true);
       setError(null);
+      setSources([]);
       
       // Add empty assistant message for streaming
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
       
-      // Start streaming response
-      eventSourceRef.current = new EventSource(
-        `/api/rag/chat?message=${encodeURIComponent(userMessage)}`
-      );
+      // Use fetch with ReadableStream for POST streaming
+      const response = await fetch(getApiUrl('/api/rag/chat-stream'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage }),
+      });
       
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
       let currentMessage = '';
       
-      eventSourceRef.current.onmessage = (event) => {
-        if (event.data === '[DONE]') {
-          setIsLoading(false);
-          eventSourceRef.current.close();
-          return;
-        }
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
         
-        const data = JSON.parse(event.data);
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
         
-        if (data.type === 'token') {
-          currentMessage += data.content;
-          setMessages(prev => [
-            ...prev.slice(0, -1),
-            { role: 'assistant', content: currentMessage }
-          ]);
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            
+            if (data === '[DONE]') {
+              setIsLoading(false);
+              break;
+            }
+            
+            try {
+              const parsed = JSON.parse(data);
+              
+              if (parsed.type === 'token') {
+                currentMessage += parsed.content;
+                setMessages(prev => [
+                  ...prev.slice(0, -1),
+                  { role: 'assistant', content: currentMessage }
+                ]);
+              }
+              else if (parsed.type === 'citations') {
+                setSources(parsed.content.citations);
+              }
+              else if (parsed.type === 'error') {
+                setError(parsed.content);
+                setIsLoading(false);
+              }
+            } catch (e) {
+              // Ignore parse errors for incomplete chunks
+            }
+          }
         }
-        else if (data.type === 'citations') {
-          setSources(data.content.citations);
-          setIsLoading(false);
-          eventSourceRef.current.close();
-        }
-        else if (data.type === 'error') {
-          setError(data.content);
-          setIsLoading(false);
-          eventSourceRef.current.close();
-        }
-      };
+      }
       
-      eventSourceRef.current.onerror = () => {
-        setError('Connection error. Please try again.');
-        eventSourceRef.current.close();
-        setIsLoading(false);
-      };
+      setIsLoading(false);
       
     } catch (err) {
-      setError(err.message);
+      setError('Connection error. Please try again.');
+      setMessages(prev => prev.slice(0, -1)); // Remove empty assistant message
       setIsLoading(false);
     }
   };

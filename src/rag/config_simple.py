@@ -26,8 +26,21 @@ class RAGConfig:
 
         load_dotenv()
 
+        # Get storage path and make it absolute if relative
+        storage_path_str = os.getenv("VECTOR_STORE_PATH", "./storage/vectorstore")
+        storage_path = Path(storage_path_str)
+
+        # If path is relative and we're in src/, go up one level
+        if not storage_path.is_absolute():
+            # Check if we're in src/ directory
+            current_dir = Path.cwd()
+            if current_dir.name == "src":
+                storage_path = current_dir.parent / storage_path
+            else:
+                storage_path = current_dir / storage_path
+
         return cls(
-            storage_path=Path(os.getenv("VECTOR_STORE_PATH", "./storage/vectorstore")),
+            storage_path=storage_path,
             chunk_size=int(os.getenv("CHUNK_SIZE", "512")),
             chunk_overlap=int(os.getenv("CHUNK_OVERLAP", "50")),
             top_k=int(os.getenv("TOP_K", "4")),
