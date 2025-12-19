@@ -67,33 +67,45 @@ except StopIteration:
 all_failed_records = []
 
 # 3. Read data from file
-print(f"\\nReading data from '{{file_name}}' (format: {data_format})")
+# Detect file format from extension
+file_ext = file_name.split('.')[-1].lower()
+print(f"\\nReading data from '{{file_name}}' (detected format: {{file_ext}})")
+
 try:
-    if "{data_format}" == "csv":
+    if file_ext == "csv":
         df = spark.read.format("csv") \\
             .option("header", "{has_header}") \\
             .option("inferSchema", "true") \\
             .option("delimiter", "{delimiter}") \\
             .option("encoding", "{encoding}") \\
             .load(file_name)
-    elif "{data_format}" == "json":
+    elif file_ext in ["json", "jsonl"]:
         df = spark.read.json(file_name)
-    elif "{data_format}" == "parquet":
+    elif file_ext == "parquet":
         df = spark.read.parquet(file_name)
-    elif "{data_format}" == "delta":
+    elif file_ext == "delta":
         df = spark.read.format("delta").load(file_name)
     else:
-        print(f"Unsupported data format: {data_format}. Please load data manually.")
+        print(f"Unsupported file extension: {{file_ext}}. Please ensure your file has a valid extension (.csv, .json, .parquet, .delta).")
         spark.stop()
         exit(1)
 except Exception as e:
     print(f"Error reading data: {{e}}")
+    print(f"Hint: Check if the file delimiter is '{delimiter}' and encoding is '{encoding}'")
     spark.stop()
     exit(1)
 
 print(f"Data loaded successfully. Total records: {{df.count()}}")
 print("\\nData schema:")
 df.printSchema()
+
+# Helper function to check if column exists
+def check_column_exists(df, column_name):
+    \"\"\"Check if a column exists in the DataFrame.\"\"\"
+    if column_name not in df.columns:
+        print(f"  WARNING: Column '{{column_name}}' not found in dataset. Available columns: {{df.columns}}")
+        return False
+    return True
 
 # ================================================================
 # 4. Applying Data Quality Rules
@@ -117,15 +129,22 @@ print("\\n--- Applying Data Quality Rules ---")
         if rule_type == "not_null":
             code += f"""
 print(f"\\nChecking not_null for column: {column}")
-failed_not_null = df.filter(col("{column}").isNull())
-all_failed_records = run_check(f"null_{column}", failed_not_null, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_not_null = df.filter(col("{column}").isNull())
+    all_failed_records = run_check(f"null_{column}", failed_not_null, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "uniqueness":
             cols_str = ", ".join([f"'{c}'" for c in columns])
+            cols_check = " and ".join([f'check_column_exists(df, "{c}")' for c in columns])
             code += f"""
 print(f"\\nChecking uniqueness for columns: {cols_str}")
-failed_uniqueness = df.groupBy({cols_str}).count().filter(col("count") > 1)
-all_failed_records = run_check(f"uniqueness_{'_'.join(columns)}", failed_uniqueness, all_failed_records)
+if {cols_check}:
+    failed_uniqueness = df.groupBy({cols_str}).count().filter(col("count") > 1)
+    all_failed_records = run_check(f"uniqueness_{'_'.join(columns)}", failed_uniqueness, all_failed_records)
+else:
+    print(f"  SKIPPED: One or more columns not found in dataset")
 """
         elif rule_type == "format":
             fmt = rule.get("format")
@@ -140,14 +159,20 @@ all_failed_records = run_check(f"uniqueness_{'_'.join(columns)}", failed_uniquen
             if spark_date_format:
                 code += f"""
 print(f"\\nChecking date format '{fmt}' for column: {column}")
-failed_format = df.filter(to_date(col("{column}"), "{spark_date_format}").isNull() & col("{column}").isNotNull())
-all_failed_records = run_check(f"date_format_{column}", failed_format, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_format = df.filter(to_date(col("{column}"), "{spark_date_format}").isNull() & col("{column}").isNotNull())
+    all_failed_records = run_check(f"date_format_{column}", failed_format, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
             else:  # Generic format check using regex
                 code += f"""
 print(f"\\nChecking custom format (regex) '{fmt}' for column: {column}")
-failed_format = df.filter(~col("{column}").rlike("{fmt}"))
-all_failed_records = run_check(f"format_{column}", failed_format, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_format = df.filter(~col("{column}").rlike("{fmt}"))
+    all_failed_records = run_check(f"format_{column}", failed_format, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
 
         elif rule_type == "range":
@@ -179,16 +204,22 @@ all_failed_records = run_check(f"format_{column}", failed_format, all_failed_rec
                 condition_str = " | ".join(range_condition)
                 code += f"""
 print(f"\\nChecking range [{add_float_literal(min_val) if min_val is not None else '-inf'}, {add_float_literal(max_val) if max_val is not None else 'inf'}] for column: {column}")
-failed_range = df.filter({condition_str})
-all_failed_records = run_check(f"range_{column}", failed_range, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_range = df.filter({condition_str})
+    all_failed_records = run_check(f"range_{column}", failed_range, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "in_set":
             values = rule.get("values", [])
             values_str = ", ".join([f"'{v}'" for v in values])
             code += f"""
 print(f"\\nChecking values in set [{values_str}] for column: {column}")
-failed_in_set = df.filter(~col("{column}").isin({values_str}))
-all_failed_records = run_check(f"in_set_{column}", failed_in_set, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_in_set = df.filter(~col("{column}").isin({values_str}))
+    all_failed_records = run_check(f"in_set_{column}", failed_in_set, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "regex":
             pattern = rule.get("pattern")
@@ -196,8 +227,11 @@ all_failed_records = run_check(f"in_set_{column}", failed_in_set, all_failed_rec
             escaped_pattern = pattern.replace("\\", "\\\\")
             code += f"""
 print(f"\\nChecking regex pattern '{pattern}' for column: {column}")
-failed_regex = df.filter(~col("{column}").rlike("{escaped_pattern}"))
-all_failed_records = run_check(f"regex_{column}", failed_regex, all_failed_records)
+if check_column_exists(df, "{column}"):
+    failed_regex = df.filter(~col("{column}").rlike("{escaped_pattern}"))
+    all_failed_records = run_check(f"regex_{column}", failed_regex, all_failed_records)
+else:
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "value_distribution":
             value = rule.get("value")
@@ -205,17 +239,20 @@ all_failed_records = run_check(f"regex_{column}", failed_regex, all_failed_recor
             max_freq = rule.get("max_freq")
             code += f"""
 print(f"\\nChecking value distribution for column '{column}' (value: '{value}', min_freq: {min_freq}, max_freq: {max_freq})")
-total_count = df.count()
-value_count = df.filter(col("{column}") == "{value}").count()
-if total_count > 0:
-    actual_freq = value_count / total_count
-    if {min_freq} <= actual_freq <= {max_freq}:
-        print(f"  SUCCESS: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, within range [{min_freq}, {max_freq}].")
+if check_column_exists(df, "{column}"):
+    total_count = df.count()
+    value_count = df.filter(col("{column}") == "{value}").count()
+    if total_count > 0:
+        actual_freq = value_count / total_count
+        if {min_freq} <= actual_freq <= {max_freq}:
+            print(f"  SUCCESS: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, within range [{min_freq}, {max_freq}].")
+        else:
+            print(f"  FAIL: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, outside range [{min_freq}, {max_freq}].")
+            all_failed_records.append((f"distribution_{column}_{value}", actual_freq))
     else:
-        print(f"  FAIL: Value '{value}' in column '{column}' has frequency {{actual_freq:.4f}}, outside range [{min_freq}, {max_freq}].")
-        all_failed_records.append((f"distribution_{column}_{value}", actual_freq))
+        print(f"  WARNING: Dataset is empty, unable to check value distribution for column '{column}'.")
 else:
-    print(f"  WARNING: Dataset is empty, unable to check value distribution for column '{column}'.")
+    print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "cross_column_comparison":
             col1 = rule.get("column1")
@@ -224,8 +261,11 @@ else:
 
             code += f"""
 print(f"\\nChecking cross-column comparison: {col1} {operator} {col2}")
-failed_comparison = df.filter(~(col("{col1}") {operator} col("{col2}")))
-all_failed_records = run_check(f"cross_column_{col1}_{operator}_{col2}", failed_comparison, all_failed_records)
+if check_column_exists(df, "{col1}") and check_column_exists(df, "{col2}"):
+    failed_comparison = df.filter(~(col("{col1}") {operator} col("{col2}")))
+    all_failed_records = run_check(f"cross_column_{col1}_{operator}_{col2}", failed_comparison, all_failed_records)
+else:
+    print(f"  SKIPPED: One or both columns not found in dataset")
 """
 
     # Add final summary and cleanup
