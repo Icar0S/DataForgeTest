@@ -145,6 +145,8 @@ else:
     print(f"  SKIPPED: Column '{column}' not found in dataset")
 """
         elif rule_type == "uniqueness":
+            if not columns:
+                continue  # Skip if no columns specified
             cols_str = ", ".join([f"'{c}'" for c in columns])
             cols_check = " and ".join([f'check_column_exists(df, "{c}")' for c in columns])
             code += f"""
@@ -157,6 +159,8 @@ else:
 """
         elif rule_type == "format":
             fmt = rule.get("format")
+            if not fmt:
+                continue  # Skip if no format specified
             date_formats = {
                 "YYYY-MM-DD": "yyyy-MM-dd",
                 "MM-DD-YYYY": "MM-dd-yyyy",
@@ -232,6 +236,8 @@ else:
 """
         elif rule_type == "regex":
             pattern = rule.get("pattern")
+            if not pattern:
+                continue  # Skip if no pattern specified
             # Handle backslash escaping for regex patterns
             escaped_pattern = pattern.replace("\\", "\\\\")
             code += f"""
