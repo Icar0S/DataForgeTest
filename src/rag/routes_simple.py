@@ -36,6 +36,18 @@ def debug_rag():
 
     docs_file = config.storage_path / "documents.json"
 
+    # LLM diagnostic information
+    llm_status = {
+        "configured": chat_engine.use_llm,
+        "client_type": (
+            type(chat_engine.llm_client).__name__ if chat_engine.llm_client else None
+        ),
+        "provider": os.getenv("LLM_PROVIDER", "not set"),
+        "model": os.getenv("LLM_MODEL") or os.getenv("GEMINI_MODEL", "not set"),
+        "gemini_key_set": bool(os.getenv("GEMINI_API_KEY")),
+        "anthropic_key_set": bool(os.getenv("LLM_API_KEY")),
+    }
+
     return jsonify(
         {
             "documents_count": len(rag_system.documents),
@@ -44,6 +56,7 @@ def debug_rag():
             "docs_file_path": str(docs_file),
             "docs_file_exists": docs_file.exists(),
             "cwd": os.getcwd(),
+            "llm_status": llm_status,
             "documents": [
                 {
                     "id": doc_id[:8] + "...",

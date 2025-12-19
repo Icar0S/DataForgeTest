@@ -9,6 +9,7 @@ try:
 except ImportError:
     # Fallback for when run directly (not as package)
     import sys
+
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from llm_client import get_default_llm_client
 
@@ -27,7 +28,15 @@ class SimpleChatEngine:
 
         if self.use_llm:
             provider = os.getenv("LLM_PROVIDER", "ollama")
-            model = os.getenv("LLM_MODEL", "qwen2.5-coder:7b" if provider == "ollama" else "claude-3-haiku-20240307")
+            # Get the actual model name based on provider
+            if provider == "gemini":
+                model = os.getenv("GEMINI_MODEL") or os.getenv(
+                    "LLM_MODEL", "gemini-2.5-flash"
+                )
+            elif provider == "anthropic":
+                model = os.getenv("LLM_MODEL", "claude-3-haiku-20240307")
+            else:  # ollama
+                model = os.getenv("LLM_MODEL", "qwen2.5-coder:7b")
             print(f"✅ LLM initialized with provider: {provider}, model: {model}")
         else:
             print("⚠️  No LLM configured. Using simple template responses.")

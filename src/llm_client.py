@@ -129,17 +129,21 @@ class OllamaClient(LLMClient):
 class GeminiClient(LLMClient):
     """Client for Google Gemini API."""
 
-    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
         """Initialize Gemini client.
 
         Args:
             api_key: Google Gemini API key
-            model: Model name to use (e.g., 'gemini-1.5-flash', 'gemini-1.5-pro')
+            model: Model name to use (e.g., 'gemini-2.5-flash', 'gemini-2.5-pro')
+                  Will auto-add 'models/' prefix if not present
         """
         try:
             import google.generativeai as genai
 
             genai.configure(api_key=api_key)
+            # Add models/ prefix if not present
+            if not model.startswith("models/"):
+                model = f"models/{model}"
             self.model = genai.GenerativeModel(model)
             self.model_name = model
         except ImportError as e:
@@ -182,6 +186,15 @@ class GeminiClient(LLMClient):
             response = self.model.generate_content(
                 prompt, generation_config=generation_config
             )
+
+            # Handle blocked or empty responses
+            if not response.text:
+                # Check if response was blocked
+                if hasattr(response, "prompt_feedback"):
+                    feedback = response.prompt_feedback
+                    if hasattr(feedback, "block_reason"):
+                        raise RuntimeError(f"Content blocked: {feedback.block_reason}")
+                raise RuntimeError("Empty response from Gemini")
 
             return response.text
         except Exception as e:
@@ -230,7 +243,7 @@ def create_llm_client(
         model = (
             model
             or os.getenv("GEMINI_MODEL")
-            or os.getenv("LLM_MODEL", "gemini-1.5-flash")
+            or os.getenv("LLM_MODEL", "gemini-2.5-flash")
         )
         return GeminiClient(api_key=api_key, model=model)
 
