@@ -77,6 +77,32 @@ def test_anthropic_client_creation():
         return False
 
 
+def test_gemini_client_creation():
+    """Test creating Gemini client."""
+    try:
+        from llm_client import create_llm_client  # type: ignore
+
+        # Test without API key (should raise ValueError)
+        try:
+            create_llm_client(provider="gemini", api_key=None)
+            print("❌ Should have raised ValueError for missing API key")
+            return False
+        except ValueError as e:
+            print(
+                f"✅ Correctly raises ValueError for missing Gemini API key: {str(e)[:50]}..."
+            )
+            return True
+        except ImportError:
+            print(
+                "⚠️  google-generativeai package not installed (OK for Ollama-only setup)"
+            )
+            return True
+
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+        return False
+
+
 def test_rag_integration():
     """Test RAG module integration with new LLM client."""
     try:
@@ -160,6 +186,7 @@ def main():
         ("LLM Client Import", test_llm_client_import),
         ("Ollama Client Creation", test_ollama_client_creation),
         ("Anthropic Client Validation", test_anthropic_client_creation),
+        ("Gemini Client Validation", test_gemini_client_creation),
         ("RAG Integration", test_rag_integration),
         ("Synthetic Data Integration", test_synthetic_integration),
     ]

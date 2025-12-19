@@ -17,13 +17,13 @@ class LLMClient(ABC):
         temperature: float = 0.7,
     ) -> str:
         """Generate text from messages.
-        
+
         Args:
             messages: List of message dicts with 'role' and 'content'
             system: Optional system prompt
             max_tokens: Maximum tokens to generate
             temperature: Temperature for generation (0.0-1.0)
-            
+
         Returns:
             Generated text response
         """
@@ -35,13 +35,14 @@ class AnthropicClient(LLMClient):
 
     def __init__(self, api_key: str, model: str = "claude-3-haiku-20240307"):
         """Initialize Anthropic client.
-        
+
         Args:
             api_key: Anthropic API key
             model: Model name to use
         """
         try:
             import anthropic
+
             self.client = anthropic.Anthropic(api_key=api_key)
             self.model = model
         except ImportError as e:
@@ -79,13 +80,14 @@ class OllamaClient(LLMClient):
         base_url: str = "http://localhost:11434",
     ):
         """Initialize Ollama client.
-        
+
         Args:
             model: Model name to use (e.g., 'qwen2.5-coder:7b', 'llama3')
             base_url: Base URL for Ollama API
         """
         try:
             import ollama
+
             self.client = ollama.Client(host=base_url)
             self.model = model
         except ImportError as e:
@@ -124,6 +126,68 @@ class OllamaClient(LLMClient):
             raise RuntimeError(f"Ollama API error: {e}") from e
 
 
+class GeminiClient(LLMClient):
+    """Client for Google Gemini API."""
+
+    def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
+        """Initialize Gemini client.
+
+        Args:
+            api_key: Google Gemini API key
+            model: Model name to use (e.g., 'gemini-1.5-flash', 'gemini-1.5-pro')
+        """
+        try:
+            import google.generativeai as genai
+
+            genai.configure(api_key=api_key)
+            self.model = genai.GenerativeModel(model)
+            self.model_name = model
+        except ImportError as e:
+            raise ImportError(
+                "google-generativeai package not installed. Install with: pip install google-generativeai"
+            ) from e
+
+    def generate(
+        self,
+        messages: List[Dict[str, str]],
+        system: Optional[str] = None,
+        max_tokens: int = 1024,
+        temperature: float = 0.7,
+    ) -> str:
+        """Generate text using Gemini API."""
+        try:
+            # Gemini uses a different format - build conversation
+            conversation = []
+            if system:
+                conversation.append(f"System: {system}\n")
+
+            # Format messages
+            for msg in messages:
+                role = msg.get("role", "user")
+                content = msg.get("content", "")
+                if role == "user":
+                    conversation.append(f"User: {content}")
+                elif role == "assistant":
+                    conversation.append(f"Assistant: {content}")
+
+            prompt = "\n".join(conversation)
+
+            # Configure generation
+            generation_config = {
+                "temperature": temperature,
+                "max_output_tokens": max_tokens,
+            }
+
+            # Generate response
+            response = self.model.generate_content(
+                prompt, generation_config=generation_config
+            )
+
+            return response.text
+        except Exception as e:
+            raise RuntimeError(f"Gemini API error: {e}") from e
+
+
 def create_llm_client(
     provider: Optional[str] = None,
     api_key: Optional[str] = None,
@@ -131,16 +195,16 @@ def create_llm_client(
     base_url: Optional[str] = None,
 ) -> LLMClient:
     """Factory function to create LLM client based on configuration.
-    
+
     Args:
-        provider: LLM provider ('anthropic' or 'ollama'). If None, reads from LLM_PROVIDER env var
-        api_key: API key for Anthropic. If None, reads from LLM_API_KEY env var
-        model: Model name. If None, reads from LLM_MODEL env var
+        provider: LLM provider ('anthropic', 'gemini', or 'ollama'). If None, reads from LLM_PROVIDER env var
+        api_key: API key for Anthropic/Gemini. If None, reads from LLM_API_KEY or GEMINI_API_KEY env var
+        model: Model name. If None, reads from LLM_MODEL or GEMINI_MODEL env var
         base_url: Base URL for Ollama. If None, reads from OLLAMA_BASE_URL env var
-        
+
     Returns:
         Configured LLM client instance
-        
+
     Raises:
         ValueError: If provider is invalid or required config is missing
     """
@@ -157,6 +221,19 @@ def create_llm_client(
         model = model or os.getenv("LLM_MODEL", "claude-3-haiku-20240307")
         return AnthropicClient(api_key=api_key, model=model)
 
+    elif provider == "gemini":
+        api_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("LLM_API_KEY")
+        if not api_key:
+            raise ValueError(
+                "Gemini API key is required. Set GEMINI_API_KEY environment variable."
+            )
+        model = (
+            model
+            or os.getenv("GEMINI_MODEL")
+            or os.getenv("LLM_MODEL", "gemini-1.5-flash")
+        )
+        return GeminiClient(api_key=api_key, model=model)
+
     elif provider == "ollama":
         model = model or os.getenv("LLM_MODEL", "qwen2.5-coder:7b")
         base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
@@ -164,13 +241,13 @@ def create_llm_client(
 
     else:
         raise ValueError(
-            f"Invalid LLM provider: {provider}. Must be 'anthropic' or 'ollama'."
+            f"Invalid LLM provider: {provider}. Must be 'anthropic', 'gemini', or 'ollama'."
         )
 
 
 def get_default_llm_client() -> Optional[LLMClient]:
     """Get default LLM client based on environment configuration.
-    
+
     Returns:
         LLM client instance or None if configuration is invalid
     """
