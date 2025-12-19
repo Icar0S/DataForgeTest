@@ -4,6 +4,8 @@ Flask-Cors
 pandas
 numpy
 anthropic
+ollama
+google-generativeai
 python-dotenv
 openpyxl
 pyarrow
