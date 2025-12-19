@@ -71,6 +71,13 @@ all_failed_records = []
 file_ext = file_name.split('.')[-1].lower()
 print(f"\\nReading data from '{{file_name}}' (detected format: {{file_ext}})")
 
+# Display auto-detected settings for CSV files
+if file_ext == "csv":
+    print("CSV Reading Configuration:")
+    print(f"  - Delimiter: '{delimiter}' (auto-detected)")
+    print(f"  - Encoding: '{encoding}' (auto-detected)")
+    print(f"  - Header: {has_header}")
+
 try:
     if file_ext == "csv":
         df = spark.read.format("csv") \\
@@ -96,8 +103,10 @@ except Exception as e:
     exit(1)
 
 print(f"Data loaded successfully. Total records: {{df.count()}}")
+print(f"Columns found: {{len(df.columns)}}")
 print("\\nData schema:")
 df.printSchema()
+print(f"\\nColumn names: {{df.columns}}")
 
 # Helper function to check if column exists
 def check_column_exists(df, column_name):
