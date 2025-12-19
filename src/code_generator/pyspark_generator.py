@@ -68,8 +68,8 @@ all_failed_records = []
 
 # 3. Read data from file
 # Detect file format from extension
-file_ext = file_name.split('.')[-1].lower()
-print(f"\\nReading data from '{{file_name}}' (detected format: {{file_ext}})")
+file_ext = file_name.split('.')[-1].lower() if '.' in file_name else ''
+print(f"\\nReading data from '{{file_name}}' (detected format: {{file_ext if file_ext else 'unknown'}})")
 
 # Display auto-detected settings for CSV files
 if file_ext == "csv":
@@ -79,7 +79,11 @@ if file_ext == "csv":
     print(f"  - Header: {has_header}")
 
 try:
-    if file_ext == "csv":
+    if not file_ext:
+        print(f"Error: Unable to detect file format. File has no extension.")
+        spark.stop()
+        exit(1)
+    elif file_ext == "csv":
         df = spark.read.format("csv") \\
             .option("header", "{has_header}") \\
             .option("inferSchema", "true") \\
@@ -93,7 +97,7 @@ try:
     elif file_ext == "delta":
         df = spark.read.format("delta").load(file_name)
     else:
-        print(f"Unsupported file extension: {{file_ext}}. Please ensure your file has a valid extension (.csv, .json, .parquet, .delta).")
+        print(f"Unsupported file extension: '{{file_ext}}'. Please ensure your file has a valid extension (.csv, .json, .parquet, .delta).")
         spark.stop()
         exit(1)
 except Exception as e:
