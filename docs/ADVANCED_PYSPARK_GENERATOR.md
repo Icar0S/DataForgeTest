@@ -215,6 +215,70 @@ The system automatically:
 - Support for incremental data validation
 - Export DSL in YAML format
 
+## Recent Improvements (December 2024)
+
+### Critical Bug Fixes
+
+1. **Dynamic File Format Detection**
+   - **Issue**: The generated code had a hardcoded format check `if "csv" == "csv":` which always evaluated to true, ignoring the actual file type
+   - **Fix**: Implemented runtime file format detection using `file_ext = file_name.split('.')[-1].lower()`
+   - **Impact**: Generated code now correctly handles CSV, JSON, Parquet, and Delta files based on actual extension
+
+2. **Delimiter Detection**
+   - **Issue**: CSV files with semicolon (`;`) delimiters were being read with comma (`,`), causing all columns to merge into a single column
+   - **Fix**: Auto-detected delimiter from dataset inspection is now properly used in generated code
+   - **Impact**: Brazilian and European CSV files with semicolon delimiters are now read correctly
+
+3. **Column Existence Validation**
+   - **Issue**: Generated code would fail silently or with cryptic errors when expected columns didn't exist
+   - **Fix**: Added `check_column_exists()` helper function that validates column presence before each rule
+   - **Impact**: Clear warning messages showing available columns when validation columns are missing
+
+4. **Improved Error Messages**
+   - **Issue**: Generic error messages made debugging difficult
+   - **Fix**: Added specific hints about delimiter and encoding settings in error messages
+   - **Impact**: Users can quickly identify and fix configuration issues
+
+### Code Quality Improvements
+
+- **Robustness**: All data quality rules (not_null, uniqueness, format, range, in_set, regex, value_distribution, cross_column_comparison) now validate column existence
+- **User Feedback**: Generated code displays auto-detected CSV configuration (delimiter, encoding, header)
+- **Debugging**: Column names and counts are displayed after successful data load
+- **Testing**: All existing unit tests pass, additional integration tests verify improvements
+
+### Example: Before vs After
+
+**Before (Broken):**
+```python
+# Hardcoded format check - always reads as CSV regardless of file type
+if "csv" == "csv":
+    df = spark.read.format("csv") \
+        .option("delimiter", ",") \  # Wrong delimiter for semicolon-separated files
+        ...
+
+# No column validation - fails with cryptic error
+failed_not_null = df.filter(col("Matrícula").isNull())
+```
+
+**After (Fixed):**
+```python
+# Dynamic format detection based on actual file extension
+file_ext = file_name.split('.')[-1].lower()
+if file_ext == "csv":
+    print("CSV Reading Configuration:")
+    print(f"  - Delimiter: ';' (auto-detected)")
+    print(f"  - Encoding: 'utf-8' (auto-detected)")
+    df = spark.read.format("csv") \
+        .option("delimiter", ";") \  # Correct auto-detected delimiter
+        ...
+
+# Column validation with clear error messages
+if check_column_exists(df, "Matrícula"):
+    failed_not_null = df.filter(col("Matrícula").isNull())
+else:
+    print(f"  SKIPPED: Column 'Matrícula' not found in dataset")
+```
+
 ## Contributing
 
 When contributing to this feature:
