@@ -70,15 +70,30 @@ const AdvancedPySparkGenerator = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to inspect dataset');
+        let errorMessage = 'Failed to inspect dataset';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       setMetadata(data);
       setCurrentStep(2);
     } catch (err) {
-      setError(err.message);
+      // Provide more detailed error messages
+      if (err.message.includes('Failed to fetch') || err.name === 'NetworkError') {
+        setError('Network error: Unable to connect to server. Please check your connection and try again.');
+      } else if (err.message.includes('timeout')) {
+        setError('Request timeout: The file is taking too long to process. Try with a smaller file.');
+      } else {
+        setError(err.message);
+      }
+      console.error('Inspect error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -101,8 +116,14 @@ const AdvancedPySparkGenerator = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate DSL');
+        let errorMessage = 'Failed to generate DSL';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -110,7 +131,12 @@ const AdvancedPySparkGenerator = () => {
       setDslText(JSON.stringify(data.dsl, null, 2));
       setCurrentStep(3);
     } catch (err) {
-      setError(err.message);
+      if (err.message.includes('Failed to fetch') || err.name === 'NetworkError') {
+        setError('Network error: Unable to connect to server. Please check your connection.');
+      } else {
+        setError(err.message);
+      }
+      console.error('Generate DSL error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -131,16 +157,27 @@ const AdvancedPySparkGenerator = () => {
         }
       }
 
-      const response = await fetch(getApiUrl('/api/datasets/generate-pyspark'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          dsl: finalDsl,
-        }),
-      });
+      colet errorMessage = 'Failed to generate PySpark code';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error (${response.status}): ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
 
+      const data = await response.json();
+      setPysparkCode(data.pyspark_code);
+      setFilename(data.filename);
+      setCurrentStep(4);
+    } catch (err) {
+      if (err.message.includes('Failed to fetch') || err.name === 'NetworkError') {
+        setError('Network error: Unable to connect to server. Please check your connection.');
+      } else {
+        setError(err.message);
+      }
+      console.error('Generate PySpark error:', err
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to generate PySpark code');
