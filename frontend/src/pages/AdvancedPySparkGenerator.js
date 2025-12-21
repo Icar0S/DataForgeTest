@@ -157,7 +157,18 @@ const AdvancedPySparkGenerator = () => {
         }
       }
 
-      colet errorMessage = 'Failed to generate PySpark code';
+      const response = await fetch(getApiUrl('/api/datasets/generate-pyspark'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dsl: finalDsl,
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to generate PySpark code';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
@@ -177,18 +188,7 @@ const AdvancedPySparkGenerator = () => {
       } else {
         setError(err.message);
       }
-      console.error('Generate PySpark error:', err
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate PySpark code');
-      }
-
-      const data = await response.json();
-      setPysparkCode(data.pyspark_code);
-      setFilename(data.filename);
-      setCurrentStep(4);
-    } catch (err) {
-      setError(err.message);
+      console.error('Generate PySpark error:', err);
     } finally {
       setIsLoading(false);
     }
