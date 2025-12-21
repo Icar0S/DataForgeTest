@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { fadeIn, staggerContainer } from '../styles/animations';
 import { getApiUrl } from '../config/api';
 
+/* eslint-disable no-undef */
+
 const TestDatasetGold = () => {
   // State
   const [file, setFile] = useState(null);
@@ -114,7 +116,7 @@ const TestDatasetGold = () => {
     e.stopPropagation();
     setDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       handleFileChange(e.dataTransfer.files[0]);
     }
   };
@@ -194,8 +196,8 @@ const TestDatasetGold = () => {
             setReport(statusData.report);
             setStatus(statusData);
           }
-        } catch (statusErr) {
-          console.error('Failed to fetch report:', statusErr);
+        } catch (error_) {
+          console.error('Failed to fetch report:', error_);
         }
         setIsProcessing(false);
       }
@@ -220,7 +222,7 @@ const TestDatasetGold = () => {
       const blob = await response.blob();
       
       // Create a temporary URL for the blob
-      const url = window.URL.createObjectURL(blob);
+      const url = globalThis.URL.createObjectURL(blob);
       
       // Create a temporary anchor element and trigger download
       const a = document.createElement('a');
@@ -230,8 +232,8 @@ const TestDatasetGold = () => {
       a.click();
       
       // Clean up
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      a.remove();
+      globalThis.URL.revokeObjectURL(url);
     } catch (err) {
       console.error('Download failed:', err);
       setError(`Download failed: ${err.message}`);
@@ -257,25 +259,30 @@ const TestDatasetGold = () => {
       variants={staggerContainer}
       initial="initial"
       animate="animate"
-      className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white p-6"
+      className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 text-white"
     >
       {/* Header */}
-      <motion.div variants={fadeIn} className="max-w-6xl mx-auto mb-8">
+      <header className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-900/50 backdrop-blur-sm">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors mb-4"
+          className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50"
+          aria-label="Back to Home"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back to Home
+          <span className="font-medium">Back to Home</span>
         </Link>
-        <h1 className="text-4xl font-bold mb-2">Test Dataset GOLD</h1>
-        <p className="text-gray-300">
-          Upload and clean your dataset with automated data quality improvements
-        </p>
-      </motion.div>
+        <h1 className="text-xl font-semibold text-white">Test Dataset GOLD</h1>
+        <div className="w-32" /> {/* Spacer for centering */}
+      </header>
 
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Error Display */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <motion.div variants={fadeIn} className="mb-8">
+          <p className="text-gray-300 text-lg">
+            Upload and clean your dataset with automated data quality improvements
+          </p>
+        </motion.div>
+
+        <div className="space-y-6">{/* Error Display */}
         {error && (
           <motion.div
             variants={fadeIn}
@@ -301,7 +308,10 @@ const TestDatasetGold = () => {
             </h2>
 
             {/* Drag and Drop Area */}
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role, jsx-a11y/prefer-tag-over-role */}
             <div
+              role="button"
+              tabIndex={0}
               className={`border-2 border-dashed rounded-xl p-12 text-center transition-colors ${
                 dragActive
                   ? 'border-purple-500 bg-purple-500/10'
@@ -311,6 +321,13 @@ const TestDatasetGold = () => {
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
             >
               {isUploading ? (
                 <div className="flex flex-col items-center gap-3">
@@ -379,25 +396,28 @@ const TestDatasetGold = () => {
                 <table className="w-full text-sm">
                   <thead className="bg-gray-800">
                     <tr>
-                      {metadata.columns.map((col, idx) => (
-                        <th key={idx} className="px-4 py-2 text-left font-semibold">
+                      {metadata.columns.map((col) => (
+                        <th key={col} className="px-4 py-2 text-left font-semibold">
                           {col}
                         </th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {metadata.sample.slice(0, 5).map((row, idx) => (
-                      <tr key={idx} className="border-t border-gray-700">
-                        {metadata.columns.map((col, colIdx) => (
-                          <td key={colIdx} className="px-4 py-2">
-                            {row[col] !== null && row[col] !== undefined
-                              ? String(row[col])
-                              : '-'}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
+                    {metadata.sample.slice(0, 5).map((row, idx) => {
+                      const rowKey = metadata.columns.map(col => String(row[col] || '')).join('-').substring(0, 50) + `-${idx}`;
+                      return (
+                        <tr key={rowKey} className="border-t border-gray-700">
+                          {metadata.columns.map((col) => (
+                            <td key={`${rowKey}-${col}`} className="px-4 py-2">
+                              {row[col] !== null && row[col] !== undefined
+                                ? String(row[col])
+                                : '-'}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -534,9 +554,9 @@ const TestDatasetGold = () => {
                 <h3 className="font-semibold mb-2">Removed Columns</h3>
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <div className="flex flex-wrap gap-2">
-                    {report.removedColumns.map((col, idx) => (
+                    {report.removedColumns.map((col) => (
                       <span
-                        key={idx}
+                        key={col}
                         className="px-3 py-1 bg-red-900/30 text-red-300 rounded-full text-sm"
                       >
                         {col}
@@ -625,23 +645,26 @@ const TestDatasetGold = () => {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-800 sticky top-0">
                       <tr>
-                        {Object.keys(report.samplePreview[0] || {}).map((col, idx) => (
-                          <th key={idx} className="px-4 py-2 text-left font-semibold">
+                        {Object.keys(report.samplePreview[0] || {}).map((col) => (
+                          <th key={col} className="px-4 py-2 text-left font-semibold">
                             {col}
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {report.samplePreview.slice(0, 10).map((row, idx) => (
-                        <tr key={idx} className="border-t border-gray-700">
-                          {Object.values(row).map((val, colIdx) => (
-                            <td key={colIdx} className="px-4 py-2">
-                              {val !== null && val !== undefined ? String(val) : '-'}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
+                      {report.samplePreview.slice(0, 10).map((row, idx) => {
+                        const rowKey = Object.values(row).map(v => String(v || '')).join('-').substring(0, 50) + `-${idx}`;
+                        return (
+                          <tr key={rowKey} className="border-t border-gray-700">
+                            {Object.entries(row).map(([col, val]) => (
+                              <td key={`${rowKey}-${col}`} className="px-4 py-2">
+                                {val !== null && val !== undefined ? String(val) : '-'}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -677,6 +700,7 @@ const TestDatasetGold = () => {
             </div>
           </motion.div>
         )}
+        </div>
       </div>
     </motion.div>
   );

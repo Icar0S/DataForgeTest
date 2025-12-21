@@ -181,10 +181,10 @@ const QaChecklist = () => {
           <Link
             to="/"
             className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50"
-            aria-label="Voltar para a Home"
+            aria-label="Back to Home"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium">Voltar</span>
+            <span className="font-medium">Back to Home</span>
           </Link>
           <h1 className="text-xl font-semibold text-white">Checklist de Testes QA</h1>
           <button
@@ -261,10 +261,10 @@ const QaChecklist = () => {
         <Link
           to="/"
           className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50"
-          aria-label="Voltar para a Home"
+          aria-label="Back to Home"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Voltar</span>
+          <span className="font-medium">Back to Home</span>
         </Link>
         <h1 className="text-xl font-semibold text-white">Checklist de Testes QA</h1>
         <button

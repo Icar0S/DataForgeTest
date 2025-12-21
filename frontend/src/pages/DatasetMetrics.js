@@ -177,18 +177,22 @@ const DatasetMetrics = () => {
     >
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <motion.div variants={fadeIn} className="mb-8">
+        {/* Header */}
+        <header className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-900/50 backdrop-blur-sm">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors mb-4"
+            className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50"
+            aria-label="Back to Home"
           >
             <ArrowLeft className="w-5 h-5" />
-            Voltar para Home
+            <span className="font-medium">Back to Home</span>
           </Link>
-          <h1 className="text-4xl font-bold mb-2">
-            Métricas de Qualidade de Dados
-          </h1>
-          <p className="text-gray-300 text-lg">
+          <h1 className="text-xl font-semibold text-white">Métricas de Qualidade de Dados</h1>
+          <div className="w-32" /> {/* Spacer for centering */}
+        </header>
+
+        <motion.div variants={fadeIn} className="px-6 py-8">
+          <p className="text-gray-300 text-lg mb-8">
             Analise a qualidade do seu dataset e obtenha métricas detalhadas sobre completude, unicidade, validade e consistência
           </p>
         </motion.div>

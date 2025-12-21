@@ -345,17 +345,21 @@ const GenerateDataset = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div variants={fadeIn} className="mb-8">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Home
-          </Link>
-          <h1 className="text-4xl font-bold mb-2">
-            Generate Synthetic Dataset
-          </h1>
-          <p className="text-gray-300 text-lg">
+          {/* Header */}
+          <header className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-900/50 backdrop-blur-sm mb-8">
+            <Link
+              to="/"
+              className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white transition-colors rounded-lg hover:bg-gray-800/50"
+              aria-label="Back to Home"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="font-medium">Back to Home</span>
+            </Link>
+            <h1 className="text-xl font-semibold text-white">Generate Synthetic Dataset</h1>
+            <div className="w-32" /> {/* Spacer for centering */}
+          </header>
+
+          <p className="text-gray-300 text-lg mb-8">
             Create realistic synthetic data using AI-powered generation
           </p>
         </motion.div>
