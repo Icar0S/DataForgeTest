@@ -346,7 +346,7 @@ const ChecklistPage = () => {
                           </button>
                           
                           <div className="flex-1">
-                            <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-start justify-between gap-4">
                               <div>
                                 <div className="text-sm text-purple-400 font-mono mb-1">
                                   {item.code}
