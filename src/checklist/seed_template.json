@@ -96,7 +96,7 @@
         {
           "id": "DQ_1",
           "code": "DQ_1",
-          "title": "Use testes de transformação e validação reversa para garantir a correção do ETL.",
+          "title": "Realizar teste de transformação e validação reversa para garantir a correção do ETL.",
           "manual": "Valide transformações com casos positivos/negativos; use round-trip checks quando possível.",
           "references": ["Arshad et al., 2021", "Souza et al., 2019"],
           "priority_weight": 4
@@ -104,7 +104,7 @@
         {
           "id": "DQ_2",
           "code": "DQ_2",
-          "title": "Verifique a integridade, a duplicação, a validade temporal e o alinhamento das regras de negócios.",
+          "title": "Verificar completude, duplicação, validade temporal e alinhamento com regras de negócio.",
           "manual": "Defina regras de qualidade (completude, unicidade, atualidade) e relatórios de violações.",
           "references": ["Arshad et al., 2021", "Souza et al., 2019"],
           "priority_weight": 4
@@ -118,7 +118,7 @@
         {
           "id": "CI_1",
           "code": "CI_1",
-          "title": "Use testes de transformação e validação reversa para garantir a correção do ETL.",
+          "title": "Integrar testes habilitados para checkpoint em pipelines (GitLab CI, Jenkins, etc.).",
           "manual": "Automatize no pipeline CI; gates para bloquear regressões de transformação.",
           "references": ["Sudsee et al., 2018", "Souza et al., 2019"],
           "priority_weight": 3
@@ -126,7 +126,7 @@
         {
           "id": "CI_2",
           "code": "CI_2",
-          "title": "Verifique a integridade, a duplicação, a validade temporal e o alinhamento das regras de negócios.",
+          "title": "Gerar relatórios rastreáveis por estágio do pipeline para auditoria, validação e rollback.",
           "manual": "Automatize validações de dados como estágios de pipeline (pré e pós deploy).",
           "references": ["Sudsee et al., 2018", "Souza et al., 2019"],
           "priority_weight": 3
