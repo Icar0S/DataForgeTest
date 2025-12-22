@@ -48,6 +48,16 @@ class ChecklistMark:
 
 
 @dataclass
+class TestMetadata:
+    """Metadata about the test execution."""
+    tester_name: Optional[str] = None
+    test_environment: Optional[str] = None
+    browser_platform: Optional[str] = None
+    test_duration: Optional[str] = None
+    additional_notes: Optional[str] = None
+
+
+@dataclass
 class ChecklistRun:
     """A checklist run/session for a user."""
     id: str
@@ -56,6 +66,7 @@ class ChecklistRun:
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     marks: Dict[str, ItemStatus] = field(default_factory=dict)
+    metadata: Optional[TestMetadata] = None
 
 
 def template_to_dict(template: ChecklistTemplate) -> Dict[str, Any]:
@@ -111,7 +122,7 @@ def template_from_dict(data: Dict[str, Any]) -> ChecklistTemplate:
 
 def run_to_dict(run: ChecklistRun) -> Dict[str, Any]:
     """Convert ChecklistRun to dictionary."""
-    return {
+    result = {
         "id": run.id,
         "user_id": run.user_id,
         "project_id": run.project_id,
@@ -119,11 +130,34 @@ def run_to_dict(run: ChecklistRun) -> Dict[str, Any]:
         "updated_at": run.updated_at.isoformat(),
         "marks": {k: v.value for k, v in run.marks.items()}
     }
+    
+    # Add metadata if present
+    if run.metadata:
+        result["metadata"] = {
+            "tester_name": run.metadata.tester_name,
+            "test_environment": run.metadata.test_environment,
+            "browser_platform": run.metadata.browser_platform,
+            "test_duration": run.metadata.test_duration,
+            "additional_notes": run.metadata.additional_notes
+        }
+    
+    return result
 
 
 def run_from_dict(data: Dict[str, Any]) -> ChecklistRun:
     """Create ChecklistRun from dictionary."""
     marks = {k: ItemStatus(v) for k, v in data.get("marks", {}).items()}
+    
+    # Parse metadata if present
+    metadata = None
+    if "metadata" in data and data["metadata"]:
+        metadata = TestMetadata(
+            tester_name=data["metadata"].get("tester_name"),
+            test_environment=data["metadata"].get("test_environment"),
+            browser_platform=data["metadata"].get("browser_platform"),
+            test_duration=data["metadata"].get("test_duration"),
+            additional_notes=data["metadata"].get("additional_notes")
+        )
     
     return ChecklistRun(
         id=data["id"],
@@ -131,5 +165,6 @@ def run_from_dict(data: Dict[str, Any]) -> ChecklistRun:
         project_id=data.get("project_id"),
         created_at=datetime.fromisoformat(data["created_at"]),
         updated_at=datetime.fromisoformat(data["updated_at"]),
-        marks=marks
+        marks=marks,
+        metadata=metadata
     )

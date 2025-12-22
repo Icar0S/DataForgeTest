@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Optional
 from datetime import datetime
 
-from .models import ChecklistRun, ChecklistTemplate, ItemStatus
+from .models import ChecklistRun, ChecklistTemplate, ItemStatus, TestMetadata
 from .models import run_to_dict, run_from_dict, template_from_dict
 
 
@@ -60,12 +60,13 @@ class ChecklistStorage:
         
         return run_from_dict(data)
     
-    def update_run(self, run_id: str, marks: Dict[str, str]) -> Optional[ChecklistRun]:
-        """Update marks for a checklist run.
+    def update_run(self, run_id: str, marks: Dict[str, str], metadata: Optional[Dict[str, str]] = None) -> Optional[ChecklistRun]:
+        """Update marks and metadata for a checklist run.
         
         Args:
             run_id: Run identifier
             marks: Dictionary of item_id -> status
+            metadata: Optional dictionary with test metadata
             
         Returns:
             Updated ChecklistRun or None if not found
@@ -77,6 +78,16 @@ class ChecklistStorage:
         # Update marks
         for item_id, status_str in marks.items():
             run.marks[item_id] = ItemStatus(status_str)
+        
+        # Update metadata if provided
+        if metadata:
+            run.metadata = TestMetadata(
+                tester_name=metadata.get("tester_name"),
+                test_environment=metadata.get("test_environment"),
+                browser_platform=metadata.get("browser_platform"),
+                test_duration=metadata.get("test_duration"),
+                additional_notes=metadata.get("additional_notes")
+            )
         
         run.updated_at = datetime.now()
         self._save_run(run)

@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import Blueprint, request, jsonify, send_file
 from datetime import datetime
 
-from .models import template_to_dict
+from .models import template_to_dict, run_to_dict
 from .storage import ChecklistStorage, load_template
 from .reports import generate_markdown_report, generate_pdf_report
 
@@ -95,27 +95,19 @@ def get_run(run_id):
     if not run:
         return jsonify({"error": "Run not found"}), 404
 
-    return jsonify(
-        {
-            "id": run.id,
-            "user_id": run.user_id,
-            "project_id": run.project_id,
-            "created_at": run.created_at.isoformat(),
-            "updated_at": run.updated_at.isoformat(),
-            "marks": {k: v.value for k, v in run.marks.items()},
-        }
-    )
+    return jsonify(run_to_dict(run))
 
 
 @checklist_bp.route("/runs/<run_id>", methods=["PUT"])
 def update_run(run_id):
-    """Update marks for a checklist run.
+    """Update marks and metadata for a checklist run.
 
     Args:
         run_id: Run identifier
 
     Request JSON:
         marks: List of {itemId, status} objects
+        metadata: Optional object with test metadata fields
 
     Returns:
         JSON with updated run data
@@ -143,22 +135,16 @@ def update_run(run_id):
 
             marks_dict[item_id] = status
 
+        # Get metadata if provided
+        metadata_data = data.get("metadata")
+
         # Update run
-        run = storage.update_run(run_id, marks_dict)
+        run = storage.update_run(run_id, marks_dict, metadata_data)
 
         if not run:
             return jsonify({"error": "Run not found"}), 404
 
-        return jsonify(
-            {
-                "id": run.id,
-                "user_id": run.user_id,
-                "project_id": run.project_id,
-                "created_at": run.created_at.isoformat(),
-                "updated_at": run.updated_at.isoformat(),
-                "marks": {k: v.value for k, v in run.marks.items()},
-            }
-        )
+        return jsonify(run_to_dict(run))
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
