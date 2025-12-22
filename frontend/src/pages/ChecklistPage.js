@@ -332,10 +332,10 @@ const ChecklistPage = () => {
                         key={item.id}
                         className="bg-gray-800/30 border border-gray-700/50 rounded-lg p-4 hover:bg-gray-800/50 transition-all"
                       >
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-center gap-4">
                           <button
                             onClick={() => handleMarkToggle(item.id, status)}
-                            className="mt-1 flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+                            className="flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
                             aria-label={isDone ? 'Marcar como não feito' : 'Marcar como feito'}
                           >
                             {isDone ? (
