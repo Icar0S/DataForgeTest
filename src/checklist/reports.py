@@ -52,6 +52,22 @@ def generate_markdown_report(
     if run.project_id:
         md_lines.append(f"**Projeto:** {run.project_id}")
     md_lines.append("")
+    
+    # Add test metadata if available
+    if run.metadata:
+        md_lines.append("## Informações do Teste")
+        md_lines.append("")
+        if run.metadata.tester_name:
+            md_lines.append(f"- **Nome do Testador:** {run.metadata.tester_name}")
+        if run.metadata.test_environment:
+            md_lines.append(f"- **Ambiente de Teste:** {run.metadata.test_environment}")
+        if run.metadata.browser_platform:
+            md_lines.append(f"- **Navegador/Plataforma:** {run.metadata.browser_platform}")
+        if run.metadata.test_duration:
+            md_lines.append(f"- **Duração do Teste:** {run.metadata.test_duration}")
+        if run.metadata.additional_notes:
+            md_lines.append(f"- **Observações Adicionais:** {run.metadata.additional_notes}")
+        md_lines.append("")
 
     # Summary
     total_items = sum(len(dim.items) for dim in template.dimensions)
@@ -198,6 +214,19 @@ def generate_pdf_report(
     ]
     if run.project_id:
         metadata_data.append(["Projeto:", run.project_id])
+    
+    # Add test metadata if available
+    if run.metadata:
+        if run.metadata.tester_name:
+            metadata_data.append(["Nome do Testador:", run.metadata.tester_name])
+        if run.metadata.test_environment:
+            metadata_data.append(["Ambiente de Teste:", run.metadata.test_environment])
+        if run.metadata.browser_platform:
+            metadata_data.append(["Navegador/Plataforma:", run.metadata.browser_platform])
+        if run.metadata.test_duration:
+            metadata_data.append(["Duração do Teste:", run.metadata.test_duration])
+        if run.metadata.additional_notes:
+            metadata_data.append(["Observações Adicionais:", run.metadata.additional_notes])
 
     metadata_table = Table(metadata_data, colWidths=[2 * inch, 4 * inch])
     metadata_table.setStyle(

@@ -9,7 +9,8 @@ import {
   Sparkles, 
   X,
   FileText,
-  FileDown
+  FileDown,
+  ClipboardEdit
 } from 'lucide-react';
 import { getApiUrl } from '../config/api';
 
@@ -27,6 +28,14 @@ const ChecklistPage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [showMetadataForm, setShowMetadataForm] = useState(false);
+  const [metadata, setMetadata] = useState({
+    tester_name: '',
+    test_environment: '',
+    browser_platform: '',
+    test_duration: '',
+    additional_notes: ''
+  });
 
   // Load template on mount
   useEffect(() => {
@@ -71,6 +80,11 @@ const ChecklistPage = () => {
       if (data.marks) {
         setMarks(data.marks);
       }
+      
+      // Load existing metadata if any
+      if (data.metadata) {
+        setMetadata(data.metadata);
+      }
     } catch (err) {
       setError('Erro ao criar sessão: ' + err.message);
     }
@@ -100,7 +114,10 @@ const ChecklistPage = () => {
       const response = await fetch(getApiUrl(`/api/checklist/runs/${runId}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ marks: marksArray })
+        body: JSON.stringify({ 
+          marks: marksArray,
+          metadata: metadata
+        })
       });
       
       if (!response.ok) throw new Error('Failed to save progress');
@@ -190,6 +207,28 @@ const ChecklistPage = () => {
   const closeManualModal = () => {
     setShowManualModal(false);
     setSelectedItem(null);
+  };
+
+  const openMetadataForm = () => {
+    setShowMetadataForm(true);
+  };
+
+  const closeMetadataForm = () => {
+    setShowMetadataForm(false);
+  };
+
+  const handleMetadataChange = (field, value) => {
+    setMetadata(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveMetadata = async () => {
+    await handleSaveProgress();
+    setShowMetadataForm(false);
+    setSuccessMessage('Informações do teste salvas com sucesso!');
+    setTimeout(() => setSuccessMessage(null), 3000);
   };
 
   const getSelectedDimension = () => {
@@ -418,6 +457,15 @@ const ChecklistPage = () => {
           </button>
           
           <button
+            onClick={openMetadataForm}
+            disabled={!runId}
+            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ClipboardEdit className="w-5 h-5" />
+            Informações do Teste
+          </button>
+          
+          <button
             onClick={handleGenerateRecommendations}
             disabled={isLoading || !runId}
             className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -515,6 +563,130 @@ const ChecklistPage = () => {
                     <span className="text-gray-300">{selectedItem.priority_weight}/5</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Metadata Form Modal */}
+      {showMetadataForm && (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+        <div 
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          onClick={closeMetadataForm}
+        >
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+          <div 
+            className="bg-gray-900 border border-gray-700/50 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">
+                    Informações do Teste
+                  </h3>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Preencha as informações adicionais sobre a execução do teste
+                  </p>
+                </div>
+                <button
+                  onClick={closeMetadataForm}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  aria-label="Fechar modal"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="tester_name" className="block text-sm font-medium text-gray-300 mb-2">
+                    Nome do Testador *
+                  </label>
+                  <input
+                    id="tester_name"
+                    type="text"
+                    value={metadata.tester_name}
+                    onChange={(e) => handleMetadataChange('tester_name', e.target.value)}
+                    placeholder="Ex: João Silva"
+                    className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="test_environment" className="block text-sm font-medium text-gray-300 mb-2">
+                    Ambiente de Teste *
+                  </label>
+                  <input
+                    id="test_environment"
+                    type="text"
+                    value={metadata.test_environment}
+                    onChange={(e) => handleMetadataChange('test_environment', e.target.value)}
+                    placeholder="Ex: Produção, Homologação, Desenvolvimento"
+                    className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="browser_platform" className="block text-sm font-medium text-gray-300 mb-2">
+                    Navegador/Plataforma
+                  </label>
+                  <input
+                    id="browser_platform"
+                    type="text"
+                    value={metadata.browser_platform}
+                    onChange={(e) => handleMetadataChange('browser_platform', e.target.value)}
+                    placeholder="Ex: Chrome 120 / Windows 11, Safari / macOS"
+                    className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="test_duration" className="block text-sm font-medium text-gray-300 mb-2">
+                    Duração do Teste
+                  </label>
+                  <input
+                    id="test_duration"
+                    type="text"
+                    value={metadata.test_duration}
+                    onChange={(e) => handleMetadataChange('test_duration', e.target.value)}
+                    placeholder="Ex: 2 horas, 45 minutos"
+                    className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="additional_notes" className="block text-sm font-medium text-gray-300 mb-2">
+                    Observações Adicionais
+                  </label>
+                  <textarea
+                    id="additional_notes"
+                    value={metadata.additional_notes}
+                    onChange={(e) => handleMetadataChange('additional_notes', e.target.value)}
+                    placeholder="Adicione observações, problemas encontrados, ou informações relevantes sobre o teste..."
+                    rows="4"
+                    className="w-full px-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={closeMetadataForm}
+                  className="px-6 py-2 text-gray-300 hover:text-white transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveMetadata}
+                  disabled={!metadata.tester_name || !metadata.test_environment}
+                  className="flex items-center gap-2 px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-5 h-5" />
+                  Salvar
+                </button>
               </div>
             </div>
           </div>

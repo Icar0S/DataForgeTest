@@ -103,19 +103,27 @@ def get_run(run_id):
             "created_at": run.created_at.isoformat(),
             "updated_at": run.updated_at.isoformat(),
             "marks": {k: v.value for k, v in run.marks.items()},
+            "metadata": {
+                "tester_name": run.metadata.tester_name if run.metadata else None,
+                "test_environment": run.metadata.test_environment if run.metadata else None,
+                "browser_platform": run.metadata.browser_platform if run.metadata else None,
+                "test_duration": run.metadata.test_duration if run.metadata else None,
+                "additional_notes": run.metadata.additional_notes if run.metadata else None
+            } if run.metadata else None
         }
     )
 
 
 @checklist_bp.route("/runs/<run_id>", methods=["PUT"])
 def update_run(run_id):
-    """Update marks for a checklist run.
+    """Update marks and metadata for a checklist run.
 
     Args:
         run_id: Run identifier
 
     Request JSON:
         marks: List of {itemId, status} objects
+        metadata: Optional object with test metadata fields
 
     Returns:
         JSON with updated run data
@@ -143,8 +151,11 @@ def update_run(run_id):
 
             marks_dict[item_id] = status
 
+        # Get metadata if provided
+        metadata_data = data.get("metadata")
+
         # Update run
-        run = storage.update_run(run_id, marks_dict)
+        run = storage.update_run(run_id, marks_dict, metadata_data)
 
         if not run:
             return jsonify({"error": "Run not found"}), 404
@@ -157,6 +168,13 @@ def update_run(run_id):
                 "created_at": run.created_at.isoformat(),
                 "updated_at": run.updated_at.isoformat(),
                 "marks": {k: v.value for k, v in run.marks.items()},
+                "metadata": {
+                    "tester_name": run.metadata.tester_name if run.metadata else None,
+                    "test_environment": run.metadata.test_environment if run.metadata else None,
+                    "browser_platform": run.metadata.browser_platform if run.metadata else None,
+                    "test_duration": run.metadata.test_duration if run.metadata else None,
+                    "additional_notes": run.metadata.additional_notes if run.metadata else None
+                } if run.metadata else None
             }
         )
 
