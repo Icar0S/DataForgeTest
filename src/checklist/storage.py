@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, Optional
 from datetime import datetime
 
-from .models import ChecklistRun, ChecklistTemplate, ItemStatus
+from .models import ChecklistRun, ChecklistTemplate, ItemStatus, TestMetadata
 from .models import run_to_dict, run_from_dict, template_from_dict
 
 
@@ -81,7 +81,6 @@ class ChecklistStorage:
         
         # Update metadata if provided
         if metadata:
-            from .models import TestMetadata
             run.metadata = TestMetadata(
                 tester_name=metadata.get("tester_name"),
                 test_environment=metadata.get("test_environment"),
