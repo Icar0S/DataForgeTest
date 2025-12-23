@@ -9,25 +9,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot.main import process_chatbot_request
-from rag.routes_simple import rag_bp
-from accuracy.routes import accuracy_bp
-from synthetic.routes import synth_bp
-from gold.routes import gold_bp
-from metrics.routes import metrics_bp
-from checklist.routes import checklist_bp
-from dataset_inspector.routes import dataset_inspector_bp
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Register blueprints
-app.register_blueprint(rag_bp)
-app.register_blueprint(accuracy_bp)
-app.register_blueprint(synth_bp)
-app.register_blueprint(gold_bp)
-app.register_blueprint(metrics_bp)
-app.register_blueprint(checklist_bp)
-app.register_blueprint(dataset_inspector_bp)
+# Import and register blueprints with error handling
+# Critical blueprints are imported first
+blueprints_to_register = [
+    # Critical features first (simpler, less dependencies)
+    ("metrics", "metrics.routes", "metrics_bp"),
+    ("checklist", "checklist.routes", "checklist_bp"),
+    ("dataset_inspector", "dataset_inspector.routes", "dataset_inspector_bp"),
+    ("accuracy", "accuracy.routes", "accuracy_bp"),
+    ("gold", "gold.routes", "gold_bp"),
+    ("synthetic", "synthetic.routes", "synth_bp"),
+    # RAG last (has complex initialization)
+    ("rag", "rag.routes_simple", "rag_bp"),
+]
+
+for feature_name, module_path, blueprint_name in blueprints_to_register:
+    try:
+        module = __import__(module_path, fromlist=[blueprint_name])
+        blueprint = getattr(module, blueprint_name)
+        app.register_blueprint(blueprint)
+        print(f"[OK] Registered blueprint: {feature_name}")
+    except Exception as e:
+        print(f"[FAIL] Failed to register blueprint {feature_name}: {str(e)}")
+        # Continue registering other blueprints even if one fails
 
 
 @app.route("/", methods=["GET"])

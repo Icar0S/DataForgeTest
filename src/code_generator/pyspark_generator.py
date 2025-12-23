@@ -10,7 +10,7 @@ def generate_pyspark_code(dsl):
     dataset_name = dsl.get("dataset", {}).get("name", "data")
     data_format = dsl.get("dataset", {}).get("format", "").lower()
     has_header = dsl.get("dataset", {}).get("has_header", False)
-    
+
     # Get detected options (encoding and delimiter)
     detected_options = dsl.get("dataset", {}).get("detected_options", {})
     encoding = detected_options.get("encoding", "utf-8")
@@ -152,7 +152,9 @@ else:
             if not columns:
                 continue  # Skip if no columns specified
             cols_str = ", ".join([f"'{c}'" for c in columns])
-            cols_check = " and ".join([f'check_column_exists(df, "{c}")' for c in columns])
+            cols_check = " and ".join(
+                [f'check_column_exists(df, "{c}")' for c in columns]
+            )
             code += f"""
 print(f"\\nChecking uniqueness for columns: {cols_str}")
 if {cols_check}:
@@ -298,7 +300,7 @@ if all_failed_records:
     for rule_name, failed_count in all_failed_records:
         print(f"- {rule_name}: {failed_count} failures")
 else:
-    print("✅ All data quality rules passed!")
+    print("[SUCCESS] All data quality rules passed!")
 
 # 6. Finalize Spark Session
 spark.stop()

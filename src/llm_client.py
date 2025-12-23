@@ -267,5 +267,5 @@ def get_default_llm_client() -> Optional[LLMClient]:
     try:
         return create_llm_client()
     except (ValueError, ImportError) as e:
-        print(f"⚠️  Could not initialize LLM client: {e}")
+        print(f"[WARNING] Could not initialize LLM client: {e}")
         return None

@@ -31,12 +31,12 @@ class SimpleRAG:
                     data = json.load(f)
                     self.documents = data.get("documents", {})
                     self.document_chunks = data.get("chunks", {})
-                    print(f"✅ Loaded {len(self.documents)} documents from file")
+                    print(f"[OK] Loaded {len(self.documents)} documents from file")
             except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"⚠️  Error loading documents: {e}")
+                print(f"[WARNING] Error loading documents: {e}")
                 self._load_fallback_documents()
         else:
-            print(f"⚠️  Documents file not found: {docs_file}")
+            print(f"[WARNING] Documents file not found: {docs_file}")
             self._load_fallback_documents()
 
     def _load_fallback_documents(self):
@@ -44,16 +44,16 @@ class SimpleRAG:
         try:
             from .fallback_docs import FALLBACK_DOCUMENTS
 
-            print("📦 Loading fallback documents...")
+            print("[INFO] Loading fallback documents...")
             for doc_id, doc_data in FALLBACK_DOCUMENTS.items():
                 self.documents[doc_id] = doc_data
                 # Create chunks for fallback docs
                 chunks = self._create_chunks(doc_data["content"])
                 self.document_chunks[doc_id] = chunks
 
-            print(f"✅ Loaded {len(self.documents)} fallback documents")
+            print(f"[OK] Loaded {len(self.documents)} fallback documents")
         except Exception as e:  # pylint: disable=broad-exception-caught
-            print(f"❌ Failed to load fallback documents: {e}")
+            print(f"[ERROR] Failed to load fallback documents: {e}")
 
     def _save_documents(self):
         """Save documents to storage."""

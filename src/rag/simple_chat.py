@@ -37,9 +37,9 @@ class SimpleChatEngine:
                 model = os.getenv("LLM_MODEL", "claude-3-haiku-20240307")
             else:  # ollama
                 model = os.getenv("LLM_MODEL", "qwen2.5-coder:7b")
-            print(f"✅ LLM initialized with provider: {provider}, model: {model}")
+            print(f"[OK] LLM initialized with provider: {provider}, model: {model}")
         else:
-            print("⚠️  No LLM configured. Using simple template responses.")
+            print("[WARNING] No LLM configured. Using simple template responses.")
 
     def chat(self, message: str) -> Dict:
         """Process a chat message with RAG context."""
@@ -112,7 +112,7 @@ Please answer based on the context above. Use citations [1], [2], etc. when refe
             return response_text
 
         except Exception as e:
-            print(f"❌ LLM API error: {e}")
+            print(f"[ERROR] LLM API error: {e}")
             # Fallback to simple response
             return self._generate_simple_response(question, context)
 
