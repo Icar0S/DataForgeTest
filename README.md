@@ -807,6 +807,21 @@ We welcome contributions! Please see our contributing guidelines:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## 📚 Citação Acadêmica
+
+Se você usar este projeto em sua pesquisa, por favor cite:
+
+```bibtex
+@mastersthesis{santos2025dataqualitychatbot,
+  author = {Santos, Icaro},
+  title = {DataForgeTest Big Data Quality Testing: Sistema Inteligente para Validação de Dados},
+  school = {Universidade Estadual do Ceará},
+  year = {2025},
+  type = {Dissertação de Mestrado},
+  url = {https://github.com/Icar0S/DataForgeTest}
+}
+```
+
 ## 🙏 Acknowledgments
 
 - **Anthropic Claude** for LLM capabilities

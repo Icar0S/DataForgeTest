@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: Data Quality Chatbot
+message: "Se você usar este software em sua pesquisa, por favor cite-o usando os metadados deste arquivo."
+type: software
+authors:
+  - family-names: Santos
+    given-names: Icaro
+    orcid: "https://orcid.org/0009-0000-8999-7051"
+repository-code: "https://github.com/Icar0S/DataForgeTest"
+abstract: "Sistema de chatbot para análise e geração de regras de qualidade de dados usando PySpark."
+keywords:
+  - data quality
+  - pyspark
+  - machine learning
+  - chatbot
+license: MIT
+date-released: 2025-12-23
