@@ -10,7 +10,7 @@ os.environ["LLM_PROVIDER"] = "gemini"
 # API key must be set via environment variable
 if "GEMINI_API_KEY" not in os.environ:
     raise ValueError("GEMINI_API_KEY environment variable is required")
-os.environ["GEMINI_MODEL"] = "gemini-2.0-flash-lite"
+os.environ["GEMINI_MODEL"] = "gemini-2.5-flash-lite"
 
 from rag.config_simple import RAGConfig  # type: ignore  # noqa: E402
 from rag.simple_rag import SimpleRAG  # type: ignore  # noqa: E402

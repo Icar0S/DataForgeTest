@@ -24,13 +24,13 @@ GEMINI_API_KEY=AIzaSyAn1gGblIgQfuIdDGZKkjiNZM7ddYWIPKE
 GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 
-**IMPORTANTE**: Use `gemini-2.0-flash-exp` ou `gemini-2.0-flash-lite`, NÃO use apenas `gemini-2.0-flash-lite` se não funcionar.
+**IMPORTANTE**: Use `gemini-2.0-flash-exp` ou `gemini-2.5-flash-lite`, NÃO use apenas `gemini-2.5-flash-lite` se não funcionar.
 
 ### 2. Modelos Gemini Disponíveis (Janeiro 2026)
 
 Teste nesta ordem:
 1. `gemini-2.0-flash-exp` ✅ Recomendado
-2. `gemini-2.0-flash-lite` 
+2. `gemini-2.5-flash-lite` 
 3. `gemini-1.5-flash`
 4. `gemini-1.5-pro`
 
@@ -155,7 +155,7 @@ Após configurar e fazer redeploy:
 
 ### Problema: Modelo não encontrado
 
-**Erro**: `404 models/gemini-2.0-flash-lite is not found`
+**Erro**: `404 models/gemini-2.5-flash-lite is not found`
 
 **Solução**:
 Tente outros modelos disponíveis:

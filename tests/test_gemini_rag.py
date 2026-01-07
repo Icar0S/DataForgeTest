@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 os.environ["LLM_PROVIDER"] = "gemini"
 if "GEMINI_API_KEY" not in os.environ:
     raise ValueError("GEMINI_API_KEY environment variable is required")
-os.environ["GEMINI_MODEL"] = "gemini-2.0-flash-lite"
+os.environ["GEMINI_MODEL"] = "gemini-2.5-flash-lite"
 
 from rag.config_simple import RAGConfig  # type: ignore  # noqa: E402
 from rag.simple_rag import SimpleRAG  # type: ignore  # noqa: E402

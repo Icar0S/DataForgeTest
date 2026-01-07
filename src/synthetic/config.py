@@ -55,7 +55,7 @@ class SyntheticConfig:
         if provider == "ollama":
             default_model = "qwen2.5-coder:7b"
         elif provider == "gemini":
-            default_model = "gemini-2.0-flash-lite"
+            default_model = "gemini-2.5-flash-lite"
         else:  # anthropic
             default_model = "claude-3-haiku-20240307"
 

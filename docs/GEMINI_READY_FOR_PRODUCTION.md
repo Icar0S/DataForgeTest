@@ -5,7 +5,7 @@
 ### ✅ Testes Locais Bem-Sucedidos
 
 ```
-✅ LLM initialized with provider: gemini, model: gemini-2.0-flash-lite
+✅ LLM initialized with provider: gemini, model: gemini-2.5-flash-lite
 📚 Documentos: 31
 🧠 LLM: Ativo
 ✅ Usando LLM: True
@@ -20,7 +20,7 @@
 ```bash
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=your_actual_gemini_api_key_here
-GEMINI_MODEL=gemini-2.0-flash-lite
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 ### 2️⃣ Verificação Pós-Deploy
@@ -37,7 +37,7 @@ Procure por `llm_status`:
     "configured": true,  // ✅ Deve ser true
     "client_type": "GeminiClient",  // ✅ Deve ser GeminiClient
     "provider": "gemini",  // ✅ Deve ser gemini
-    "model": "gemini-2.0-flash-lite",  // ✅ Deve ser gemini-2.0-flash-lite
+    "model": "gemini-2.5-flash-lite",  // ✅ Deve ser gemini-2.5-flash-lite
     "gemini_key_set": true  // ✅ Deve ser true
   }
 }
@@ -103,7 +103,7 @@ Por enquanto funciona perfeitamente, mas pode aparecer warnings nos logs.
 ## 🚀 Checklist Final
 
 - [x] Código implementado e testado
-- [x] Modelo correto: gemini-2.0-flash-lite
+- [x] Modelo correto: gemini-2.5-flash-lite
 - [x] API key válida e testada
 - [x] Testes locais passando
 - [x] Documentação completa
@@ -118,7 +118,7 @@ Por enquanto funciona perfeitamente, mas pode aparecer warnings nos logs.
 ```bash
 set GEMINI_API_KEY=your_actual_gemini_api_key_here
 set LLM_PROVIDER=gemini
-set GEMINI_MODEL=gemini-2.0-flash-lite
+set GEMINI_MODEL=gemini-2.5-flash-lite
 python test_gemini_rag.py
 ```
 
@@ -137,7 +137,7 @@ python diagnose_llm_production.py
 ## ✅ Resumo
 
 1. ✅ Gemini testado e funcionando localmente
-2. ✅ Modelo correto: `gemini-2.0-flash-lite`
+2. ✅ Modelo correto: `gemini-2.5-flash-lite`
 3. ✅ API key válida
 4. ✅ RAG + LLM integrados
 5. ⏳ Aguardando configuração no Render

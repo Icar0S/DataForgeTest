@@ -31,7 +31,7 @@ class SimpleChatEngine:
             # Get the actual model name based on provider
             if provider == "gemini":
                 model = os.getenv("GEMINI_MODEL") or os.getenv(
-                    "LLM_MODEL", "gemini-2.0-flash-lite"
+                    "LLM_MODEL", "gemini-2.5-flash-lite"
                 )
             elif provider == "anthropic":
                 model = os.getenv("LLM_MODEL", "claude-3-haiku-20240307")
