@@ -19,6 +19,11 @@ synth_bp = Blueprint("synth", __name__, url_prefix="/api/synth")
 # Initialize config
 config = SyntheticConfig.from_env()
 
+# Log configuration for debugging
+print(f"[SYNTHETIC CONFIG] Provider: {config.llm_provider}")
+print(f"[SYNTHETIC CONFIG] Model: {config.llm_model}")
+print(f"[SYNTHETIC CONFIG] API Key configured: {'Yes' if config.llm_api_key else 'No'}")
+
 # Initialize generator with provider
 generator = SyntheticDataGenerator(
     api_key=config.llm_api_key,
@@ -37,6 +42,7 @@ def health_check():
         {
             "status": "ok",
             "message": "Synthetic Data Generation service is running",
+            "provider": config.llm_provider,
             "model": config.llm_model,
             "max_rows": config.max_rows,
         }

@@ -50,6 +50,8 @@ class SyntheticConfig:
 
         # Determine provider and default model
         provider = os.getenv("LLM_PROVIDER", "ollama")
+
+        # Set appropriate default model based on provider
         if provider == "ollama":
             default_model = "qwen2.5-coder:7b"
         elif provider == "gemini":
@@ -57,12 +59,29 @@ class SyntheticConfig:
         else:  # anthropic
             default_model = "claude-3-haiku-20240307"
 
+        # Get model from environment, with special handling for Gemini
+        configured_model = os.getenv("LLM_MODEL") or os.getenv("GEMINI_MODEL")
+
+        # If no model specified, use default for provider
+        model_to_use = configured_model or default_model
+
+        # Smart detection: If a Gemini model is specified, ensure provider is set to gemini
+        if model_to_use and model_to_use.startswith("gemini"):
+            provider = "gemini"
+            # Use GEMINI_API_KEY if LLM_API_KEY is not set
+            api_key = os.getenv("LLM_API_KEY") or os.getenv("GEMINI_API_KEY", "")
+        elif model_to_use and model_to_use.startswith("claude"):
+            provider = "anthropic"
+            api_key = os.getenv("LLM_API_KEY", "")
+        else:
+            api_key = os.getenv("LLM_API_KEY", "")
+
         return cls(
             storage_path=Path(storage_path),
             llm_provider=provider,
             llm_provider_endpoint=os.getenv("LLM_PROVIDER_ENDPOINT"),
-            llm_api_key=os.getenv("LLM_API_KEY", ""),
-            llm_model=os.getenv("LLM_MODEL", default_model),
+            llm_api_key=api_key,
+            llm_model=model_to_use,
             ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
             max_rows=int(os.getenv("SYNTH_MAX_ROWS", "1000000")),
             request_timeout=int(os.getenv("SYNTH_REQUEST_TIMEOUT", "300")),
