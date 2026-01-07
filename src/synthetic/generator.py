@@ -8,7 +8,7 @@ import random
 import re
 import time
 from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Use relative import instead of sys.path manipulation
 try:
@@ -406,9 +406,45 @@ Requirements:
                 elif col_type == "boolean":
                     record[name] = random.choice([True, False])
                 elif col_type == "date":
-                    record[name] = (
-                        f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d}"
-                    )
+                    # Generate date with optional range constraints
+                    start_date_str = options.get("start", "2020-01-01")
+                    end_date_str = options.get("end", "2025-12-31")
+                    try:
+                        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+                        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+                        days_between = (end_date - start_date).days
+                        random_days = random.randint(0, max(0, days_between))
+                        random_date = start_date + timedelta(days=random_days)
+                        record[name] = random_date.strftime("%Y-%m-%d")
+                    except (ValueError, TypeError):
+                        # Fallback if date parsing fails
+                        record[name] = (
+                            f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d}"
+                        )
+                elif col_type == "datetime":
+                    # Generate datetime with optional range constraints
+                    start_date_str = options.get("start", "2020-01-01")
+                    end_date_str = options.get("end", "2025-12-31")
+                    try:
+                        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+                        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
+                        days_between = (end_date - start_date).days
+                        random_days = random.randint(0, max(0, days_between))
+                        random_date = start_date + timedelta(days=random_days)
+                        # Add random time component
+                        random_hour = random.randint(0, 23)
+                        random_minute = random.randint(0, 59)
+                        random_second = random.randint(0, 59)
+                        random_datetime = random_date + timedelta(
+                            hours=random_hour, minutes=random_minute, seconds=random_second
+                        )
+                        record[name] = random_datetime.strftime("%Y-%m-%d %H:%M:%S")
+                    except (ValueError, TypeError):
+                        # Fallback if date parsing fails
+                        record[name] = (
+                            f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d} "
+                            f"{random.randint(0,23):02d}:{random.randint(0,59):02d}:{random.randint(0,59):02d}"
+                        )
                 elif col_type == "uuid":
                     record[name] = f"mock-uuid-{i:06d}"
                 else:

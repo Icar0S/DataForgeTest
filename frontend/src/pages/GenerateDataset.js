@@ -184,7 +184,9 @@ const GenerateDataset = () => {
       }
 
       const data = await response.json();
-      setDownloadUrl(data.downloadUrl);
+      // Convert the download URL to a full URL using getApiUrl
+      const fullDownloadUrl = getApiUrl(data.downloadUrl);
+      setDownloadUrl(fullDownloadUrl);
       setLogs(data.logs || []);
       setGenerationSummary(data.summary);
       setSuccess(`Dataset generated successfully! ${data.summary.rows} rows, ${data.summary.cols} columns`);
