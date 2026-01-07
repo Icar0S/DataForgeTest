@@ -1,5 +1,6 @@
 """Tests for synthetic data generation backend."""
 
+import re
 import pytest
 from src.synthetic.validators import (
     validate_schema,
@@ -282,7 +283,6 @@ class TestSyntheticDataGenerator:
         assert all("updated_at" in r for r in records)
 
         # Check datetime format (should be YYYY-MM-DD HH:MM:SS)
-        import re
         datetime_pattern = re.compile(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
         for record in records:
             assert datetime_pattern.match(record["created_at"]), f"Invalid datetime format: {record['created_at']}"

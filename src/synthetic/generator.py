@@ -372,6 +372,47 @@ Requirements:
 
         return [], logs
 
+    def _generate_random_date(
+        self, start_str: str, end_str: str, include_time: bool = False
+    ) -> str:
+        """Generate a random date or datetime within a range.
+
+        Args:
+            start_str: Start date in YYYY-MM-DD format
+            end_str: End date in YYYY-MM-DD format
+            include_time: If True, include time component (for datetime)
+
+        Returns:
+            Random date string (YYYY-MM-DD or YYYY-MM-DD HH:MM:SS)
+        """
+        try:
+            start_date = datetime.strptime(start_str, "%Y-%m-%d")
+            end_date = datetime.strptime(end_str, "%Y-%m-%d")
+            days_between = (end_date - start_date).days
+            random_days = random.randint(0, max(0, days_between))
+            random_date = start_date + timedelta(days=random_days)
+
+            if include_time:
+                # Add random time component for datetime
+                random_hour = random.randint(0, 23)
+                random_minute = random.randint(0, 59)
+                random_second = random.randint(0, 59)
+                random_datetime = random_date + timedelta(
+                    hours=random_hour, minutes=random_minute, seconds=random_second
+                )
+                return random_datetime.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                return random_date.strftime("%Y-%m-%d")
+        except (ValueError, TypeError):
+            # Fallback if date parsing fails
+            if include_time:
+                return (
+                    f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d} "
+                    f"{random.randint(0,23):02d}:{random.randint(0,59):02d}:{random.randint(0,59):02d}"
+                )
+            else:
+                return f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d}"
+
     def _generate_mock_data(
         self, schema: Dict[str, Any], num_rows: int
     ) -> List[Dict[str, Any]]:
@@ -409,42 +450,16 @@ Requirements:
                     # Generate date with optional range constraints
                     start_date_str = options.get("start", "2020-01-01")
                     end_date_str = options.get("end", "2025-12-31")
-                    try:
-                        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-                        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-                        days_between = (end_date - start_date).days
-                        random_days = random.randint(0, max(0, days_between))
-                        random_date = start_date + timedelta(days=random_days)
-                        record[name] = random_date.strftime("%Y-%m-%d")
-                    except (ValueError, TypeError):
-                        # Fallback if date parsing fails
-                        record[name] = (
-                            f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d}"
-                        )
+                    record[name] = self._generate_random_date(
+                        start_date_str, end_date_str, include_time=False
+                    )
                 elif col_type == "datetime":
                     # Generate datetime with optional range constraints
                     start_date_str = options.get("start", "2020-01-01")
                     end_date_str = options.get("end", "2025-12-31")
-                    try:
-                        start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
-                        end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-                        days_between = (end_date - start_date).days
-                        random_days = random.randint(0, max(0, days_between))
-                        random_date = start_date + timedelta(days=random_days)
-                        # Add random time component
-                        random_hour = random.randint(0, 23)
-                        random_minute = random.randint(0, 59)
-                        random_second = random.randint(0, 59)
-                        random_datetime = random_date + timedelta(
-                            hours=random_hour, minutes=random_minute, seconds=random_second
-                        )
-                        record[name] = random_datetime.strftime("%Y-%m-%d %H:%M:%S")
-                    except (ValueError, TypeError):
-                        # Fallback if date parsing fails
-                        record[name] = (
-                            f"2024-{random.randint(1,12):02d}-{random.randint(1,28):02d} "
-                            f"{random.randint(0,23):02d}:{random.randint(0,59):02d}:{random.randint(0,59):02d}"
-                        )
+                    record[name] = self._generate_random_date(
+                        start_date_str, end_date_str, include_time=True
+                    )
                 elif col_type == "uuid":
                     record[name] = f"mock-uuid-{i:06d}"
                 else:
