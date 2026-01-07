@@ -9,9 +9,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from chatbot.main import process_chatbot_request
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Handle proxy headers from Render/reverse proxies
+# This ensures request.is_secure correctly detects HTTPS
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
 
 # Import and register blueprints with error handling
 # Critical blueprints are imported first

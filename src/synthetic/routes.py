@@ -221,7 +221,16 @@ def generate():
 
         # In production environments, build an absolute URL
         if request.host:
-            scheme = "https" if request.is_secure else "http"
+            # Check for forwarded proto header (set by reverse proxies like Render)
+            forwarded_proto = request.headers.get("X-Forwarded-Proto", "")
+            # Use HTTPS if forwarded proto is https, or if request is secure
+            # Default to HTTPS in production (when host is not localhost)
+            is_localhost = "localhost" in request.host or "127.0.0.1" in request.host
+            scheme = (
+                "https"
+                if (forwarded_proto == "https" or request.is_secure or not is_localhost)
+                else "http"
+            )
             download_url = f"{scheme}://{request.host}{download_path}"
 
         # Return summary
@@ -256,6 +265,12 @@ def download(session_id: str, filename: str):
         File download
     """
     try:
+        # Log request for debugging
+        forwarded_proto = request.headers.get("X-Forwarded-Proto", "not set")
+        print(
+            f"[DOWNLOAD] Request from {request.host} via {forwarded_proto}, is_secure={request.is_secure}"
+        )
+
         # Sanitize inputs
         session_id = secure_filename(session_id)
         filename = secure_filename(filename)
@@ -308,6 +323,14 @@ def download(session_id: str, filename: str):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+
+        # Security headers to prevent mixed content issues
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+
+        # Ensure CORS allows the download
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        response.headers["Access-Control-Expose-Headers"] = "Content-Disposition"
 
         return response
 
