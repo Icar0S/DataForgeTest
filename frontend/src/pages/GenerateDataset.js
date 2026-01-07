@@ -90,7 +90,7 @@ const GenerateDataset = () => {
     
     // Check for empty column names
     columns.forEach((col, i) => {
-      if (!col.name || !col.name.trim()) {
+      if (!col.name?.trim()) {
         errors.push(`Column ${i + 1} needs a name`);
       }
     });
@@ -184,9 +184,11 @@ const GenerateDataset = () => {
       }
 
       const data = await response.json();
-      // Convert the download URL to a full URL using getApiUrl
-      const fullDownloadUrl = getApiUrl(data.downloadUrl);
-      setDownloadUrl(fullDownloadUrl);
+      // Check if download URL is already absolute (starts with http/https)
+      const downloadUrlToUse = data.downloadUrl.startsWith('http') 
+        ? data.downloadUrl 
+        : getApiUrl(data.downloadUrl);
+      setDownloadUrl(downloadUrlToUse);
       setLogs(data.logs || []);
       setGenerationSummary(data.summary);
       setSuccess(`Dataset generated successfully! ${data.summary.rows} rows, ${data.summary.cols} columns`);
@@ -239,7 +241,7 @@ const GenerateDataset = () => {
             type="number"
             placeholder="Min"
             value={options.min || ''}
-            onChange={(e) => handleColumnChange(index, 'options.min', parseFloat(e.target.value) || 0)}
+            onChange={(e) => handleColumnChange(index, 'options.min', Number.parseFloat(e.target.value) || 0)}
             onKeyDown={handleKeyDown}
             className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
             aria-label={`Min value for ${column.name}`}
@@ -248,7 +250,7 @@ const GenerateDataset = () => {
             type="number"
             placeholder="Max"
             value={options.max || ''}
-            onChange={(e) => handleColumnChange(index, 'options.max', parseFloat(e.target.value) || 100)}
+            onChange={(e) => handleColumnChange(index, 'options.max', Number.parseFloat(e.target.value) || 100)}
             onKeyDown={handleKeyDown}
             className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
             aria-label={`Max value for ${column.name}`}
@@ -258,7 +260,7 @@ const GenerateDataset = () => {
               type="number"
               placeholder="Decimals"
               value={options.decimals || ''}
-              onChange={(e) => handleColumnChange(index, 'options.decimals', parseInt(e.target.value) || 2)}
+              onChange={(e) => handleColumnChange(index, 'options.decimals', Number.parseInt(e.target.value, 10) || 2)}
               onKeyDown={handleKeyDown}
               className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
               aria-label={`Decimal places for ${column.name}`}
@@ -271,7 +273,7 @@ const GenerateDataset = () => {
               onChange={(e) => handleColumnChange(index, 'options.unique', e.target.checked)}
               className="w-4 h-4"
             />
-            Unique
+            <span>Unique</span>
           </label>
         </div>
       );
@@ -314,7 +316,7 @@ const GenerateDataset = () => {
           type="number"
           placeholder="Avg length"
           value={options.length || ''}
-          onChange={(e) => handleColumnChange(index, 'options.length', parseInt(e.target.value) || 50)}
+          onChange={(e) => handleColumnChange(index, 'options.length', Number.parseInt(e.target.value, 10) || 50)}
           onKeyDown={handleKeyDown}
           className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
           aria-label={`Average length for ${column.name}`}
@@ -396,15 +398,16 @@ const GenerateDataset = () => {
           
           {/* Number of Columns */}
           <div className="mb-6">
-            <label className="block text-gray-300 mb-2">Number of Columns</label>
+            <label htmlFor="numColumns" className="block text-gray-300 mb-2">Number of Columns</label>
             <select
+              id="numColumns"
               value={numColumns}
-              onChange={(e) => setNumColumns(parseInt(e.target.value))}
+              onChange={(e) => setNumColumns(Number.parseInt(e.target.value, 10))}
               className="px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
               aria-label="Number of columns"
             >
-              {[...Array(50)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1}</option>
+              {Array.from({ length: 50 }, (_, i) => (
+                <option key={`col-count-${i + 1}`} value={i + 1}>{i + 1}</option>
               ))}
             </select>
           </div>
@@ -413,13 +416,14 @@ const GenerateDataset = () => {
           <div className="space-y-4">
             {columns.map((col, index) => (
               <div
-                key={index}
+                key={`col-config-${col.name}-${index}`}
                 className="bg-gray-900/50 rounded-xl p-4 border border-gray-700/50"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-gray-400 text-sm mb-1">Column Name</label>
+                    <label htmlFor={`col-name-${index}`} className="block text-gray-400 text-sm mb-1">Column Name</label>
                     <input
+                      id={`col-name-${index}`}
                       ref={index === 0 ? firstInputRef : null}
                       type="text"
                       value={col.name}
@@ -430,8 +434,9 @@ const GenerateDataset = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-1">Type</label>
+                    <label htmlFor={`col-type-${index}`} className="block text-gray-400 text-sm mb-1">Type</label>
                     <select
+                      id={`col-type-${index}`}
                       value={col.type}
                       onChange={(e) => handleColumnChange(index, 'type', e.target.value)}
                       className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
@@ -443,7 +448,7 @@ const GenerateDataset = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-gray-400 text-sm mb-1">Options</label>
+                    <label htmlFor={`col-options-${index}`} className="block text-gray-400 text-sm mb-1">Options</label>
                     {renderColumnOptions(col, index)}
                   </div>
                 </div>
@@ -461,8 +466,9 @@ const GenerateDataset = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-300 mb-2">File Type</label>
+              <label htmlFor="fileType" className="block text-gray-300 mb-2">File Type</label>
               <select
+                id="fileType"
                 value={fileType}
                 onChange={(e) => setFileType(e.target.value)}
                 className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-purple-500"
@@ -474,11 +480,12 @@ const GenerateDataset = () => {
               </select>
             </div>
             <div>
-              <label className="block text-gray-300 mb-2">Number of Rows</label>
+              <label htmlFor="numRows" className="block text-gray-300 mb-2">Number of Rows</label>
               <input
+                id="numRows"
                 type="number"
                 value={numRows}
-                onChange={(e) => setNumRows(parseInt(e.target.value) || 0)}
+                onChange={(e) => setNumRows(Number.parseInt(e.target.value, 10) || 0)}
                 onKeyDown={handleKeyDown}
                 min="1"
                 max="1000000"
@@ -542,7 +549,7 @@ const GenerateDataset = () => {
         </motion.div>
 
         {/* Preview Table */}
-        {previewData && previewData.preview && previewData.preview.length > 0 && (
+        {previewData?.preview?.length > 0 && (
           <motion.div
             variants={fadeIn}
             className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 mb-6"
@@ -552,8 +559,8 @@ const GenerateDataset = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-700">
-                    {previewData.columns.map((col, i) => (
-                      <th key={i} className="px-4 py-2 text-left text-purple-400 font-semibold">
+                    {previewData.columns.map((col) => (
+                      <th key={`preview-header-${col}`} className="px-4 py-2 text-left text-purple-400 font-semibold">
                         {col}
                       </th>
                     ))}
@@ -561,9 +568,9 @@ const GenerateDataset = () => {
                 </thead>
                 <tbody>
                   {previewData.preview.slice(0, 50).map((row, i) => (
-                    <tr key={i} className="border-b border-gray-700/50">
-                      {previewData.columns.map((col, j) => (
-                        <td key={j} className="px-4 py-2 text-gray-300">
+                    <tr key={`preview-row-${i}-${JSON.stringify(row).substring(0, 30)}`} className="border-b border-gray-700/50">
+                      {previewData.columns.map((col) => (
+                        <td key={`preview-cell-${i}-${col}`} className="px-4 py-2 text-gray-300">
                           {row[col] !== null && row[col] !== undefined ? String(row[col]) : <span className="text-gray-500 italic">null</span>}
                         </td>
                       ))}
@@ -610,7 +617,7 @@ const GenerateDataset = () => {
             <h2 className="text-2xl font-bold mb-4">Generation Logs</h2>
             <div className="bg-gray-900/50 rounded-lg p-4 max-h-64 overflow-y-auto">
               {logs.map((log, i) => (
-                <p key={i} className="text-gray-300 text-sm font-mono mb-1">
+                <p key={`log-${i}-${log.substring(0, 20)}`} className="text-gray-300 text-sm font-mono mb-1">
                   {log}
                 </p>
               ))}
