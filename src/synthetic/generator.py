@@ -388,6 +388,11 @@ Requirements:
         try:
             start_date = datetime.strptime(start_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_str, "%Y-%m-%d")
+            
+            # Ensure start_date is before or equal to end_date
+            if start_date > end_date:
+                start_date, end_date = end_date, start_date
+            
             days_between = (end_date - start_date).days
             random_days = random.randint(0, max(0, days_between))
             random_date = start_date + timedelta(days=random_days)

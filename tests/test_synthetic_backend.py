@@ -291,6 +291,26 @@ class TestSyntheticDataGenerator:
             assert not record["created_at"].startswith("mock_"), f"Datetime should not be mock string: {record['created_at']}"
             assert not record["updated_at"].startswith("mock_"), f"Datetime should not be mock string: {record['updated_at']}"
 
+    def test_generate_mock_data_with_swapped_dates(self):
+        """Test mock data generation with start date after end date (should auto-swap)."""
+        generator = SyntheticDataGenerator(api_key="")  # No API key
+
+        schema = {
+            "columns": [
+                {"name": "id", "type": "integer", "options": {"min": 1, "max": 100}},
+                # Deliberately swap start and end dates
+                {"name": "created_at", "type": "datetime", "options": {"start": "2025-12-31", "end": "2020-01-01"}},
+            ]
+        }
+
+        records = generator._generate_mock_data(schema, 5)
+
+        assert len(records) == 5
+        # Check that dates are still generated correctly (should auto-swap internally)
+        datetime_pattern = re.compile(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+        for record in records:
+            assert datetime_pattern.match(record["created_at"]), f"Invalid datetime format: {record['created_at']}"
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
