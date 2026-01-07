@@ -129,12 +129,12 @@ class OllamaClient(LLMClient):
 class GeminiClient(LLMClient):
     """Client for Google Gemini API."""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-2.0-flash-lite"):
         """Initialize Gemini client.
 
         Args:
             api_key: Google Gemini API key
-            model: Model name to use (e.g., 'gemini-2.5-flash', 'gemini-2.5-pro')
+            model: Model name to use (e.g., 'gemini-2.0-flash-lite', 'gemini-2.5-pro')
                   Will auto-add 'models/' prefix if not present
         """
         try:
@@ -243,7 +243,7 @@ def create_llm_client(
         model = (
             model
             or os.getenv("GEMINI_MODEL")
-            or os.getenv("LLM_MODEL", "gemini-2.5-flash")
+            or os.getenv("LLM_MODEL", "gemini-2.0-flash-lite")
         )
         return GeminiClient(api_key=api_key, model=model)
 
