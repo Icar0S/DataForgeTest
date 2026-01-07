@@ -9,7 +9,7 @@ from typing import Optional
 @dataclass
 class SyntheticConfig:
     """Configuration for Synthetic Data Generation feature.
-    
+
     Args:
         storage_path: Path to store generated datasets
         llm_provider: LLM provider ('anthropic' or 'ollama')
@@ -22,7 +22,7 @@ class SyntheticConfig:
         max_mem_mb: Maximum memory usage in MB
         rate_limit: Rate limit in requests per minute
     """
-    
+
     storage_path: Path = Path("./storage/synth")
     llm_provider: str = "ollama"
     llm_provider_endpoint: Optional[str] = None
@@ -33,25 +33,30 @@ class SyntheticConfig:
     request_timeout: int = 300
     max_mem_mb: int = 2048
     rate_limit: int = 60
-    
+
     @classmethod
     def from_env(cls) -> "SyntheticConfig":
         """Create config from environment variables."""
         from dotenv import load_dotenv
-        
+
         load_dotenv()
-        
+
         # Get storage path and make it absolute
         storage_path = os.getenv("SYNTH_STORAGE_PATH", "./storage/synth")
         if not os.path.isabs(storage_path):
             # Make it relative to the project root
             project_root = Path(__file__).parent.parent.parent
             storage_path = project_root / storage_path
-        
+
         # Determine provider and default model
         provider = os.getenv("LLM_PROVIDER", "ollama")
-        default_model = "qwen2.5-coder:7b" if provider == "ollama" else "claude-3-haiku-20240307"
-        
+        if provider == "ollama":
+            default_model = "qwen2.5-coder:7b"
+        elif provider == "gemini":
+            default_model = "gemini-2.5-flash"
+        else:  # anthropic
+            default_model = "claude-3-haiku-20240307"
+
         return cls(
             storage_path=Path(storage_path),
             llm_provider=provider,

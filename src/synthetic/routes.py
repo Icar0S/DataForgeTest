@@ -1,9 +1,7 @@
 """Flask routes for Synthetic Data Generation."""
 
-import json
 import time
 import uuid
-from pathlib import Path
 from flask import Blueprint, request, jsonify, send_file
 from werkzeug.utils import secure_filename
 import pandas as pd
@@ -11,7 +9,6 @@ import pandas as pd
 from .config import SyntheticConfig
 from .generator import SyntheticDataGenerator
 from .validators import (
-    validate_schema,
     validate_generate_request,
     validate_preview_request,
 )
@@ -22,8 +19,12 @@ synth_bp = Blueprint("synth", __name__, url_prefix="/api/synth")
 # Initialize config
 config = SyntheticConfig.from_env()
 
-# Initialize generator
-generator = SyntheticDataGenerator(api_key=config.llm_api_key, model=config.llm_model)
+# Initialize generator with provider
+generator = SyntheticDataGenerator(
+    api_key=config.llm_api_key,
+    model=config.llm_model,
+    provider=config.llm_provider,
+)
 
 # Ensure storage directories exist
 config.storage_path.mkdir(parents=True, exist_ok=True)
@@ -208,6 +209,15 @@ def generate():
 
         duration = time.time() - start_time
 
+        # Build download URL - make it absolute if we have a host header
+        download_path = f"/api/synth/download/{session_id}/{output_file.name}"
+        download_url = download_path
+
+        # In production environments, build an absolute URL
+        if request.host:
+            scheme = "https" if request.is_secure else "http"
+            download_url = f"{scheme}://{request.host}{download_path}"
+
         # Return summary
         return jsonify(
             {
@@ -217,7 +227,7 @@ def generate():
                     "fileType": file_type,
                     "durationSec": round(duration, 2),
                 },
-                "downloadUrl": f"/api/synth/download/{session_id}/{output_file.name}",
+                "downloadUrl": download_url,
                 "logs": all_logs,
             }
         )

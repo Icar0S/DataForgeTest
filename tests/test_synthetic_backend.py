@@ -1,5 +1,6 @@
 """Tests for synthetic data generation backend."""
 
+import re
 import pytest
 from src.synthetic.validators import (
     validate_schema,
@@ -261,6 +262,54 @@ class TestSyntheticDataGenerator:
         assert all(isinstance(r["id"], int) for r in records)
         assert all(isinstance(r["price"], float) for r in records)
         assert all(isinstance(r["active"], bool) for r in records)
+
+    def test_generate_mock_data_with_datetime(self):
+        """Test mock data generation with datetime type."""
+        generator = SyntheticDataGenerator(api_key="")  # No API key
+
+        schema = {
+            "columns": [
+                {"name": "id", "type": "integer", "options": {"min": 1, "max": 100}},
+                {"name": "created_at", "type": "datetime", "options": {"start": "2020-01-01", "end": "2025-12-31"}},
+                {"name": "updated_at", "type": "datetime", "options": {}},
+            ]
+        }
+
+        records = generator._generate_mock_data(schema, 10)
+
+        assert len(records) == 10
+        assert all("id" in r for r in records)
+        assert all("created_at" in r for r in records)
+        assert all("updated_at" in r for r in records)
+
+        # Check datetime format (should be YYYY-MM-DD HH:MM:SS)
+        datetime_pattern = re.compile(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+        for record in records:
+            assert datetime_pattern.match(record["created_at"]), f"Invalid datetime format: {record['created_at']}"
+            assert datetime_pattern.match(record["updated_at"]), f"Invalid datetime format: {record['updated_at']}"
+            # Ensure datetime is not the mock string pattern
+            assert not record["created_at"].startswith("mock_"), f"Datetime should not be mock string: {record['created_at']}"
+            assert not record["updated_at"].startswith("mock_"), f"Datetime should not be mock string: {record['updated_at']}"
+
+    def test_generate_mock_data_with_swapped_dates(self):
+        """Test mock data generation with start date after end date (should auto-swap)."""
+        generator = SyntheticDataGenerator(api_key="")  # No API key
+
+        schema = {
+            "columns": [
+                {"name": "id", "type": "integer", "options": {"min": 1, "max": 100}},
+                # Deliberately swap start and end dates
+                {"name": "created_at", "type": "datetime", "options": {"start": "2025-12-31", "end": "2020-01-01"}},
+            ]
+        }
+
+        records = generator._generate_mock_data(schema, 5)
+
+        assert len(records) == 5
+        # Check that dates are still generated correctly (should auto-swap internally)
+        datetime_pattern = re.compile(r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$')
+        for record in records:
+            assert datetime_pattern.match(record["created_at"]), f"Invalid datetime format: {record['created_at']}"
 
 
 if __name__ == "__main__":
