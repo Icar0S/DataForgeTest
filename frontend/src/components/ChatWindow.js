@@ -6,21 +6,38 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { materialDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { getApiUrl } from '../config/api';
 
+// Generate unique IDs for messages
+let messageIdCounter = 0;
+const generateMessageId = () => {
+  messageIdCounter += 1;
+  return `msg-${Date.now()}-${messageIdCounter}`;
+};
+
 const CodeComponent = ({node, inline, className, children, ...props}) => {
   const match = /language-(\w+)/.exec(className || '');
+  const codeString = Array.isArray(children) ? String(children).replace(/\n$/, '') : String(children);
+  
   return !inline && match ? (
     <SyntaxHighlighter
-      children={Array.isArray(children) ? String(children).replace(/\n$/, '') : String(children)}
       style={materialDark}
       language={match[1]}
       PreTag="div"
       {...props}
-    />
+    >
+      {codeString}
+    </SyntaxHighlighter>
   ) : (
     <code className={className} {...props}>
       {children}
     </code>
   );
+};
+
+CodeComponent.propTypes = {
+  node: PropTypes.object,
+  inline: PropTypes.bool,
+  className: PropTypes.string,
+  children: PropTypes.node
 };
 
 const ChatWindow = ({ onClose }) => {
@@ -39,19 +56,68 @@ const ChatWindow = ({ onClose }) => {
   
   useEffect(() => {
     // Cleanup EventSource on unmount
+    const eventSource = eventSourceRef.current;
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+      if (eventSource) {
+        eventSource.close();
       }
     };
   }, []);
+
+  // Process SSE event data
+  const processEventData = (parsed, currentMessage) => {
+    if (parsed.type === 'token') {
+      const newMessage = currentMessage + parsed.content;
+      const messageContent = newMessage;
+      setMessages(prev => [
+        ...prev.slice(0, -1),
+        { id: prev[prev.length - 1]?.id || generateMessageId(), role: 'assistant', content: messageContent }
+      ]);
+      return newMessage;
+    }
+    
+    if (parsed.type === 'citations') {
+      setSources(parsed.content.citations);
+    }
+    
+    if (parsed.type === 'error') {
+      setError(parsed.content);
+      setIsLoading(false);
+    }
+    
+    return currentMessage;
+  };
+
+  // Process SSE line
+  const processSSELine = (line, currentMessage) => {
+    if (!line.startsWith('data: ')) {
+      return { currentMessage, shouldBreak: false };
+    }
+    
+    const data = line.slice(6);
+    
+    if (data === '[DONE]') {
+      setIsLoading(false);
+      return { currentMessage, shouldBreak: true };
+    }
+    
+    try {
+      const parsed = JSON.parse(data);
+      const newMessage = processEventData(parsed, currentMessage);
+      return { currentMessage: newMessage, shouldBreak: false };
+    } catch (parseError) {
+      // Ignore parse errors for incomplete chunks
+      console.warn('Failed to parse SSE data:', parseError);
+      return { currentMessage, shouldBreak: false };
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
     
     const userMessage = input;
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMessages(prev => [...prev, { id: generateMessageId(), role: 'user', content: userMessage }]);
     
     try {
       setIsLoading(true);
@@ -59,7 +125,8 @@ const ChatWindow = ({ onClose }) => {
       setSources([]);
       
       // Add empty assistant message for streaming
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      const assistantMessageId = generateMessageId();
+      setMessages(prev => [...prev, { id: assistantMessageId, role: 'assistant', content: '' }]);
       
       // Use fetch with ReadableStream for POST streaming
       const response = await fetch(getApiUrl('/api/rag/chat-stream'), {
@@ -86,41 +153,16 @@ const ChatWindow = ({ onClose }) => {
         const lines = chunk.split('\n');
         
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            
-            if (data === '[DONE]') {
-              setIsLoading(false);
-              break;
-            }
-            
-            try {
-              const parsed = JSON.parse(data);
-              
-              if (parsed.type === 'token') {
-                currentMessage += parsed.content;
-                setMessages(prev => [
-                  ...prev.slice(0, -1),
-                  { role: 'assistant', content: currentMessage }
-                ]);
-              }
-              else if (parsed.type === 'citations') {
-                setSources(parsed.content.citations);
-              }
-              else if (parsed.type === 'error') {
-                setError(parsed.content);
-                setIsLoading(false);
-              }
-            } catch (e) {
-              // Ignore parse errors for incomplete chunks
-            }
-          }
+          const result = processSSELine(line, currentMessage);
+          currentMessage = result.currentMessage;
+          if (result.shouldBreak) break;
         }
       }
       
       setIsLoading(false);
       
     } catch (err) {
+      console.error('Chat error:', err);
       setError('Connection error. Please try again.');
       setMessages(prev => prev.slice(0, -1)); // Remove empty assistant message
       setIsLoading(false);
@@ -160,8 +202,8 @@ const ChatWindow = ({ onClose }) => {
       
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[80%] p-3 rounded-lg ${
               msg.role === 'user' 
                 ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
@@ -184,8 +226,8 @@ const ChatWindow = ({ onClose }) => {
           <div className="mt-4 p-4 bg-gray-800/50 backdrop-blur-sm rounded-lg border border-gray-700/50">
             <h3 className="font-semibold mb-2 text-purple-300">Sources:</h3>
             <ul className="space-y-2">
-              {sources.map((source, idx) => (
-                <li key={idx} className="text-sm">
+              {sources.map((source) => (
+                <li key={source.id || `source-${source.metadata?.filename || Math.random()}`} className="text-sm">
                   <span className="font-mono text-purple-400">[{source.id}]</span>{" "}
                   <span className="text-gray-300">{source.text}</span>
                   <div className="text-xs text-gray-400">

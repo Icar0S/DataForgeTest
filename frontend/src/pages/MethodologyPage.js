@@ -290,7 +290,7 @@ const MethodologyPage = () => {
             const PhaseIcon = phaseIcon.icon;
             return (
               <motion.div
-                key={index}
+                key={`phase-${phaseIcon.number}-${phase.title}`}
                 variants={fadeIn}
                 className="relative"
               >
@@ -380,9 +380,9 @@ const MethodologyPage = () => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {t.qualityDimensions.map((dimension, index) => (
+            {t.qualityDimensions.map((dimension) => (
               <motion.div
-                key={index}
+                key={`dimension-${dimension.name}`}
                 variants={fadeIn}
                 className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-xl p-6 border border-purple-500/30 hover:border-purple-400/50 transition-all"
               >
