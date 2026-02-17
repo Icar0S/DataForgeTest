@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Sparkles, Brain, TrendingUp, Shield, Clock, Globe, BarChart3, MessageSquare, Eye } from 'lucide-react';
+import { Zap, Code, Bug, CheckCircle, AlertTriangle, FileText, GitCompare, Sparkles, Brain, TrendingUp, Shield, Clock, Globe, BarChart3, MessageSquare, Eye, GitBranch } from 'lucide-react';
 import RAGButton from './RAGButton';
 import DataAccuracyDropdown from './DataAccuracyDropdown';
 import PySparkDropdown from './PySparkDropdown';
@@ -297,6 +297,20 @@ const DataQualityLLMSystem = () => {
               >
                 <Sparkles className="w-5 h-5" />
                 Generate Synthetic Dataset
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={scaleIn}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link
+                to="/methodology"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center gap-2"
+                aria-label="Framework Metodológico"
+              >
+                <GitBranch className="w-5 h-5" />
+                Metodologia
               </Link>
             </motion.div>
             <RAGButton />

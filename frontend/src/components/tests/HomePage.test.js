@@ -27,6 +27,7 @@ jest.mock('lucide-react', () => ({
   BarChart3: () => <div data-testid="icon-chart">BarChart3</div>,
   MessageSquare: () => <div data-testid="icon-message">MessageSquare</div>,
   Eye: () => <div data-testid="icon-eye">Eye</div>,
+  GitBranch: () => <div data-testid="icon-gitbranch">GitBranch</div>,
 }));
 
 // Mock framer-motion to avoid animation issues in tests
