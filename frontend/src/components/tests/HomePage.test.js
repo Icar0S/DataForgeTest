@@ -27,6 +27,7 @@ jest.mock('lucide-react', () => ({
   BarChart3: () => <div data-testid="icon-chart">BarChart3</div>,
   MessageSquare: () => <div data-testid="icon-message">MessageSquare</div>,
   Eye: () => <div data-testid="icon-eye">Eye</div>,
+  GitBranch: () => <div data-testid="icon-gitbranch">GitBranch</div>,
 }));
 
 // Mock framer-motion to avoid animation issues in tests
@@ -47,6 +48,13 @@ jest.mock('../../styles/animations', () => ({
   slideIn: {},
   scaleIn: {},
 }));
+
+// Mock the PySparkDropdown to avoid complex dependencies
+jest.mock('../PySparkDropdown', () => {
+  return function MockPySparkDropdown() {
+    return <div data-testid="pyspark-dropdown">PySpark Dropdown</div>;
+  };
+});
 
 // Mock the DataAccuracyDropdown to avoid complex dependencies
 jest.mock('../DataAccuracyDropdown', () => {
