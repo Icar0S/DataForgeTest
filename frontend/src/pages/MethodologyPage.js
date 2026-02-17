@@ -12,7 +12,8 @@ import {
   BookOpen,
   ArrowRight,
   CheckCircle,
-  Languages
+  Languages,
+  ArrowDown
 } from 'lucide-react';
 import { fadeIn, slideIn, staggerContainer } from '../styles/animations';
 
@@ -38,7 +39,7 @@ const MethodologyPage = () => {
       aiSupport: 'Suporte IA',
       qualityDimensionsTitle: 'Dimensões de Qualidade de Dados',
       frameworkNote: 'Framework aplicável a dados estruturados e semi-estruturados em ambientes de processamento distribuído',
-      footerText: 'Dissertação de Mestrado - Framework Metodológico para Qualidade de Dados em Big Data',
+      footerText: '© 2024-2026 - Framework de Pesquisa Acadêmica. Todos os direitos reservados aos pesquisadores.',
       phases: [
         {
           title: 'Planejamento e Definição Estratégica',
@@ -100,7 +101,7 @@ const MethodologyPage = () => {
       aiSupport: 'AI Support',
       qualityDimensionsTitle: 'Data Quality Dimensions',
       frameworkNote: 'Framework applicable to structured and semi-structured data in distributed processing environments',
-      footerText: 'Master\'s Thesis - Methodological Framework for Data Quality in Big Data',
+      footerText: '© 2024-2026 - Academic Research Framework. All rights reserved to the researchers.',
       phases: [
         {
           title: 'Planning and Strategic Definition',
@@ -360,7 +361,7 @@ const MethodologyPage = () => {
                 {/* Arrow to next phase */}
                 {index < t.phases.length - 1 && (
                   <div className="flex justify-center my-4">
-                    <ArrowRight className="w-6 h-6 text-purple-400" />
+                    <ArrowDown className="w-6 h-6 text-purple-400" />
                   </div>
                 )}
               </motion.div>
