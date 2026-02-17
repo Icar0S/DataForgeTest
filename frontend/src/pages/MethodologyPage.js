@@ -10,7 +10,6 @@ import {
   BarChart3,
   Brain,
   BookOpen,
-  ArrowRight,
   CheckCircle,
   Languages,
   ArrowDown
