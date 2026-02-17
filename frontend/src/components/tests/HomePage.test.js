@@ -49,6 +49,13 @@ jest.mock('../../styles/animations', () => ({
   scaleIn: {},
 }));
 
+// Mock the PySparkDropdown to avoid complex dependencies
+jest.mock('../PySparkDropdown', () => {
+  return function MockPySparkDropdown() {
+    return <div data-testid="pyspark-dropdown">PySpark Dropdown</div>;
+  };
+});
+
 // Mock the DataAccuracyDropdown to avoid complex dependencies
 jest.mock('../DataAccuracyDropdown', () => {
   return function MockDataAccuracyDropdown() {
