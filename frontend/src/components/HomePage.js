@@ -307,10 +307,10 @@ const DataQualityLLMSystem = () => {
               <Link
                 to="/methodology"
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl font-semibold text-lg shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center gap-2"
-                aria-label="Framework Metodológico"
+                aria-label="Methodology Framework"
               >
                 <GitBranch className="w-5 h-5" />
-                Metodologia
+                Methodology
               </Link>
             </motion.div>
             <RAGButton />
