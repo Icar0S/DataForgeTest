@@ -5,6 +5,9 @@ import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
 
+# Supported file types for auto-import
+_AUTO_IMPORT_EXTENSIONS = {".txt", ".md", ".pdf"}
+
 
 class SimpleRAG:
     """Simple RAG implementation without complex dependencies."""
@@ -23,7 +26,7 @@ class SimpleRAG:
         self._load_documents()
 
     def _load_documents(self):
-        """Load documents from storage or use fallback."""
+        """Load documents from storage, auto-import from docs_to_import, or use fallback."""
         docs_file = self.storage_path / "documents.json"
         if docs_file.exists():
             try:
@@ -31,12 +34,107 @@ class SimpleRAG:
                     data = json.load(f)
                     self.documents = data.get("documents", {})
                     self.document_chunks = data.get("chunks", {})
+                    # Rebuild missing chunks from document content
+                    for doc_id, doc_data in self.documents.items():
+                        if doc_id not in self.document_chunks:
+                            content = doc_data.get("content", "")
+                            self.document_chunks[doc_id] = self._create_chunks(content)
                     print(f"[OK] Loaded {len(self.documents)} documents from file")
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"[WARNING] Error loading documents: {e}")
-                self._load_fallback_documents()
+                self._auto_import_or_fallback()
         else:
             print(f"[WARNING] Documents file not found: {docs_file}")
+            self._auto_import_or_fallback()
+
+    def _auto_import_or_fallback(self):
+        """Try auto-importing from docs_to_import folder; fall back to hardcoded docs."""
+        docs_dir = self._find_docs_to_import()
+        if docs_dir is not None:
+            print(f"[INFO] Auto-importing documents from {docs_dir}...")
+            self._auto_import_from_folder(docs_dir)
+        else:
+            print("[INFO] docs_to_import folder not found. Loading fallback documents...")
+            self._load_fallback_documents()
+
+    def _find_docs_to_import(self) -> Optional[Path]:
+        """Locate the docs_to_import directory relative to common project layouts."""
+        candidates = [
+            Path("docs_to_import"),                        # cwd/docs_to_import
+            Path("../docs_to_import"),                     # one level up (e.g. src/)
+            Path(__file__).parent.parent.parent / "docs_to_import",  # project root
+        ]
+        for candidate in candidates:
+            try:
+                resolved = candidate.resolve()
+                if resolved.is_dir():
+                    return resolved
+            except Exception:  # pylint: disable=broad-exception-caught
+                pass
+        return None
+
+    def _extract_text_from_file(self, file_path: Path) -> Optional[str]:
+        """Extract plain text from a supported file."""
+        suffix = file_path.suffix.lower()
+        if suffix in {".txt", ".md"}:
+            for encoding in ("utf-8", "latin-1", "cp1252"):
+                try:
+                    return file_path.read_text(encoding=encoding)
+                except UnicodeDecodeError:
+                    continue
+        elif suffix == ".pdf":
+            try:
+                import PyPDF2  # pylint: disable=import-outside-toplevel
+
+                text_parts = []
+                with open(file_path, "rb") as fh:
+                    reader = PyPDF2.PdfReader(fh)
+                    for page in reader.pages:
+                        text = page.extract_text()
+                        if text:
+                            text_parts.append(text)
+                return "\n".join(text_parts) if text_parts else None
+            except ImportError:
+                print("[WARNING] PyPDF2 not installed; PDF files cannot be imported.")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"[WARNING] Could not read PDF {file_path.name}: {e}")
+        return None
+
+    def _auto_import_from_folder(self, folder: Path):
+        """Import all supported documents from folder into the RAG system."""
+        imported = 0
+        for file_path in sorted(folder.rglob("*")):
+            if not file_path.is_file():
+                continue
+            if file_path.suffix.lower() not in _AUTO_IMPORT_EXTENSIONS:
+                continue
+            try:
+                content = self._extract_text_from_file(file_path)
+                if not content or not content.strip():
+                    continue
+                doc_id = str(uuid.uuid4())
+                metadata = {
+                    "filename": file_path.name,
+                    "filepath": str(file_path),
+                    "size": file_path.stat().st_size,
+                    "source": "docs_to_import",
+                }
+                self.documents[doc_id] = {
+                    "content": content,
+                    "metadata": metadata,
+                    "id": doc_id,
+                }
+                self.document_chunks[doc_id] = self._create_chunks(content)
+                imported += 1
+                print(f"[OK] Imported: {file_path.name}")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"[WARNING] Failed to import {file_path.name}: {e}")
+
+        if imported > 0:
+            print(f"[OK] Auto-imported {imported} documents from docs_to_import")
+            self._save_documents()
+        else:
+            print("[WARNING] No documents imported from docs_to_import. Loading fallbacks.")
             self._load_fallback_documents()
 
     def _load_fallback_documents(self):
