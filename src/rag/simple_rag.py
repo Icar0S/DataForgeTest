@@ -1,5 +1,6 @@
 """Simple RAG implementation using basic vector search."""
 
+import fcntl
 import json
 import uuid
 from pathlib import Path
@@ -29,22 +30,56 @@ class SimpleRAG:
         """Load documents from storage, auto-import from docs_to_import, or use fallback."""
         docs_file = self.storage_path / "documents.json"
         if docs_file.exists():
-            try:
-                with open(docs_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.documents = data.get("documents", {})
-                    self.document_chunks = data.get("chunks", {})
-                    # Rebuild missing chunks from document content
-                    for doc_id, doc_data in self.documents.items():
-                        if doc_id not in self.document_chunks:
-                            content = doc_data.get("content", "")
-                            self.document_chunks[doc_id] = self._create_chunks(content)
-                    print(f"[OK] Loaded {len(self.documents)} documents from file")
-            except Exception as e:  # pylint: disable=broad-exception-caught
-                print(f"[WARNING] Error loading documents: {e}")
-                self._auto_import_or_fallback()
+            self._load_from_file(docs_file)
         else:
             print(f"[WARNING] Documents file not found: {docs_file}")
+            self._auto_import_or_fallback_with_lock()
+
+    def _load_from_file(self, docs_file: Path):
+        """Load documents from a JSON file."""
+        try:
+            with open(docs_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                self.documents = data.get("documents", {})
+                self.document_chunks = data.get("chunks", {})
+                # Rebuild missing chunks from document content
+                for doc_id, doc_data in self.documents.items():
+                    if doc_id not in self.document_chunks:
+                        content = doc_data.get("content", "")
+                        self.document_chunks[doc_id] = self._create_chunks(content)
+                print(f"[OK] Loaded {len(self.documents)} documents from file")
+        except Exception as e:  # pylint: disable=broad-exception-caught
+            print(f"[WARNING] Error loading documents: {e}")
+            self._auto_import_or_fallback()
+
+    def _auto_import_or_fallback_with_lock(self):
+        """Run auto-import with an exclusive file lock so only one worker imports.
+
+        When multiple gunicorn workers start simultaneously and documents.json is
+        absent, this prevents each worker from independently re-importing all PDFs.
+        The first worker acquires the lock and runs the import; every subsequent
+        worker waits, then loads from the file that the first worker saved.
+        """
+        docs_file = self.storage_path / "documents.json"
+        lock_file = self.storage_path / "documents.lock"
+        try:
+            with open(lock_file, "w") as lock_fd:
+                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+                try:
+                    # Double-check: another worker may have written the file while
+                    # we were waiting for the lock.
+                    if docs_file.exists():
+                        print(
+                            "[INFO] documents.json created by another worker; loading from file"
+                        )
+                        self._load_from_file(docs_file)
+                    else:
+                        self._auto_import_or_fallback()
+                finally:
+                    fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+        except OSError as e:
+            # fcntl not available (e.g., Windows dev environment) – proceed without lock
+            print(f"[WARNING] File lock unavailable ({e}); importing without lock")
             self._auto_import_or_fallback()
 
     def _auto_import_or_fallback(self):
@@ -101,12 +136,27 @@ class SimpleRAG:
         return None
 
     def _auto_import_from_folder(self, folder: Path):
-        """Import all supported documents from folder into the RAG system."""
+        """Import all supported documents from folder into the RAG system.
+
+        Files whose filename is already present in the index are skipped so that
+        calling this method more than once (e.g., via the /api/rag/ingest endpoint
+        after dropping new PDFs into docs_to_import) never creates duplicates.
+        """
+        # Build set of filenames already in the index
+        existing_filenames = {
+            doc.get("metadata", {}).get("filename")
+            for doc in self.documents.values()
+        }
+
         imported = 0
+        skipped = 0
         for file_path in sorted(folder.rglob("*")):
             if not file_path.is_file():
                 continue
             if file_path.suffix.lower() not in _AUTO_IMPORT_EXTENSIONS:
+                continue
+            if file_path.name in existing_filenames:
+                skipped += 1
                 continue
             try:
                 content = self._extract_text_from_file(file_path)
@@ -130,10 +180,14 @@ class SimpleRAG:
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"[WARNING] Failed to import {file_path.name}: {e}")
 
+        if skipped:
+            print(f"[INFO] Skipped {skipped} already-indexed document(s)")
+
         if imported > 0:
             print(f"[OK] Auto-imported {imported} documents from docs_to_import")
             self._save_documents()
-        else:
+        elif skipped == 0:
+            # Nothing imported and nothing skipped means the folder had no usable content
             print("[WARNING] No documents imported from docs_to_import. Loading fallbacks.")
             self._load_fallback_documents()
 
@@ -262,3 +316,19 @@ class SimpleRAG:
             self._save_documents()
             return True
         return False
+
+    def import_new_documents(self) -> Dict:
+        """Scan docs_to_import for files not yet in the index and import them.
+
+        Returns:
+            Dict with keys ``imported`` (count of new docs) and
+            ``total`` (total docs after import).
+        """
+        docs_dir = self._find_docs_to_import()
+        if docs_dir is None:
+            return {"imported": 0, "total": len(self.documents), "error": "docs_to_import folder not found"}
+
+        before = len(self.documents)
+        self._auto_import_from_folder(docs_dir)
+        imported = len(self.documents) - before
+        return {"imported": imported, "total": len(self.documents)}
