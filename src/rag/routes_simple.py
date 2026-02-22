@@ -69,6 +69,28 @@ def debug_rag():
     )
 
 
+@rag_bp.route("/ingest", methods=["POST"])
+def ingest_documents():
+    """Scan docs_to_import folder and import any files not yet in the index.
+
+    Drop new PDF/TXT/MD files into the docs_to_import directory and call this
+    endpoint to add them to the RAG index without re-importing existing documents.
+    """
+    try:
+        result = rag_system.import_new_documents()
+        if "error" in result:
+            return jsonify(result), 404
+        return jsonify(
+            {
+                "status": "success",
+                "new_documents": result["imported"],
+                "total_documents": result["total"],
+            }
+        )
+    except Exception as e:  # pylint: disable=broad-exception-caught
+        return jsonify({"error": str(e)}), 500
+
+
 @rag_bp.route("/reload", methods=["POST"])
 def reload_rag():
     """Reload RAG system to pick up new documents/chunks."""

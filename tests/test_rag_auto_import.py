@@ -215,3 +215,107 @@ class TestAutoImportFromDocsFolder:
         results = rag.search("data quality")
         assert len(results) > 0
         assert any("quality" in r["text"].lower() for r in results)
+
+    def test_auto_import_skips_existing_filenames(self, tmp_path):
+        """Files already in the index are not imported again (no duplicates)."""
+        docs_dir = tmp_path / "docs_to_import"
+        docs_dir.mkdir()
+        (docs_dir / "guide.txt").write_text("Data quality guide.", encoding="utf-8")
+
+        storage_dir = tmp_path / "storage" / "vectorstore"
+        storage_dir.mkdir(parents=True)
+
+        config = _make_config(str(storage_dir))
+        rag = SimpleRAG.__new__(SimpleRAG)
+        rag.config = config
+        rag.storage_path = storage_dir
+        rag.documents = {}
+        rag.document_chunks = {}
+
+        original_find = SimpleRAG._find_docs_to_import
+
+        def _mock_find(_instance):
+            return docs_dir
+
+        SimpleRAG._find_docs_to_import = _mock_find
+        try:
+            # First import
+            rag._auto_import_from_folder(docs_dir)
+            count_after_first = len(rag.documents)
+
+            # Second import with the same folder – should be a no-op
+            rag._auto_import_from_folder(docs_dir)
+            count_after_second = len(rag.documents)
+        finally:
+            SimpleRAG._find_docs_to_import = original_find
+
+        assert count_after_first == 1
+        assert count_after_second == 1, "Re-importing the same file should not create a duplicate"
+
+    def test_import_new_documents_only_adds_new_files(self, tmp_path):
+        """import_new_documents() only imports files not already in the index."""
+        docs_dir = tmp_path / "docs_to_import"
+        docs_dir.mkdir()
+        (docs_dir / "first.txt").write_text("First document.", encoding="utf-8")
+
+        storage_dir = tmp_path / "storage" / "vectorstore"
+        storage_dir.mkdir(parents=True)
+
+        config = _make_config(str(storage_dir))
+        rag = SimpleRAG.__new__(SimpleRAG)
+        rag.config = config
+        rag.storage_path = storage_dir
+        rag.documents = {}
+        rag.document_chunks = {}
+
+        original_find = SimpleRAG._find_docs_to_import
+
+        def _mock_find(_instance):
+            return docs_dir
+
+        SimpleRAG._find_docs_to_import = _mock_find
+        try:
+            # Initial import
+            rag._auto_import_from_folder(docs_dir)
+            assert len(rag.documents) == 1
+
+            # Add a second file and call import_new_documents
+            (docs_dir / "second.txt").write_text("Second document.", encoding="utf-8")
+            result = rag.import_new_documents()
+        finally:
+            SimpleRAG._find_docs_to_import = original_find
+
+        assert result["imported"] == 1
+        assert result["total"] == 2
+        filenames = {d["metadata"]["filename"] for d in rag.documents.values()}
+        assert "first.txt" in filenames
+        assert "second.txt" in filenames
+
+    def test_worker_race_condition_single_import(self, tmp_path):
+        """Simulate two workers starting simultaneously; documents are imported only once."""
+        docs_dir = tmp_path / "docs_to_import"
+        docs_dir.mkdir()
+        (docs_dir / "paper.txt").write_text("Big data paper content.", encoding="utf-8")
+
+        storage_dir = tmp_path / "storage" / "vectorstore"
+        storage_dir.mkdir(parents=True)
+
+        config = _make_config(str(storage_dir))
+
+        original_find = SimpleRAG._find_docs_to_import
+
+        def _mock_find(_instance):
+            return docs_dir
+
+        SimpleRAG._find_docs_to_import = _mock_find
+        try:
+            # Simulate two workers initialising at the same time (sequentially here,
+            # but the lock ensures idempotency even without true parallelism).
+            rag1 = SimpleRAG(config)
+            rag2 = SimpleRAG(config)
+        finally:
+            SimpleRAG._find_docs_to_import = original_find
+
+        # Both workers should end up with exactly one document
+        assert len(rag1.documents) == 1
+        assert len(rag2.documents) == 1
