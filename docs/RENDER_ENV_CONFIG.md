@@ -20,7 +20,7 @@ Acesse o painel do Render e configure as seguintes **Environment Variables**:
 
 ```bash
 LLM_PROVIDER=gemini
-GEMINI_API_KEY=AIzaSyAn1gGblIgQfuIdDGZKkjiNZM7ddYWIPKE
+GEMINI_API_KEY=
 GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 
@@ -67,7 +67,7 @@ SYNTH_RATE_LIMIT=60
 4. Clique em **Add Environment Variable**
 5. Adicione as variáveis uma por uma:
    - Key: `LLM_PROVIDER` → Value: `gemini`
-   - Key: `GEMINI_API_KEY` → Value: `AIzaSyAn1gGblIgQfuIdDGZKkjiNZM7ddYWIPKE`
+   - Key: `GEMINI_API_KEY` → Value: ``
    - Key: `GEMINI_MODEL` → Value: `gemini-2.0-flash-exp`
 6. Clique em **Save Changes**
 7. O Render fará redeploy automático
@@ -89,7 +89,7 @@ services:
       - key: LLM_PROVIDER
         value: gemini
       - key: GEMINI_API_KEY
-        value: AIzaSyAn1gGblIgQfuIdDGZKkjiNZM7ddYWIPKE
+        value: 
       - key: GEMINI_MODEL
         value: gemini-2.0-flash-exp
       - key: SYNTH_STORAGE_PATH
