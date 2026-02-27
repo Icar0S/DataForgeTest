@@ -574,9 +574,9 @@ python tests/test_rag_diagnostics.py     # System diagnostics
 
 # Data accuracy tests (31 tests total)
 python -m pytest tests/test_accuracy*.py -v                    # All accuracy tests
-python tests/test_accuracy_backend.py -v                       # Backend unit tests (9 tests)
-python tests/test_accuracy_integration.py -v                   # Basic integration (4 tests)
-python tests/test_accuracy_integration_robust.py -v            # Robust integration (18 tests)
+python tests/backend/unit/test_accuracy_backend.py -v                       # Backend unit tests
+python tests/backend/integration/test_accuracy_integration.py -v            # Basic integration tests
+python tests/backend/integration/test_accuracy_integration_robust.py -v     # Robust integration tests
 
 # Frontend tests
 cd frontend

@@ -6,11 +6,10 @@ import shutil
 from pathlib import Path
 import pandas as pd
 import sys
-import os
 import io
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from src.api import app
 
@@ -171,6 +170,42 @@ class TestDataAccuracyIntegration:
         error = response.get_json()
         assert "error" in error
         assert "not allowed" in error["error"].lower()
+
+    def test_upload_validation_errors(self):
+        """Test upload validation scenarios."""
+        response = self.client.post("/api/accuracy/upload?role=invalid")
+        assert response.status_code == 400
+
+        response = self.client.post("/api/accuracy/upload?role=gold")
+        assert response.status_code == 400
+
+        response = self.client.post(
+            "/api/accuracy/upload?role=gold",
+            data={"file": (io.BytesIO(b"abc"), "")},
+            content_type="multipart/form-data",
+        )
+        assert response.status_code == 400
+
+    def test_compare_requires_both_datasets(self):
+        """Test compare request fails when target dataset is missing."""
+        with open(self.gold_csv, "rb") as f:
+            response = self.client.post(
+                "/api/accuracy/upload?role=gold",
+                data={"file": (f, "gold.csv")},
+                content_type="multipart/form-data",
+            )
+        session_id = response.get_json()["sessionId"]
+
+        response = self.client.post(
+            "/api/accuracy/compare-correct",
+            json={
+                "sessionId": session_id,
+                "keyColumns": ["produto"],
+                "valueColumns": ["preco_unitario"],
+            },
+            content_type="application/json",
+        )
+        assert response.status_code == 400
 
     def test_duplicate_in_gold_error(self):
         """Test that duplicates in GOLD raise an error."""
