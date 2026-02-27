@@ -9,7 +9,7 @@ import sys
 import io
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from src.api import app
 

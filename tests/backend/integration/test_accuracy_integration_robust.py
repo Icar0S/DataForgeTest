@@ -5,6 +5,7 @@ including edge cases, different file formats, large datasets, and various
 normalization options.
 """
 
+import io
 import pytest
 import tempfile
 import shutil
@@ -14,7 +15,7 @@ import numpy as np
 import sys
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from src.api import app
 
@@ -159,7 +160,7 @@ class TestDataAccuracyRobust:
         response = self.client.get(corrected_url)
         assert response.status_code == 200
         
-        corrected_df = pd.read_csv(pd.io.common.BytesIO(response.data))
+        corrected_df = pd.read_csv(io.BytesIO(response.data))
         # Verify corrections
         assert corrected_df[corrected_df['id'] == 'B']['quantidade'].values[0] == 200
         assert corrected_df[corrected_df['id'] == 'C']['preco'].values[0] == 30.0

@@ -9,7 +9,7 @@ import numpy as np
 import sys
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from src.accuracy.processor import (
     normalize_column_name,
