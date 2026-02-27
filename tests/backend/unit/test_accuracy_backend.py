@@ -1,22 +1,23 @@
 """Tests for Data Accuracy backend."""
 
 import pytest
-import json
 import tempfile
 import shutil
 from pathlib import Path
 import pandas as pd
+import numpy as np
 import sys
-import os
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from src.accuracy.processor import (
     normalize_column_name,
     strip_accents,
     normalize_key_value,
     coerce_numeric,
+    read_dataset,
+    handle_duplicates,
     compare_and_correct,
 )
 
@@ -43,6 +44,7 @@ class TestNormalization:
 
         assert normalize_key_value("  Product-123  ", options) == "product123"
         assert normalize_key_value("Café Especial", options) == "cafe especial"
+        assert normalize_key_value(np.nan, options) == ""
 
     def test_coerce_numeric(self):
         """Test numeric coercion."""
@@ -56,6 +58,19 @@ class TestNormalization:
         assert coerce_numeric("123.45", options) == 123.45
         # Integer
         assert coerce_numeric(100, options) == 100.0
+        # Invalid value
+        assert pd.isna(coerce_numeric("invalid-number", options))
+
+    def test_read_dataset_unsupported_type(self):
+        """Test unsupported file type."""
+        with pytest.raises(ValueError, match="Unsupported file type"):
+            read_dataset(Path("unsupported.txt"))
+
+    def test_handle_duplicates_without_numeric_columns(self):
+        """Test duplicate policy fallback when no numeric columns are present."""
+        df = pd.DataFrame({"produto": ["A", "A", "B"], "categoria": ["x", "x", "y"]})
+        result = handle_duplicates(df, ["produto"], policy="sum")
+        assert len(result) == 2
 
 
 class TestCompareAndCorrect:

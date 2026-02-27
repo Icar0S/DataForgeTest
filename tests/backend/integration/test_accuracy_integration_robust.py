@@ -12,12 +12,11 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import sys
-import os
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
-from api import app
+from src.api import app
 
 
 class TestDataAccuracyRobust:
