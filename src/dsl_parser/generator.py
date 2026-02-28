@@ -239,7 +239,11 @@ def generate_dsl(answers):
                 if len(rule_parts) == 2 and rule_parts[0] and rule_parts[1]:
                     col_name = rule_parts[0]
                     values_str = rule_parts[1].replace("[", "").replace("]", "")
-                    values = [v.strip() for v in values_str.split(",") if v.strip()]
+                    values = [
+                        v.strip().strip("'\"")
+                        for v in values_str.split(",")
+                        if v.strip()
+                    ]
                     if values:
                         dsl["rules"].append(
                             {"type": "in_set", "column": col_name, "values": values}
@@ -349,7 +353,8 @@ def generate_dsl(answers):
                                 f"'{':'.join(rule_parts)}'. "
                                 f"Expected 'column:value:min_freq:max_freq' "
                                 f"(e.g., 'status:active:0.7:1.0'). "
-                                f"Input: '{value_dist_str}'."),
+                                f"Input: '{value_dist_str}'."
+                            ),
                         }
                     )
         except (ValueError, IndexError) as e:
@@ -360,17 +365,20 @@ def generate_dsl(answers):
                         f"Error parsing value distribution constraints: {e}. "
                         f"Input: '{value_dist_str}'. "
                         f"Expected 'column:value:min_freq:max_freq' "
-                        f"(e.g., 'status:active:0.7:1.0')."),
+                        f"(e.g., 'status:active:0.7:1.0')."
+                    ),
                 }
             )
 
     # Cross-Column Validation
     cross_column_str = answers.get(
-        ("Are there any relationships between two columns that should always hold true "
-         "(e.g., 'start_date' must be before 'end_date', 'price' must be greater than "
-         "'cost')? List as 'column1:operator:column2', separated by commas. "
-         "Supported operators: <, <=, >, >=, ==, !=. "
-         "(e.g., start_date:<:end_date, price:>:cost)"),
+        (
+            "Are there any relationships between two columns that should always hold true "
+            "(e.g., 'start_date' must be before 'end_date', 'price' must be greater than "
+            "'cost')? List as 'column1:operator:column2', separated by commas. "
+            "Supported operators: <, <=, >, >=, ==, !=. "
+            "(e.g., start_date:<:end_date, price:>:cost)"
+        ),
         "",
     )
     if cross_column_str:
@@ -401,7 +409,8 @@ def generate_dsl(answers):
                                     f"Unsupported operator '{operator}' in cross-column "
                                     f"comparison. Supported operators are: "
                                     f"{', '.join(supported_operators)}. "
-                                    f"Input: '{cross_column_str}'."),
+                                    f"Input: '{cross_column_str}'."
+                                ),
                             }
                         )
                 else:
@@ -413,7 +422,8 @@ def generate_dsl(answers):
                                 f"'{':'.join(rule_parts)}'. "
                                 f"Expected 'column1:operator:column2' "
                                 f"(e.g., 'start_date:<:end_date'). "
-                                f"Input: '{cross_column_str}'."),
+                                f"Input: '{cross_column_str}'."
+                            ),
                         }
                     )
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -424,7 +434,8 @@ def generate_dsl(answers):
                         f"Error parsing cross-column comparison constraints: {e}. "
                         f"Input: '{cross_column_str}'. "
                         f"Expected 'column1:operator:column2' "
-                        f"(e.g., 'start_date:<:end_date')."),
+                        f"(e.g., 'start_date:<:end_date')."
+                    ),
                 }
             )
 
