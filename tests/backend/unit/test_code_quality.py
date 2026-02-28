@@ -1,11 +1,14 @@
 """Unit tests for code quality validation of generated PySpark code."""
+
 import sys
 import ast
 import unittest
 import os
 
 # Add project root to path for imports
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+)
 
 from src.dsl_parser.generator import generate_dsl
 from src.code_generator.pyspark_generator import generate_pyspark_code
@@ -14,6 +17,7 @@ from utilities.sample_answers import SAMPLE_ANSWERS
 
 class TestCodeQuality(unittest.TestCase):
     """Test suite for validating the quality of generated PySpark code."""
+
     def setUp(self):
         """Configura o ambiente de teste gerando o código uma vez para todos os testes."""
         self.dsl = generate_dsl(SAMPLE_ANSWERS)
@@ -21,10 +25,8 @@ class TestCodeQuality(unittest.TestCase):
 
     def test_code_is_valid_python(self):
         """Verifica se o código gerado é Python válido que pode ser parseado."""
-        # Substitui aspas duplas consecutivas por aspas simples para validação
-        code_for_validation = self.code.replace("''", "'")
         try:
-            ast.parse(code_for_validation)
+            ast.parse(self.code)
         except SyntaxError as e:
             self.fail(f"O código gerado contém erro de sintaxe: {str(e)}")
 
@@ -135,9 +137,11 @@ class TestCodeQuality(unittest.TestCase):
             )
 
         # Verifica se não há caminhos absolutos no código (incompatível com Colab)
-        code_lines = self.code.split("\\n")
+        code_lines = self.code.split("\n")
         for line in code_lines:
-            if "C:" in line or "D:" in line:  # Procura por caminhos Windows
+            if (
+                "C:\\\\" in line or "D:\\\\" in line or "C:/" in line or "D:/" in line
+            ):  # Procura por caminhos Windows
                 self.fail(
                     f"Caminho absoluto Windows detectado (incompatível com Colab): {line}"
                 )

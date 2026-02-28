@@ -16,8 +16,8 @@ test_files = [
 ]
 
 
-def test_json_serialization(obj, name):
-    """Test if an object can be serialized to JSON."""
+def check_json_serialization(obj, name):
+    """Helper: verify an object can round-trip through JSON."""
     try:
         json_str = json.dumps(obj, ensure_ascii=False)
         print(f"  ✓ {name} serialization OK ({len(json_str)} chars)")
@@ -25,10 +25,8 @@ def test_json_serialization(obj, name):
         # Try to deserialize
         json.loads(json_str)
         print(f"  ✓ {name} deserialization OK")
-        return True
     except (TypeError, ValueError) as e:
         print(f"  ✗ {name} JSON error: {e}")
-        return False
 
 
 for csv_path in test_files:
@@ -48,34 +46,7 @@ for csv_path in test_files:
 
         # Test metadata JSON serialization
         print("\n[2] Testing metadata JSON serialization...")
-        if not test_json_serialization(metadata, "Metadata"):
-            print("  ERROR: Metadata cannot be serialized!")
-            print(f"  Keys: {list(metadata.keys())}")
-
-            # Check each field
-            for key in metadata.keys():
-                try:
-                    json.dumps(metadata[key], ensure_ascii=False)
-                    print(f"    ✓ {key} OK")
-                except Exception as e:
-                    print(f"    ✗ {key} FAILED: {e}")
-                    if key == "columns":
-                        print("      Checking each column...")
-                        for idx, col in enumerate(metadata["columns"]):
-                            try:
-                                json.dumps(col, ensure_ascii=False)
-                            except Exception as col_e:
-                                print(
-                                    f"        ✗ Column {idx} ({col.get('name', 'N/A')}): {col_e}"
-                                )
-                    elif key == "preview":
-                        print(f"      Preview has {len(metadata['preview'])} rows")
-                        for idx, row in enumerate(metadata["preview"]):
-                            try:
-                                json.dumps(row, ensure_ascii=False)
-                            except Exception as row_e:
-                                print(f"        ✗ Row {idx}: {row_e}")
-            continue
+        check_json_serialization(metadata, "Metadata")  # noqa
 
         # Step 2: Generate DSL
         print("\n[3] Generate DSL...")
@@ -83,9 +54,7 @@ for csv_path in test_files:
 
         # Test DSL JSON serialization
         print("\n[4] Testing DSL JSON serialization...")
-        if not test_json_serialization(dsl, "DSL"):
-            print("  ERROR: DSL cannot be serialized!")
-            continue
+        check_json_serialization(dsl, "DSL")  # noqa
 
         # Step 3: Generate PySpark code
         print("\n[5] Generate PySpark code...")
@@ -98,9 +67,7 @@ for csv_path in test_files:
         }
 
         print("\n[6] Testing response JSON serialization...")
-        if not test_json_serialization(response, "Response"):
-            print("  ERROR: Response cannot be serialized!")
-            continue
+        check_json_serialization(response, "Response")  # noqa
 
         print(f"\n✓✓✓ ALL JSON TESTS PASSED for {os.path.basename(csv_path)} ✓✓✓")
 

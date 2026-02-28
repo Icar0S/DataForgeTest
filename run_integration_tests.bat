@@ -52,7 +52,7 @@ if errorlevel 1 (
 
 REM Verificar/ativar ambiente virtual
 if exist "%ROOT_DIR%.venv\Scripts\activate.bat" (
-    echo [INFO] Ativando ambiente virtual (.venv)...
+    echo [INFO] Ativando ambiente virtual ^(.venv^)...
     call "%ROOT_DIR%.venv\Scripts\activate.bat"
 ) else (
     echo [AVISO] Ambiente virtual nao encontrado. Usando Python do sistema.
@@ -74,13 +74,14 @@ python -m pytest "%TESTS_DIR%\backend\unit" ^
     --junit-xml="%RESULTS_DIR%\backend\unit-results.xml" ^
     --html="%RESULTS_DIR%\backend\unit-report.html" ^
     --self-contained-html ^
-    -q 2>nul || (
-        python -m pytest "%TESTS_DIR%\backend\unit" ^
-            -v ^
-            --tb=short ^
-            --junit-xml="%RESULTS_DIR%\backend\unit-results.xml" ^
-            -q
-    )
+    -q 2>nul
+if errorlevel 1 (
+    python -m pytest "%TESTS_DIR%\backend\unit" ^
+        -v ^
+        --tb=short ^
+        --junit-xml="%RESULTS_DIR%\backend\unit-results.xml" ^
+        -q
+)
 
 if errorlevel 1 (
     echo [FALHA] Testes unitarios de backend falharam.
@@ -193,12 +194,13 @@ python -m pytest "%TESTS_DIR%\backend\performance\test_performance_benchmarks.py
     --tb=short ^
     --benchmark-json="%RESULTS_DIR%\performance\benchmark.json" ^
     --benchmark-sort=mean ^
-    -q 2>nul || (
-        python -m pytest "%TESTS_DIR%\backend\performance\test_performance_benchmarks.py" ^
-            -v ^
-            --tb=short ^
-            -q
-    )
+    -q 2>nul
+if errorlevel 1 (
+    python -m pytest "%TESTS_DIR%\backend\performance\test_performance_benchmarks.py" ^
+        -v ^
+        --tb=short ^
+        -q
+)
 
 if errorlevel 1 (
     echo [FALHA] Benchmarks de performance falharam - SLAs violados.
@@ -248,12 +250,13 @@ call npm test -- ^
     --testPathPattern="unit|components/tests|pages/tests" ^
     --verbose ^
     --reporters=default ^
-    --reporters=jest-junit 2>nul || (
-        call npm test -- ^
-            --watchAll=false ^
-            --testPathPattern="unit|components/tests|pages/tests" ^
-            --verbose
-    )
+    --reporters=jest-junit 2>nul
+if errorlevel 1 (
+    call npm test -- ^
+        --watchAll=false ^
+        --testPathPattern="unit|components/tests|pages/tests" ^
+        --verbose
+)
 
 if errorlevel 1 (
     echo [FALHA] Testes unitarios de frontend falharam.
