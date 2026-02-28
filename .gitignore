@@ -25,3 +25,6 @@ storage/
 
 # Ignore uploads directory
 uploads/
+
+# Ignore test results directory
+test-results/
