@@ -189,10 +189,11 @@ class TestMetricsEndpoint:
             response.status_code != 404
         ), "Endpoint returned 404! This is the bug we fixed."
 
-        # Should return 400 (missing data) or 500, but NOT 404
+        # Should return 400 (missing data), 415, 429 (rate limited), or 500, but NOT 404
         assert response.status_code in [
             400,
             415,
+            429,
             500,
         ], f"Unexpected status code: {response.status_code}"
 

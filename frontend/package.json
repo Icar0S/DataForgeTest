@@ -34,8 +34,15 @@
   "jest": {
     "testMatch": [
       "<rootDir>/src/**/*.test.{js,jsx,ts,tsx}",
-      "<rootDir>/src/**/tests/**/*.{js,jsx,ts,tsx}"
-    ]
+      "<rootDir>/src/**/tests/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/../tests/frontend/**/*.test.{js,jsx,ts,tsx}"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.js"
+    }
   },
   "browserslist": {
     "production": [

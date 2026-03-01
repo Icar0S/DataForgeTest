@@ -124,7 +124,6 @@ echo.
 python -m pytest "%TESTS_DIR%\backend\security" ^
     -v ^
     --tb=short ^
-    -m security ^
     --junit-xml="%RESULTS_DIR%\backend\security-results.xml" ^
     -q
 
@@ -272,7 +271,7 @@ echo.
 echo --- [7b] Testes de Seguranca de Frontend ---
 call npm test -- ^
     --watchAll=false ^
-    --testPathPattern="security" ^
+    --testPathPattern="tests/frontend/security|security" ^
     --verbose
 
 if errorlevel 1 (

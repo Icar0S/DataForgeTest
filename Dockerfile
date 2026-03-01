@@ -34,6 +34,12 @@ RUN mkdir -p storage/vectorstore \
     storage/metrics \
     uploads
 
+# Create and switch to non-root user
+RUN useradd -m -u 1000 -s /bin/bash appuser \
+    && chown -R appuser:appuser /app
+
+USER appuser
+
 # Expose port 5000
 EXPOSE 5000
 

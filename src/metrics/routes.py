@@ -10,6 +10,7 @@ import numpy as np
 
 from .config import MetricsConfig
 from .processor import read_dataset, generate_quality_report
+from limiter import limiter
 
 
 def convert_to_json_serializable(obj):
@@ -148,6 +149,7 @@ def upload_dataset():
 
 
 @metrics_bp.route("/analyze", methods=["POST"])
+@limiter.limit("20 per minute")
 def analyze_dataset():
     """Analyze dataset and generate quality report.
 
