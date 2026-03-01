@@ -20,9 +20,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "test:coverage": "craco test --watchAll=false --coverage",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -31,24 +32,7 @@
       "react-app/jest"
     ]
   },
-  "jest": {
-    "roots": [
-      "<rootDir>/src",
-      "<rootDir>/../tests/frontend"
-    ],
-    "testMatch": [
-      "<rootDir>/../tests/frontend/**/*.test.{js,jsx,ts,tsx}"
-    ],
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.js"
-    },
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!src/index.js",
-      "!src/reportWebVitals.js",
-      "!src/**/*.test.{js,jsx,ts,tsx}"
-    ]
-  },
+
   "browserslist": {
     "production": [
       ">0.2%",
@@ -62,6 +46,7 @@
     ]
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
