@@ -32,14 +32,22 @@
     ]
   },
   "jest": {
+    "roots": [
+      "<rootDir>/src",
+      "<rootDir>/../tests/frontend"
+    ],
     "testMatch": [
-      "<rootDir>/src/**/*.test.{js,jsx,ts,tsx}",
-      "<rootDir>/src/**/tests/**/*.{js,jsx,ts,tsx}",
       "<rootDir>/../tests/frontend/**/*.test.{js,jsx,ts,tsx}"
     ],
     "moduleNameMapper": {
       "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.js"
-    }
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/**/*.test.{js,jsx,ts,tsx}"
+    ]
   },
   "browserslist": {
     "production": [

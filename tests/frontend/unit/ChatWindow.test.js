@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ChatWindow from '../ChatWindow';
+import ChatWindow from '../../../frontend/src/components/ChatWindow';
 
 // Mock EventSource
 class MockEventSource {

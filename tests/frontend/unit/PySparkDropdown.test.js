@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import PySparkDropdown from '../PySparkDropdown';
+import PySparkDropdown from '../../../frontend/src/components/PySparkDropdown';
 
 describe('PySparkDropdown', () => {
   const renderComponent = () => {

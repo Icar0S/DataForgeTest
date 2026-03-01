@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import QaChecklist from '../../pages/QaChecklist';
+import QaChecklist from '../../../frontend/src/pages/QaChecklist';
 
 // Use manual mock for react-router-dom
 jest.mock('react-router-dom');

@@ -7,7 +7,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import MethodologyPage from '../MethodologyPage';
+import MethodologyPage from '../../../frontend/src/pages/MethodologyPage';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -35,7 +35,7 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Mock animation functions
-jest.mock('../../styles/animations', () => ({
+jest.mock('../../../frontend/src/styles/animations', () => ({
   fadeIn: {},
   slideIn: {},
   staggerContainer: {},

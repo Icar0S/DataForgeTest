@@ -145,9 +145,7 @@ def collect_artifacts(
         results_dir / "backend" / "e2e-results.xml",
         results_dir / "backend" / "unit-report.html",
         results_dir / "performance" / "benchmark.json",
-        results_dir / "frontend" / "coverage" / "coverage-summary.json",
         results_dir / "frontend" / "coverage" / "index.html",
-        results_dir / "frontend" / "coverage" / "lcov-report" / "index.html",
         results_dir / f"pipeline_{timestamp}.log",
         report_path,
     ]

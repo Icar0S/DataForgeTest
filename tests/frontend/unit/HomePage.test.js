@@ -7,7 +7,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import HomePage from '../HomePage';
+import HomePage from '../../../frontend/src/components/HomePage';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -42,7 +42,7 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Mock animation functions
-jest.mock('../../styles/animations', () => ({
+jest.mock('../../../frontend/src/styles/animations', () => ({
   fadeIn: {},
   staggerContainer: {},
   slideIn: {},
@@ -50,21 +50,21 @@ jest.mock('../../styles/animations', () => ({
 }));
 
 // Mock the PySparkDropdown to avoid complex dependencies
-jest.mock('../PySparkDropdown', () => {
+jest.mock('../../../frontend/src/components/PySparkDropdown', () => {
   return function MockPySparkDropdown() {
     return <div data-testid="pyspark-dropdown">PySpark Dropdown</div>;
   };
 });
 
 // Mock the DataAccuracyDropdown to avoid complex dependencies
-jest.mock('../DataAccuracyDropdown', () => {
+jest.mock('../../../frontend/src/components/DataAccuracyDropdown', () => {
   return function MockDataAccuracyDropdown() {
     return <div data-testid="data-accuracy-dropdown">Data Accuracy Dropdown</div>;
   };
 });
 
 // Mock the RAGButton to avoid complex dependencies
-jest.mock('../RAGButton', () => {
+jest.mock('../../../frontend/src/components/RAGButton', () => {
   return function MockRAGButton() {
     return <div data-testid="rag-button">RAG Button</div>;
   };

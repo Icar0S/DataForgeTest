@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import ChecklistPage from '../../pages/ChecklistPage';
+import ChecklistPage from '../../../frontend/src/pages/ChecklistPage';
 
 // Use manual mock for react-router-dom
 jest.mock('react-router-dom');

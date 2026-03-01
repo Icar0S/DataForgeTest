@@ -7,7 +7,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import DataAccuracyDropdown from '../DataAccuracyDropdown';
+import DataAccuracyDropdown from '../../../frontend/src/components/DataAccuracyDropdown';
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
