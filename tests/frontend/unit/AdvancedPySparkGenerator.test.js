@@ -311,3 +311,124 @@ describe('AdvancedPySparkGenerator Component', () => {
     });
   });
 });
+
+describe('AdvancedPySparkGenerator - Metadata with columns', () => {
+  const richMetadata = {
+    columns: [
+      {
+        name: 'id',
+        dtype: 'int64',
+        type: 'integer',
+        nullable: false,
+        null_ratio: 0.0,
+        unique_ratio: 1.0,
+        min: 1,
+        max: 1000,
+        mean: 500.5,
+        sample_values: [1, 2, 3],
+        examples: [1, 2, 3],
+      },
+      {
+        name: 'name',
+        dtype: 'object',
+        type: 'string',
+        nullable: true,
+        null_ratio: 0.1,
+        unique_ratio: 0.9,
+        sample_values: ['Alice', 'Bob'],
+        examples: ['Alice', 'Bob'],
+      },
+    ],
+    row_count: 100,
+    column_count: 2,
+    file_name: 'dataset.csv',
+    format: 'csv',
+    detected_options: {
+      encoding: 'utf-8',
+      delimiter: ',',
+    },
+    preview: [
+      { id: 1, name: 'Alice' },
+    ],
+  };
+
+  const goToStep2 = async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => richMetadata,
+    });
+    renderWithRouter(<AdvancedPySparkGenerator />);
+    const input = document.querySelector('input[type="file"]');
+    const file = new File(['content'], 'data.csv', { type: 'text/csv' });
+    fireEvent.change(input, { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: /Inspect Dataset/i }));
+    await waitFor(() => {
+      expect(screen.getByText(/Step 2: Review Dataset Metadata/i)).toBeInTheDocument();
+    });
+  };
+
+  beforeEach(() => {
+    fetch.mockClear();
+    jest.clearAllMocks();
+  });
+
+  test('shows auto-detected encoding in step 2', async () => {
+    await goToStep2();
+    expect(screen.getByText(/utf-8/i)).toBeInTheDocument();
+  });
+
+  test('shows column statistics in step 2', async () => {
+    await goToStep2();
+    expect(screen.getAllByText(/id/i).length).toBeGreaterThan(0);
+  });
+
+  test('shows data preview table in step 2', async () => {
+    await goToStep2();
+    expect(screen.getByText(/Data Preview/i)).toBeInTheDocument();
+  });
+
+  test('allows editing column required checkbox in step 2', async () => {
+    await goToStep2();
+    const checkboxes = screen.getAllByRole('checkbox');
+    // Click the first column required checkbox
+    if (checkboxes.length > 0) {
+      fireEvent.click(checkboxes[0]);
+      // No error should be thrown
+      expect(checkboxes[0]).toBeInTheDocument();
+    }
+  });
+
+  test('allows editing dataset name in step 2', async () => {
+    await goToStep2();
+    const nameInput = screen.getByDisplayValue(/dataset/i);
+    fireEvent.change(nameInput, { target: { value: 'my_custom_dataset' } });
+    expect(nameInput.value).toBe('my_custom_dataset');
+  });
+
+  test('shows Format, Rows, Columns info in step 2', async () => {
+    await goToStep2();
+    expect(screen.getByText('Format')).toBeInTheDocument();
+    expect(screen.getByText('Rows')).toBeInTheDocument();
+    expect(screen.getByText('Columns')).toBeInTheDocument();
+    expect(screen.getByText('CSV')).toBeInTheDocument();
+  });
+
+  test('shows generate another dataset button after completion', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => richMetadata });
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ dsl: { rules: [] } }) });
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => ({ pyspark_code: 'print("ok")', filename: 'code.py' }) });
+    
+    renderWithRouter(<AdvancedPySparkGenerator />);
+    const input = document.querySelector('input[type="file"]');
+    const file = new File(['content'], 'data.csv', { type: 'text/csv' });
+    fireEvent.change(input, { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: /Inspect Dataset/i }));
+    await waitFor(() => screen.getByText(/Step 2: Review Dataset Metadata/i));
+    fireEvent.click(screen.getByRole('button', { name: /Generate DSL/i }));
+    await waitFor(() => screen.getByText(/Step 3: Review and Edit DSL/i));
+    fireEvent.click(screen.getByRole('button', { name: /Generate PySpark Code/i }));
+    await waitFor(() => screen.getByText(/Step 4: PySpark Code/i));
+    
+    expect(screen.getByRole('button', { name: /Generate Another Dataset/i })).toBeInTheDocument();
+  });
+});
