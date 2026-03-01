@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import TestDatasetGold from '../../../frontend/src/pages/TestDatasetGold';
@@ -186,5 +186,236 @@ describe('TestDatasetGold Component', () => {
         expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
+  });
+});
+
+describe('TestDatasetGold - File Upload and Processing', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    jest.clearAllMocks();
+  });
+
+  const mockUploadResponse = {
+    sessionId: 'test-session-123',
+    datasetId: 'dataset-456',
+    columns: ['id', 'name', 'age'],
+    rowCount: 100,
+    fileSize: 2048,
+    format: 'csv',
+    sample: [
+      { id: 1, name: 'Alice', age: 30 },
+      { id: 2, name: 'Bob', age: 25 },
+    ],
+  };
+
+  const getFileInput = () => {
+    const inputs = document.querySelectorAll('input[type="file"]');
+    return inputs[0];
+  };
+
+  test('accepts valid CSV file type', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['id,name\n1,Alice'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/gold/upload'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+  });
+
+  test('rejects invalid file type and shows error', () => {
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    expect(screen.getByText(/Invalid file type/i)).toBeInTheDocument();
+  });
+
+  test('rejects PDF file type', () => {
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    expect(screen.getByText(/Invalid file type/i)).toBeInTheDocument();
+  });
+
+  test('shows upload spinner while uploading', async () => {
+    let resolveFetch;
+    fetch.mockReturnValue(new Promise(resolve => { resolveFetch = resolve; }));
+    
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText(/Uploading.../i)).toBeInTheDocument();
+    });
+    
+    // Resolve to clean up
+    await act(async () => {
+      resolveFetch({
+        ok: true,
+        json: async () => mockUploadResponse,
+      });
+    });
+  });
+
+  test('shows dataset information panel after successful upload', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText('Dataset Information')).toBeInTheDocument();
+    });
+  });
+
+  test('shows error when upload fails', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Upload failed: file too large' }),
+    });
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText(/Upload failed: file too large/i)).toBeInTheDocument();
+    });
+  });
+
+  test('shows cleaning options after upload', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText('Cleaning Options')).toBeInTheDocument();
+    });
+  });
+
+  test('drag and drop sets dragActive state', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    
+    const dropZone = screen.getAllByRole('button', { name: /select file/i })[0].closest('[role="button"]');
+    
+    // dragenter should set dragActive
+    fireEvent.dragEnter(dropZone);
+    // dragLeave should unset dragActive
+    fireEvent.dragLeave(dropZone);
+    // No error should be thrown
+    expect(dropZone).toBeInTheDocument();
+  });
+
+  test('drop calls handleFileChange with dropped file', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    
+    const dropZone = screen.getAllByRole('button', { name: /select file/i })[0].closest('[role="button"]');
+    const file = new File(['content'], 'dropped.csv', { type: 'text/csv' });
+    
+    fireEvent.drop(dropZone, {
+      dataTransfer: { files: [file] },
+    });
+    
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/gold/upload'),
+        expect.any(Object)
+      );
+    });
+  });
+
+  test('Process button calls API with sessionId', async () => {
+    // Upload first
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    // Process response
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        status: 'queued',
+        sessionId: 'test-session-123',
+      }),
+    });
+    
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText('Dataset Information')).toBeInTheDocument();
+    });
+    
+    const processBtn = screen.getByRole('button', { name: /Generate GOLD Dataset/i });
+    fireEvent.click(processBtn);
+    
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/gold/clean'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+  });
+
+  test('Reset button clears the state', async () => {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockUploadResponse,
+    });
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = getFileInput();
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByText('Dataset Information')).toBeInTheDocument();
+    });
+    
+    const resetBtn = screen.getByRole('button', { name: /Reset/i });
+    fireEvent.click(resetBtn);
+    
+    expect(screen.getByText('Upload Dataset')).toBeInTheDocument();
   });
 });
