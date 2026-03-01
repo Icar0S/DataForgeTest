@@ -14,6 +14,8 @@ set "FRONTEND_DIR=%ROOT_DIR%frontend"
 set "RESULTS_DIR=%ROOT_DIR%test-results"
 set "TIMESTAMP=%DATE:~6,4%%DATE:~3,2%%DATE:~0,2%_%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%"
 set "TIMESTAMP=%TIMESTAMP: =0%"
+set "PIPELINE_LOG=%RESULTS_DIR%\pipeline_%TIMESTAMP%.log"
+set "PIPELINE_HTML=%RESULTS_DIR%\pipeline_%TIMESTAMP%.html"
 
 set BACKEND_PASS=0
 set BACKEND_FAIL=0
@@ -320,6 +322,8 @@ if errorlevel 1 (
 cd /d "%ROOT_DIR%"
 
 :SUMMARY
+call :build_consolidated_log
+call :generate_unified_html_report
 echo.
 echo ============================================================
 echo  SUMARIO FINAL DA PIPELINE
@@ -342,6 +346,8 @@ echo    - test-results\backend\integration-results.xml
 echo    - test-results\backend\e2e-results.xml
 echo    - test-results\performance\benchmark.json
 echo    - test-results\frontend\coverage\index.html
+echo    - test-results\pipeline_%TIMESTAMP%.log
+echo    - test-results\pipeline_%TIMESTAMP%.html
 echo.
 
 if "%OVERALL_STATUS%"=="0" (
@@ -361,6 +367,68 @@ if errorlevel 1 (
     echo test-results/ >> "%ROOT_DIR%.gitignore"
     echo [INFO] Adicionado test-results/ ao .gitignore
 )
+
+goto :AFTER_HELPERS
+
+:build_consolidated_log
+setlocal
+echo [INFO] Gerando log consolidado em: %PIPELINE_LOG%
+> "%PIPELINE_LOG%" (
+    echo ============================================================
+    echo  DataForgeTest - Log Consolidado
+    echo  Gerado em %DATE% %TIME%
+    echo ============================================================
+)
+call :append_file_to_log "Backend - Unit" "%RESULTS_DIR%\backend\unit-results.xml"
+call :append_file_to_log "Backend - API" "%RESULTS_DIR%\backend\api-results.xml"
+call :append_file_to_log "Backend - Security" "%RESULTS_DIR%\backend\security-results.xml"
+call :append_file_to_log "Backend - Integration" "%RESULTS_DIR%\backend\integration-results.xml"
+call :append_file_to_log "Backend - E2E" "%RESULTS_DIR%\backend\e2e-results.xml"
+call :append_file_to_log "Backend - Unit HTML" "%RESULTS_DIR%\backend\unit-report.html"
+call :append_file_to_log "Performance Benchmarks" "%RESULTS_DIR%\performance\benchmark.json"
+call :append_file_to_log "Frontend Coverage Summary" "%RESULTS_DIR%\frontend\coverage\coverage-summary.json"
+call :append_file_to_log "Frontend Coverage HTML" "%RESULTS_DIR%\frontend\coverage\lcov-report\index.html"
+echo [OK] Log consolidado atualizado.
+endlocal
+exit /b 0
+
+:append_file_to_log
+setlocal
+set "SECTION_LABEL=%~1"
+set "SECTION_PATH=%~2"
+>> "%PIPELINE_LOG%" echo.
+if exist "%SECTION_PATH%" (
+    >> "%PIPELINE_LOG%" echo ---------- %SECTION_LABEL% ----------
+    type "%SECTION_PATH%" >> "%PIPELINE_LOG%"
+) else (
+    >> "%PIPELINE_LOG%" echo [WARN] %SECTION_LABEL% ausente: %SECTION_PATH%
+)
+endlocal
+exit /b 0
+
+:generate_unified_html_report
+setlocal
+if not exist "%PIPELINE_LOG%" (
+    echo [AVISO] Log consolidado inexistente - pulando geracao de HTML unico.
+    endlocal
+    exit /b 0
+)
+set "REPORT_SCRIPT=%ROOT_DIR%utilities\generate_pipeline_report.py"
+if not exist "%REPORT_SCRIPT%" (
+    echo [AVISO] Script %REPORT_SCRIPT% nao encontrado.
+    endlocal
+    exit /b 1
+)
+python "%REPORT_SCRIPT%" "%PIPELINE_LOG%" "%RESULTS_DIR%" "%PIPELINE_HTML%" %BACKEND_PASS% %BACKEND_FAIL% %FRONTEND_PASS% %FRONTEND_FAIL% %TIMESTAMP%
+if errorlevel 1 (
+    echo [AVISO] Falha ao gerar relatorio HTML consolidado.
+) else (
+    echo [OK] Relatorio consolidado salvo em: %PIPELINE_HTML%
+)
+endlocal
+exit /b 0
+
+:AFTER_HELPERS
 
 :END
 pause
