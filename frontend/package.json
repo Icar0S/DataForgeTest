@@ -53,5 +53,23 @@
     "postcss-nesting": "^13.0.2",
     "tailwindcss": "^3.4.17"
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!src/**/*.test.{js,jsx}",
+      "!src/**/__tests__/**",
+      "!src/index.js",
+      "!src/reportWebVitals.js",
+      "!src/**/__mocks__/**"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 80,
+        "branches": 70,
+        "functions": 75,
+        "lines": 80
+      }
+    }
+  }
 }

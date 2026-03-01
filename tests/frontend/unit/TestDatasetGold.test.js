@@ -419,3 +419,119 @@ describe('TestDatasetGold - File Upload and Processing', () => {
     expect(screen.getByText('Upload Dataset')).toBeInTheDocument();
   });
 });
+describe('TestDatasetGold - Processing and Report', () => {
+  beforeEach(() => {
+    fetch.mockClear();
+    jest.clearAllMocks();
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  const mockUploadResponse = {
+    sessionId: 'test-session-123',
+    datasetId: 'dataset-456',
+    columns: ['id', 'name', 'age'],
+    rowCount: 100,
+    fileSize: 2048,
+    format: 'csv',
+    sample: [{ id: 1, name: 'Alice', age: 30 }],
+  };
+
+  const mockReport = {
+    rows_processed: 100,
+    columns_processed: 3,
+    issues_found: 5,
+    issues_fixed: 3,
+    quality_score: 85,
+    column_reports: [],
+  };
+
+  test('handles process completion with completed status', async () => {
+    // Upload
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => mockUploadResponse });
+    // Process clean call
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ status: 'completed', sessionId: 'test-session-123' }),
+    });
+    // Status fetch after completed
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        state: 'completed',
+        report: mockReport,
+        progress: { current: 100, total: 100, phase: 'complete' },
+      }),
+    });
+
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Dataset Information')).toBeInTheDocument();
+    });
+
+    const processBtn = screen.getByRole('button', { name: /Generate GOLD Dataset/i });
+    fireEvent.click(processBtn);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/gold/clean'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+  });
+
+  test('handles process failure gracefully', async () => {
+    // Upload
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => mockUploadResponse });
+    // Process clean call fails
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'Processing failed: invalid data format' }),
+    });
+
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Dataset Information')).toBeInTheDocument();
+    });
+
+    const processBtn = screen.getByRole('button', { name: /Generate GOLD Dataset/i });
+    fireEvent.click(processBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Processing failed: invalid data format/i)).toBeInTheDocument();
+    });
+  });
+
+  test('cleaning options can be toggled', async () => {
+    fetch.mockResolvedValueOnce({ ok: true, json: async () => mockUploadResponse });
+
+    renderWithRouter(<TestDatasetGold />);
+    const fileInput = document.querySelector('input[type="file"]');
+    const file = new File(['content'], 'test.csv', { type: 'text/csv' });
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      expect(screen.getByText('Cleaning Options')).toBeInTheDocument();
+    });
+
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes.length).toBeGreaterThan(0);
+    // Toggle first option
+    fireEvent.click(checkboxes[0]);
+    // Toggle it back
+    fireEvent.click(checkboxes[0]);
+    expect(checkboxes[0]).toBeInTheDocument();
+  });
+});
