@@ -56,10 +56,10 @@ const ChatWindow = ({ onClose }) => {
   
   useEffect(() => {
     // Cleanup EventSource on unmount
-    const eventSource = eventSourceRef.current;
     return () => {
-      if (eventSource) {
-        eventSource.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
     };
   }, []);
@@ -88,30 +88,6 @@ const ChatWindow = ({ onClose }) => {
     return currentMessage;
   };
 
-  // Process SSE line
-  const processSSELine = (line, currentMessage) => {
-    if (!line.startsWith('data: ')) {
-      return { currentMessage, shouldBreak: false };
-    }
-    
-    const data = line.slice(6);
-    
-    if (data === '[DONE]') {
-      setIsLoading(false);
-      return { currentMessage, shouldBreak: true };
-    }
-    
-    try {
-      const parsed = JSON.parse(data);
-      const newMessage = processEventData(parsed, currentMessage);
-      return { currentMessage: newMessage, shouldBreak: false };
-    } catch (parseError) {
-      // Ignore parse errors for incomplete chunks
-      console.warn('Failed to parse SSE data:', parseError);
-      return { currentMessage, shouldBreak: false };
-    }
-  };
-
   const handleSend = async () => {
     if (!input.trim()) return;
     
@@ -123,48 +99,47 @@ const ChatWindow = ({ onClose }) => {
       setIsLoading(true);
       setError(null);
       setSources([]);
-      
-      // Add empty assistant message for streaming
+
+      // Close any previous stream before opening a new one
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+
       const assistantMessageId = generateMessageId();
       setMessages(prev => [...prev, { id: assistantMessageId, role: 'assistant', content: '' }]);
-      
-      // Use fetch with ReadableStream for POST streaming
-      const response = await fetch(getApiUrl('/api/rag/chat-stream'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: userMessage }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
+
+      const eventSourceUrl = `${getApiUrl('/api/rag/chat')}?message=${encodeURIComponent(userMessage)}`;
+      const eventSource = new EventSource(eventSourceUrl);
+      eventSourceRef.current = eventSource;
       let currentMessage = '';
-      
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          const result = processSSELine(line, currentMessage);
-          currentMessage = result.currentMessage;
-          if (result.shouldBreak) break;
+
+      eventSource.onmessage = (event) => {
+        if (event.data === '[DONE]') {
+          setIsLoading(false);
+          eventSource.close();
+          eventSourceRef.current = null;
+          return;
         }
-      }
-      
-      setIsLoading(false);
-      
+
+        try {
+          const parsed = JSON.parse(event.data);
+          currentMessage = processEventData(parsed, currentMessage);
+        } catch (parseError) {
+          console.warn('Failed to parse SSE data:', parseError);
+        }
+      };
+
+      eventSource.onerror = () => {
+        setError('Connection error. Please try again.');
+        setMessages(prev => prev.slice(0, -1));
+        setIsLoading(false);
+        eventSource.close();
+        eventSourceRef.current = null;
+      };
     } catch (err) {
       console.error('Chat error:', err);
       setError('Connection error. Please try again.');
-      setMessages(prev => prev.slice(0, -1)); // Remove empty assistant message
+      setMessages(prev => prev.slice(0, -1));
       setIsLoading(false);
     }
   };

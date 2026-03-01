@@ -1,6 +1,11 @@
 """Simple RAG implementation using basic vector search."""
 
-import fcntl
+try:
+    import fcntl
+
+    _HAS_FCNTL = True
+except ImportError:  # Windows does not have fcntl
+    _HAS_FCNTL = False
 import json
 import uuid
 from pathlib import Path
@@ -62,9 +67,13 @@ class SimpleRAG:
         """
         docs_file = self.storage_path / "documents.json"
         lock_file = self.storage_path / "documents.lock"
+        if not _HAS_FCNTL:
+            # Windows: no file-locking available, import without lock
+            self._auto_import_or_fallback()
+            return
         try:
             with open(lock_file, "w") as lock_fd:
-                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)
+                fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX)  # type: ignore[name-defined]
                 try:
                     # Double-check: another worker may have written the file while
                     # we were waiting for the lock.
@@ -76,7 +85,7 @@ class SimpleRAG:
                     else:
                         self._auto_import_or_fallback()
                 finally:
-                    fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+                    fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)  # type: ignore[name-defined]
         except OSError as e:
             # fcntl not available (e.g., Windows dev environment) – proceed without lock
             print(f"[WARNING] File lock unavailable ({e}); importing without lock")
@@ -89,14 +98,16 @@ class SimpleRAG:
             print(f"[INFO] Auto-importing documents from {docs_dir}...")
             self._auto_import_from_folder(docs_dir)
         else:
-            print("[INFO] docs_to_import folder not found. Loading fallback documents...")
+            print(
+                "[INFO] docs_to_import folder not found. Loading fallback documents..."
+            )
             self._load_fallback_documents()
 
     def _find_docs_to_import(self) -> Optional[Path]:
         """Locate the docs_to_import directory relative to common project layouts."""
         candidates = [
-            Path("docs_to_import"),                        # cwd/docs_to_import
-            Path("../docs_to_import"),                     # one level up (e.g. src/)
+            Path("docs_to_import"),  # cwd/docs_to_import
+            Path("../docs_to_import"),  # one level up (e.g. src/)
             Path(__file__).parent.parent.parent / "docs_to_import",  # project root
         ]
         for candidate in candidates:
@@ -144,8 +155,7 @@ class SimpleRAG:
         """
         # Build set of filenames already in the index
         existing_filenames = {
-            doc.get("metadata", {}).get("filename")
-            for doc in self.documents.values()
+            doc.get("metadata", {}).get("filename") for doc in self.documents.values()
         }
 
         imported = 0
@@ -188,7 +198,9 @@ class SimpleRAG:
             self._save_documents()
         elif skipped == 0:
             # Nothing imported and nothing skipped means the folder had no usable content
-            print("[WARNING] No documents imported from docs_to_import. Loading fallbacks.")
+            print(
+                "[WARNING] No documents imported from docs_to_import. Loading fallbacks."
+            )
             self._load_fallback_documents()
 
     def _load_fallback_documents(self):
@@ -326,7 +338,11 @@ class SimpleRAG:
         """
         docs_dir = self._find_docs_to_import()
         if docs_dir is None:
-            return {"imported": 0, "total": len(self.documents), "error": "docs_to_import folder not found"}
+            return {
+                "imported": 0,
+                "total": len(self.documents),
+                "error": "docs_to_import folder not found",
+            }
 
         before = len(self.documents)
         self._auto_import_from_folder(docs_dir)
