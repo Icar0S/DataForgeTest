@@ -503,6 +503,9 @@ const ChecklistPage = () => {
         >
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
             className="bg-gray-900 border border-gray-700/50 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
@@ -578,13 +581,16 @@ const ChecklistPage = () => {
         >
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div 
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="metadata-modal-title"
             className="bg-gray-900 border border-gray-700/50 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
             <div className="p-6">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-white">
+                  <h3 id="metadata-modal-title" className="text-2xl font-bold text-white">
                     Informações do Teste
                   </h3>
                   <p className="text-gray-400 text-sm mt-1">

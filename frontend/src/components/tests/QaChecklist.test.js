@@ -35,7 +35,7 @@ describe('QaChecklist Component', () => {
     renderComponent(<QaChecklist />);
     
     expect(screen.getByText('Checklist de Testes QA')).toBeInTheDocument();
-    expect(screen.getByText('Voltar')).toBeInTheDocument();
+    expect(screen.getByText('Back to Home')).toBeInTheDocument();
     expect(screen.getByText('Limpar')).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Digite sua resposta/)).toBeInTheDocument();
   });
@@ -109,7 +109,7 @@ describe('QaChecklist Component', () => {
   test('back button navigates to home page', () => {
     renderComponent(<QaChecklist />);
     
-    const backButton = screen.getByRole('link', { name: /Voltar para a Home/i });
+    const backButton = screen.getByRole('link', { name: /Back to Home/i });
     expect(backButton).toHaveAttribute('href', '/');
   });
 

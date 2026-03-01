@@ -90,7 +90,9 @@ class TestUnicodeResilience:
     def test_no_emoji_in_critical_paths(self):
         """Test that critical code paths don't use emojis."""
         # Read api.py and check for emojis
-        api_path = os.path.join(os.path.dirname(__file__), "..", "src", "api.py")
+        api_path = os.path.join(
+            os.path.dirname(__file__), "..", "..", "..", "src", "api.py"
+        )
 
         with open(api_path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -113,7 +115,7 @@ class TestUnicodeResilience:
     def test_rag_module_uses_ascii(self):
         """Test that RAG module uses ASCII markers instead of emojis."""
         rag_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "rag", "simple_rag.py"
+            os.path.dirname(__file__), "..", "..", "..", "src", "rag", "simple_rag.py"
         )
 
         with open(rag_path, "r", encoding="utf-8") as f:
@@ -134,7 +136,13 @@ class TestUnicodeResilience:
     def test_synthetic_module_uses_ascii(self):
         """Test that synthetic module uses ASCII markers."""
         synthetic_path = os.path.join(
-            os.path.dirname(__file__), "..", "src", "synthetic", "generator.py"
+            os.path.dirname(__file__),
+            "..",
+            "..",
+            "..",
+            "src",
+            "synthetic",
+            "generator.py",
         )
 
         # File might have been reformatted, so check if it exists

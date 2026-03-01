@@ -105,7 +105,7 @@ describe('HomePage Component', () => {
       renderWithRouter(<HomePage />);
       
       const links = screen.getAllByRole('link');
-      const qaLink = links.find(link => link.getAttribute('href') === '/qa-checklist');
+      const qaLink = links.find(link => link.getAttribute('href') === '/checklist');
       expect(qaLink).toBeTruthy();
     });
 

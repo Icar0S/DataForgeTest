@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 from datetime import datetime
 from flask import Blueprint, request, jsonify, send_file
+from flask_limiter.util import get_remote_address
 from werkzeug.utils import secure_filename
 import pandas as pd
 import numpy as np
@@ -51,6 +52,15 @@ config.storage_path.mkdir(parents=True, exist_ok=True)
 
 # Track processing status
 processing_status = {}
+
+
+def _metrics_rate_limit_key():
+    """Combine client IP with session id to avoid cross-session throttling."""
+    payload = {}
+    if request.method == "POST":
+        payload = request.get_json(silent=True) or {}
+    session_id = payload.get("sessionId") or ""
+    return f"{get_remote_address()}:{session_id}"
 
 
 @metrics_bp.route("/health", methods=["GET"])
@@ -149,7 +159,7 @@ def upload_dataset():
 
 
 @metrics_bp.route("/analyze", methods=["POST"])
-@limiter.limit("20 per minute")
+@limiter.limit("20 per minute", key_func=_metrics_rate_limit_key)
 def analyze_dataset():
     """Analyze dataset and generate quality report.
 
