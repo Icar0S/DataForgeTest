@@ -88,8 +88,9 @@ describe('UploadCard Component', () => {
   });
 
   describe('File selected state', () => {
+    const TWO_MB = 2 * 1024 * 1024;
     const file = new File(['content'], 'mydata.csv', { type: 'text/csv' });
-    Object.defineProperty(file, 'size', { value: 2097152 }); // 2 MB
+    Object.defineProperty(file, 'size', { value: TWO_MB }); // 2 MB
 
     test('shows file name when file is provided', () => {
       render(<UploadCard {...defaultProps} file={file} />);

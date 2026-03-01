@@ -383,9 +383,9 @@ describe('ChecklistPage - Extended Coverage', () => {
     await waitFor(() => expect(screen.getByText('Test Item 1')).toBeInTheDocument());
     
     // Button aria-label is "Marcar como feito" for NOT_DONE items
-    const toggleBtn = screen.getAllByRole('button', { name: /Marcar como feito/i })[0];
-    if (toggleBtn) {
-      fireEvent.click(toggleBtn);
+    const toggleBtns = screen.getAllByRole('button', { name: /Marcar como feito/i });
+    if (toggleBtns.length > 0) {
+      fireEvent.click(toggleBtns[0]);
     }
     // Save button should be present regardless (it's always visible after template loads)
     expect(screen.getByRole('button', { name: /Salvar Progresso/i })).toBeInTheDocument();
