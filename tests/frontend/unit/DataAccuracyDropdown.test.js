@@ -7,7 +7,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import DataAccuracyDropdown from '../DataAccuracyDropdown';
+import DataAccuracyDropdown from '../../../frontend/src/components/DataAccuracyDropdown';
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
@@ -183,5 +183,59 @@ describe('DataAccuracyDropdown Component', () => {
       const button = screen.getByText(/Data Accuracy/i).closest('button');
       expect(button).toHaveClass('bg-gradient-to-r');
     });
+  });
+});
+
+describe('DataAccuracyDropdown - Additional Coverage', () => {
+  test('opens on mouse enter and closes on mouse leave', async () => {
+    renderWithRouter(<DataAccuracyDropdown />);
+    const container = screen.getByText(/Data Accuracy/i).closest('button').parentElement;
+    
+    fireEvent.mouseEnter(container);
+    await waitFor(() => {
+      expect(screen.getByText(/Data Quality Metrics/i)).toBeInTheDocument();
+    });
+    
+    fireEvent.mouseLeave(container);
+    await waitFor(() => {
+      expect(screen.queryByText(/Data Quality Metrics/i)).not.toBeInTheDocument();
+    }, { timeout: 2000 });
+  });
+
+  test('opens on Enter key press', () => {
+    renderWithRouter(<DataAccuracyDropdown />);
+    const button = screen.getByText(/Data Accuracy/i).closest('button');
+    
+    fireEvent.keyDown(button, { key: 'Enter' });
+    expect(screen.getByText(/Data Quality Metrics/i)).toBeInTheDocument();
+  });
+
+  test('closes on Escape key press', () => {
+    renderWithRouter(<DataAccuracyDropdown />);
+    const button = screen.getByText(/Data Accuracy/i).closest('button');
+    
+    fireEvent.keyDown(button, { key: ' ' }); // Open
+    fireEvent.keyDown(button, { key: 'Escape' }); // Close
+    expect(screen.queryByText(/Data Quality Metrics/i)).not.toBeInTheDocument();
+  });
+
+  test('closes when clicking outside', () => {
+    renderWithRouter(<DataAccuracyDropdown />);
+    const button = screen.getByText(/Data Accuracy/i).closest('button');
+    
+    fireEvent.keyDown(button, { key: ' ' }); // Open
+    // Click outside
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByText(/Data Quality Metrics/i)).not.toBeInTheDocument();
+  });
+
+  test('navigation links are rendered in dropdown', () => {
+    renderWithRouter(<DataAccuracyDropdown />);
+    const button = screen.getByText(/Data Accuracy/i).closest('button');
+    fireEvent.keyDown(button, { key: 'Enter' });
+    
+    // Check all dropdown links are accessible
+    const links = screen.getAllByRole('link');
+    expect(links.length).toBeGreaterThan(0);
   });
 });

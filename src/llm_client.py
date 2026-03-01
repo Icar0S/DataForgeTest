@@ -1,7 +1,7 @@
 """LLM client abstraction layer supporting multiple providers."""
 
 import os
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 from abc import ABC, abstractmethod
 
 

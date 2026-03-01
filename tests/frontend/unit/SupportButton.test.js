@@ -6,10 +6,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import SupportButton from '../SupportButton';
+import SupportButton from '../../../frontend/src/components/SupportButton';
 
 // Mock ChatWindow to avoid complex dependencies
-jest.mock('../ChatWindow', () => {
+jest.mock('../../../frontend/src/components/ChatWindow', () => {
   // eslint-disable-next-line react/prop-types
   return function MockChatWindow({ onClose }) {
     return (

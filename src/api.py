@@ -6,17 +6,80 @@ import os
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
+from flask_limiter.util import get_remote_address
 from chatbot.main import process_chatbot_request
 from werkzeug.middleware.proxy_fix import ProxyFix
+from limiter import limiter
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+# Limit request body size to 10 MB to prevent DoS via oversized payloads
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+# Rate limiting configuration
+app.config["RATELIMIT_STORAGE_URI"] = "memory://"
+app.config["RATELIMIT_DEFAULT_LIMITS"] = ["200 per day", "50 per hour"]
+
+# Allowed origins for CORS — loaded from env var with safe default
+_CORS_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS",
+    "https://dataforgetest.onrender.com,http://localhost:3000"
+).split(",")
+
+CORS(
+    app,
+    origins=_CORS_ORIGINS,
+    methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
+    supports_credentials=False,
+)
+
+
+@app.before_request
+def reject_oversized_requests():
+    """Reject requests that exceed MAX_CONTENT_LENGTH before rate limiting runs."""
+    max_length = app.config.get("MAX_CONTENT_LENGTH")
+    if max_length and request.content_length and request.content_length > max_length:
+        abort(413)
+
+
+limiter.init_app(app)
 
 # Handle proxy headers from Render/reverse proxies
 # This ensures request.is_secure correctly detects HTTPS
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=0)
+
+
+@app.after_request
+def add_security_headers(response):
+    """Add mandatory HTTP security headers to all responses."""
+    # Prevent MIME type sniffing
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    # Prevent clickjacking
+    response.headers["X-Frame-Options"] = "DENY"
+    # Legacy XSS protection for older browsers
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    # Referrer policy
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    # Content Security Policy — allow only own origin + trusted CDNs
+    # NOTE: 'unsafe-inline' for script-src/style-src is required for the current
+    # React frontend build; tracked for removal when a nonce-based CSP is adopted.
+    _backend_url = os.environ.get(
+        "BACKEND_URL", "https://dataforgetest-backend.onrender.com"
+    )
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        f"connect-src 'self' {_backend_url}; "
+        "frame-ancestors 'none';"
+    )
+    # HSTS (only meaningful in production/HTTPS, safe to always add)
+    response.headers["Strict-Transport-Security"] = (
+        "max-age=31536000; includeSubDomains"
+    )
+    return response
 
 # Import and register blueprints with error handling
 # Critical blueprints are imported first
@@ -52,6 +115,7 @@ def health_check():
 
 
 @app.route("/ask", methods=["POST"])
+@limiter.limit("10 per minute")
 def ask_question():
     """Process user answers and generate DSL and PySpark code."""
     try:

@@ -39,6 +39,8 @@ class SyntheticDataGenerator:
         """
         self.llm_client = None
         self._llm_available = False
+        self.api_key = api_key
+        self.model = model
 
         # Try to initialize LLM client
         try:

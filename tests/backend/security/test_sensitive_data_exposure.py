@@ -186,7 +186,7 @@ class TestMalformedInputErrorHandling:
             json={"answers": {big_key: "value"}},
             content_type="application/json",
         )
-        assert response.status_code in (200, 400, 413, 500), (
+        assert response.status_code in (200, 400, 413, 429, 500), (
             f"Unexpected status code {response.status_code} for large JSON key."
         )
         body = response.get_data(as_text=True).lower()

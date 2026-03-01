@@ -1,10 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import SupportPage from '../../pages/SupportPage';
+import SupportPage from '../../../frontend/src/pages/SupportPage';
 
 // Mock ChatWindow component
-jest.mock('../ChatWindow', () => {
+jest.mock('../../../frontend/src/components/ChatWindow', () => {
   // eslint-disable-next-line react/prop-types
   const MockChatWindow = ({ onClose }) => {
     return (

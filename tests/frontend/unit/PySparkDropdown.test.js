@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import PySparkDropdown from '../PySparkDropdown';
+import PySparkDropdown from '../../../frontend/src/components/PySparkDropdown';
 
 describe('PySparkDropdown', () => {
   const renderComponent = () => {
@@ -106,5 +106,46 @@ describe('PySparkDropdown', () => {
     fireEvent.keyDown(button, { key: 'Escape' });
     
     // Dropdown should close (but animation might delay it)
+  });
+});
+
+describe("PySparkDropdown - Additional Coverage", () => {
+  const renderComponent = () => render(<BrowserRouter><PySparkDropdown /></BrowserRouter>);
+  test('Space key opens the dropdown', () => {
+    renderComponent();
+    const button = screen.getByLabelText('Generate PySpark Code Menu');
+    fireEvent.keyDown(button, { key: ' ' });
+    expect(screen.getByText('Interactive questionnaire for code generation')).toBeInTheDocument();
+  });
+
+  test('Escape key closes the dropdown', async () => {
+    renderComponent();
+    const button = screen.getByLabelText('Generate PySpark Code Menu');
+    fireEvent.keyDown(button, { key: 'Enter' }); // Open
+    expect(screen.getByText('Interactive questionnaire for code generation')).toBeInTheDocument();
+    fireEvent.keyDown(button, { key: 'Escape' }); // Close
+    // aria-expanded should now be false
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('handles mouse leave with delay', async () => {
+    renderComponent();
+    const container = screen.getByLabelText('Generate PySpark Code Menu').parentElement;
+    fireEvent.mouseEnter(container);
+    await waitFor(() => {
+      expect(screen.queryByText('Interactive questionnaire for code generation')).toBeInTheDocument();
+    });
+    fireEvent.mouseLeave(container);
+    // After mouse leave, the dropdown should close after timeout
+    await waitFor(() => {
+      expect(screen.queryByText('Interactive questionnaire for code generation')).not.toBeInTheDocument();
+    }, { timeout: 2000 });
+  });
+
+  test('button aria-expanded is true when open', () => {
+    renderComponent();
+    const button = screen.getByLabelText('Generate PySpark Code Menu');
+    fireEvent.keyDown(button, { key: 'Enter' });
+    expect(button).toHaveAttribute('aria-expanded', 'true');
   });
 });

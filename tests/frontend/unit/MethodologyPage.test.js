@@ -7,7 +7,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
-import MethodologyPage from '../MethodologyPage';
+import MethodologyPage from '../../../frontend/src/pages/MethodologyPage';
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -21,6 +21,8 @@ jest.mock('lucide-react', () => ({
   BookOpen: () => <div data-testid="icon-book">BookOpen</div>,
   ArrowRight: () => <div data-testid="icon-arrow-right">ArrowRight</div>,
   CheckCircle: () => <div data-testid="icon-check">CheckCircle</div>,
+  Languages: () => <div data-testid="icon-languages">Languages</div>,
+  ArrowDown: () => <div data-testid="icon-arrow-down">ArrowDown</div>,
 }));
 
 // Mock framer-motion
@@ -33,7 +35,7 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Mock animation functions
-jest.mock('../../styles/animations', () => ({
+jest.mock('../../../frontend/src/styles/animations', () => ({
   fadeIn: {},
   slideIn: {},
   staggerContainer: {},
@@ -86,7 +88,7 @@ describe('MethodologyPage', () => {
 
   test('renders footer with dissertation reference', () => {
     renderWithRouter(<MethodologyPage />);
-    expect(screen.getByText(/Dissertação de Mestrado - Framework Metodológico para Qualidade de Dados em Big Data/i)).toBeInTheDocument();
+    expect(screen.getByText(/Framework de Pesquisa Acadêmica/i)).toBeInTheDocument();
   });
 
   test('renders back to home link', () => {

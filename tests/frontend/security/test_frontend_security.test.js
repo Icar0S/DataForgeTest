@@ -1,4 +1,8 @@
 /**
+ * @jest-environment node
+ */
+
+/**
  * Frontend Security Tests
  *
  * Verifies that the React frontend follows security best practices:

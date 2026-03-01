@@ -4,5 +4,7 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-// Mock scrollIntoView
-Element.prototype.scrollIntoView = jest.fn();
+// Mock scrollIntoView (only in jsdom environment)
+if (typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView = jest.fn();
+}
