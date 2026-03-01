@@ -6,7 +6,7 @@ import os
 # Add current directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 from flask_cors import CORS
 from flask_limiter.util import get_remote_address
 from chatbot.main import process_chatbot_request
@@ -40,7 +40,6 @@ def reject_oversized_requests():
     """Reject requests that exceed MAX_CONTENT_LENGTH before rate limiting runs."""
     max_length = app.config.get("MAX_CONTENT_LENGTH")
     if max_length and request.content_length and request.content_length > max_length:
-        from flask import abort
         abort(413)
 
 
@@ -63,12 +62,17 @@ def add_security_headers(response):
     # Referrer policy
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
     # Content Security Policy — allow only own origin + trusted CDNs
+    # NOTE: 'unsafe-inline' for script-src/style-src is required for the current
+    # React frontend build; tracked for removal when a nonce-based CSP is adopted.
+    _backend_url = os.environ.get(
+        "BACKEND_URL", "https://dataforgetest-backend.onrender.com"
+    )
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data:; "
-        "connect-src 'self' https://dataforgetest-backend.onrender.com; "
+        f"connect-src 'self' {_backend_url}; "
         "frame-ancestors 'none';"
     )
     # HSTS (only meaningful in production/HTTPS, safe to always add)
