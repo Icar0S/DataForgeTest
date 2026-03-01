@@ -40,7 +40,7 @@ describe('DatasetMetrics Component', () => {
     test('renders back to home link', () => {
       renderWithRouter(<DatasetMetrics />);
       
-      const backLink = screen.getByRole('link', { name: /Voltar para Home/i });
+      const backLink = screen.getByRole('link', { name: /Back to Home/i });
       expect(backLink).toBeInTheDocument();
       expect(backLink).toHaveAttribute('href', '/');
     });
@@ -283,7 +283,7 @@ describe('DatasetMetrics Component', () => {
     test('has proper link navigation', () => {
       renderWithRouter(<DatasetMetrics />);
       
-      const backLink = screen.getByRole('link', { name: /Voltar para Home/i });
+      const backLink = screen.getByRole('link', { name: /Back to Home/i });
       expect(backLink).toHaveAttribute('href', '/');
     });
   });

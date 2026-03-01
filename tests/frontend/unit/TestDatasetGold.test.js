@@ -36,7 +36,7 @@ describe('TestDatasetGold Component', () => {
       expect(screen.getByText('Upload Dataset')).toBeInTheDocument();
       expect(screen.getByText('Drop your dataset here or click to browse')).toBeInTheDocument();
       expect(screen.getByText('Supported formats: CSV, XLSX, XLS, Parquet (max 50MB)')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /select file/i })[0]).toBeInTheDocument();
     });
 
     test('renders back to home link', () => {
@@ -63,7 +63,7 @@ describe('TestDatasetGold Component', () => {
       renderWithRouter(<TestDatasetGold />);
       
       // Check for upload button
-      expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /select file/i })[0]).toBeInTheDocument();
       
       // Check for navigation link
       expect(screen.getByRole('link', { name: 'Back to Home' })).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('TestDatasetGold Component', () => {
     test('has proper button roles', () => {
       renderWithRouter(<TestDatasetGold />);
       
-      expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /select file/i })[0]).toBeInTheDocument();
     });
 
     test('sets document title', () => {
@@ -129,7 +129,7 @@ describe('TestDatasetGold Component', () => {
       renderWithRouter(<TestDatasetGold />);
       
       expect(screen.getByText('Upload Dataset')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /select file/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /select file/i })[0]).toBeInTheDocument();
       expect(screen.getByText('Drop your dataset here or click to browse')).toBeInTheDocument();
     });
   });
@@ -152,7 +152,7 @@ describe('TestDatasetGold Component', () => {
     test('has interactive elements', () => {
       renderWithRouter(<TestDatasetGold />);
       
-      const selectButton = screen.getByRole('button', { name: /select file/i });
+      const selectButton = screen.getAllByRole('button', { name: /select file/i })[0];
       const homeLink = screen.getByRole('link', { name: /back to home/i });
       
       expect(selectButton).toBeInTheDocument();

@@ -248,9 +248,9 @@ describe('GenerateDataset Component', () => {
     const clearButton = screen.getByLabelText(/Clear form/i);
     fireEvent.click(clearButton);
     
-    // Check defaults are restored
-    expect(firstColumnInput.value).toBe('id');
-    expect(rowsInput.value).toBe('1000');
+    // Re-query inputs after re-render
+    expect(screen.getByLabelText(/Name for column 1/i).value).toBe('id');
+    expect(screen.getByLabelText(/Number of rows to generate/i).value).toBe('1000');
   });
 
   test('disables buttons during generation', async () => {

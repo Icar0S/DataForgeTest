@@ -59,7 +59,7 @@ describe('DataAccuracy Page', () => {
 
   test('renders back to home link', () => {
     renderDataAccuracy();
-    const backLink = screen.getByText('Voltar para Home');
+    const backLink = screen.getByText('Back to Home');
     expect(backLink).toBeInTheDocument();
     expect(backLink.closest('a')).toHaveAttribute('href', '/');
   });
