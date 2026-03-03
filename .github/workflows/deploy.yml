@@ -10,12 +10,12 @@ on:
       deploy_backend:
         description: 'Deploy backend to Render?'
         required: true
-        default: 'true'
+        default: true
         type: boolean
       deploy_frontend:
         description: 'Deploy frontend to Vercel?'
         required: true
-        default: 'true'
+        default: true
         type: boolean
 
 permissions:
@@ -91,30 +91,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install frontend dependencies
-        run: cd frontend && npm ci
-
-      - name: Build frontend for production
-        env:
-          REACT_APP_API_URL: https://dataforgetest-backend.onrender.com
-          CI: false
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          cd frontend
-          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
-
       - name: Check required secrets
         run: |
           MISSING=""
@@ -134,10 +110,9 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           cd frontend
-          npx vercel deploy --prebuilt \
+          npx vercel --prod \
             --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes \
-            --prod
+            --yes
 
       - name: Verify Vercel deploy
         run: |
