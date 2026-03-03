@@ -109,7 +109,11 @@ jobs:
         env:
           REACT_APP_API_URL: https://dataforgetest-backend.onrender.com
           CI: false
-        run: cd frontend && npm run build
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          cd frontend
+          npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
 
       - name: Check required secrets
         run: |
@@ -129,7 +133,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          npx vercel deploy --prebuilt frontend/build \
+          cd frontend
+          npx vercel deploy --prebuilt \
             --token=${{ secrets.VERCEL_TOKEN }} \
             --yes \
             --prod
