@@ -109,10 +109,15 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          cd frontend
-          npx vercel --prod \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --yes
+          # Pull project settings from Vercel (respects rootDirectory configured on the dashboard)
+          npx vercel pull --yes --environment=production \
+            --token=${{ secrets.VERCEL_TOKEN }}
+          # Build using project settings (rootDirectory=frontend is applied automatically)
+          npx vercel build --prod \
+            --token=${{ secrets.VERCEL_TOKEN }}
+          # Deploy the pre-built output
+          npx vercel deploy --prebuilt --prod \
+            --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Verify Vercel deploy
         run: |
