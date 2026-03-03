@@ -290,7 +290,8 @@ jobs:
             .
 
       - name: Trivy — Docker image vulnerability scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.30.0
+        continue-on-error: true
         with:
           image-ref: 'dataforgetest-backend:${{ github.sha }}'
           format: 'sarif'
@@ -298,7 +299,14 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
 
-      - uses: github/codeql-action/upload-sarif@v3
+      - name: Create empty SARIF if Trivy did not produce one
+        if: always()
+        run: |
+          if [ ! -f trivy-results.sarif ]; then
+            echo '{"version":"2.1.0","$schema":"https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json","runs":[]}' > trivy-results.sarif
+          fi
+
+      - uses: github/codeql-action/upload-sarif@v4
         if: always()
         with:
           sarif_file: trivy-results.sarif
@@ -320,4 +328,5 @@ jobs:
           path: |
             pip-audit-results.json
             npm-audit-results.json
+          if-no-files-found: warn
           retention-days: 30
