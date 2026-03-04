@@ -46,8 +46,29 @@ def detect_encoding(file_path: str) -> str:
     """
     with open(file_path, "rb") as f:
         raw_data = f.read(10000)  # Read first 10KB for detection
-        result = chardet.detect(raw_data)
-        return result["encoding"] or "utf-8"
+
+    # Try UTF-8 first; this also covers plain ASCII files which chardet may
+    # misdetect as windows-1252 when the sample is very small.
+    try:
+        raw_data.decode("utf-8")
+        return "utf-8"
+    except (UnicodeDecodeError, AttributeError):
+        pass
+
+    result = chardet.detect(raw_data)
+    encoding = result["encoding"] or "utf-8"
+    confidence = result.get("confidence", 0.0)
+
+    # When chardet is not confident about a specific ISO-8859-x variant (e.g.
+    # it returns iso-8859-3 for a file with only a handful of special bytes),
+    # normalise to iso-8859-1 which is the most prevalent Latin encoding for
+    # Portuguese/Brazilian content.  A high-confidence detection is respected
+    # so that legitimately different encodings (e.g. iso-8859-2 for Central
+    # European content) are preserved.
+    if encoding.lower().startswith("iso-8859-") and confidence < 0.9:
+        return "iso-8859-1"
+
+    return encoding
 
 
 def detect_csv_delimiter(file_path: str, encoding: str) -> str:
