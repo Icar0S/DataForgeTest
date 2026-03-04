@@ -272,12 +272,11 @@ const DatasetMetrics = () => {
                   className="hidden"
                   aria-label="Selecionar arquivo"
                 />
-                <button
-                  type="button"
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors"
+                <span
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-semibold transition-colors inline-block"
                 >
                   Selecionar Arquivo
-                </button>
+                </span>
               </button>
             ) : (
               <div className="space-y-4">

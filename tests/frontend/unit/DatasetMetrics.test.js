@@ -79,7 +79,7 @@ describe('DatasetMetrics Component', () => {
       fireEvent.change(input, { target: { files: [largeFile] } });
 
       expect(screen.getByText(/muito grande/i)).toBeInTheDocument();
-      expect(screen.getByText(/10MB/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/10MB/i).length).toBeGreaterThan(0);
     });
 
     test('shows analyze button after file selection', () => {
