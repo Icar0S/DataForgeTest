@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 # Supported file types for auto-import
-_AUTO_IMPORT_EXTENSIONS = {".txt", ".md", ".pdf"}
+_AUTO_IMPORT_EXTENSIONS = {".txt", ".md", ".pdf", ".csv"}
 
 
 class SimpleRAG:
@@ -140,6 +140,25 @@ class SimpleRAG:
                 print("[WARNING] PyPDF2 not installed; PDF files cannot be imported.")
             except Exception as e:  # pylint: disable=broad-exception-caught
                 print(f"[WARNING] Could not read PDF {file_path.name}: {e}")
+        elif suffix == ".csv":
+            try:
+                import pandas as pd  # pylint: disable=import-outside-toplevel
+
+                for encoding in ("utf-8", "latin-1", "cp1252"):
+                    try:
+                        df = pd.read_csv(file_path, encoding=encoding)
+                        # Convert DataFrame to readable text: header + rows
+                        lines = [" | ".join(str(c) for c in df.columns)]
+                        for _, row in df.iterrows():
+                            lines.append(" | ".join(str(v) for v in row.values))
+                        return "\n".join(lines)
+                    except UnicodeDecodeError:
+                        continue
+                return None
+            except ImportError:
+                print("[WARNING] pandas not installed; CSV files cannot be imported.")
+            except Exception as e:  # pylint: disable=broad-exception-caught
+                print(f"[WARNING] Could not read CSV {file_path.name}: {e}")
         return None
 
     def _auto_import_from_folder(self, folder: Path):
