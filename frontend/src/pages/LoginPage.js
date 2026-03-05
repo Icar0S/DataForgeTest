@@ -73,7 +73,6 @@ const translations = {
     profileSkip: 'Pular por agora',
     rightPanelTitle: 'Pipeline de Qualidade',
     rightPanelSubtitle: 'Monitoramento em tempo real',
-    detectionTitle: 'Detecções ao vivo',
     statsLabels: {
       tests: 'Testes',
       datasets: 'Datasets',
@@ -118,7 +117,6 @@ const translations = {
     profileSkip: 'Skip for now',
     rightPanelTitle: 'Quality Pipeline',
     rightPanelSubtitle: 'Real-time monitoring',
-    detectionTitle: 'Live detections',
     statsLabels: {
       tests: 'Tests',
       datasets: 'Datasets',
@@ -234,27 +232,6 @@ const PIPELINE_STEPS = [
   { name: 'Report Export', status: 'pending', progress: 0 },
 ];
 
-const FEED_POOL = [
-  { type: 'NULL_VALUE', color: 'orange', column: 'order_date', info: 'col: order_date row: 1523' },
-  { type: 'TYPE_MISMATCH', color: 'red', column: 'amount', info: 'expected float, got str' },
-  { type: 'OUTLIER', color: 'yellow', column: 'price', info: 'value: 99999.99' },
-  { type: 'VALID', color: 'green', column: 'customer_id', info: 'all 5000 rows OK' },
-  { type: 'DUPLICATE', color: 'orange', column: 'transaction_id', info: '3 duplicate keys' },
-  { type: 'FORMAT_ERROR', color: 'red', column: 'created_at', info: 'invalid ISO-8601' },
-  { type: 'SCHEMA_DRIFT', color: 'purple', column: 'user_email', info: 'new column detected' },
-  { type: 'NULL_VALUE', color: 'orange', column: 'product_sku', info: '12 nulls found' },
-  { type: 'VALID', color: 'green', column: 'region_code', info: 'schema match OK' },
-  { type: 'TYPE_MISMATCH', color: 'red', column: 'quantity', info: 'expected int, got float' },
-];
-
-const BADGE_COLORS = {
-  orange: 'bg-orange-900/40 text-orange-300 border-orange-700/50',
-  red: 'bg-red-900/40 text-red-300 border-red-700/50',
-  yellow: 'bg-yellow-900/40 text-yellow-300 border-yellow-700/50',
-  green: 'bg-green-900/40 text-green-300 border-green-700/50',
-  purple: 'bg-purple-900/40 text-purple-300 border-purple-700/50',
-};
-
 function StatCard({ icon: Icon, label, value, color }) {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -289,29 +266,9 @@ function StatCard({ icon: Icon, label, value, color }) {
 }
 
 function RightPanel({ t }) {
-  const [feed, setFeed] = useState(() => FEED_POOL.slice(0, 3));
-  const [feedIndex, setFeedIndex] = useState(3);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setFeed((prev) => {
-        const next = FEED_POOL[feedIndex % FEED_POOL.length];
-        const updated = [next, ...prev].slice(0, 5);
-        return updated;
-      });
-      setFeedIndex((i) => i + 1);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, [feedIndex]);
-
-  const getTimestamp = () => {
-    const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-  };
-
   return (
     <div className="hidden md:flex flex-col flex-1 gap-5 p-8 overflow-y-auto">
-      {/* Pipeline */}
+      {/* Section A — Pipeline */}
       <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-5">
         <div className="mb-4">
           <h3 className="text-white font-semibold">{t.rightPanelTitle}</h3>
@@ -359,46 +316,18 @@ function RightPanel({ t }) {
         </motion.div>
       </div>
 
-      {/* Stats */}
+      {/* Section B — Stats (flex-1 to fill remaining space) */}
       <motion.div
         initial="initial"
         animate="animate"
         variants={{ animate: { transition: { staggerChildren: 0.1 } } }}
-        className="grid grid-cols-2 gap-3"
+        className="grid grid-cols-2 gap-3 flex-1"
       >
         <StatCard icon={TestTube} label={t.statsLabels.tests} value="98+" color="text-purple-400" />
         <StatCard icon={Database} label={t.statsLabels.datasets} value="15000+" color="text-blue-400" />
         <StatCard icon={BarChart3} label={t.statsLabels.coverage} value="99%" color="text-green-400" />
         <StatCard icon={Zap} label={t.statsLabels.response} value="<2s" color="text-yellow-400" />
       </motion.div>
-
-      {/* Live Feed */}
-      <div className="bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 rounded-2xl p-4 flex-1">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm font-medium text-gray-300">📊 {t.detectionTitle}</span>
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse ml-auto" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <AnimatePresence>
-            {feed.map((item, idx) => (
-              <motion.div
-                key={`${item.type}-${idx}`}
-                variants={slideDown}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                className="flex items-center gap-2 text-xs"
-              >
-                <span className="text-gray-600 font-mono">{getTimestamp()}</span>
-                <span className={`px-1.5 py-0.5 rounded border text-[10px] font-mono ${BADGE_COLORS[item.color]}`}>
-                  {item.type}
-                </span>
-                <span className="text-gray-400 truncate">{item.info}</span>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </div>
     </div>
   );
 }

@@ -17,7 +17,10 @@ export default function LanguageToggle({ size = 'sm' }) {
     : 'px-4 py-2 text-sm';
 
   return (
-    <div className="flex items-center gap-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-1 border border-gray-700/50">
+    <div
+      data-testid="language-toggle"
+      className="flex items-center gap-2 bg-gray-800/50 backdrop-blur-sm rounded-lg p-1 border border-gray-700/50"
+    >
       <button
         onClick={() => changeLanguage('pt-BR')}
         className={`${btnClass} rounded-md transition-all flex items-center gap-1 ${

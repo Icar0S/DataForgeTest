@@ -207,3 +207,12 @@ describe('LoginPage — Error display', () => {
     expect(elements.length).toBeGreaterThan(0);
   });
 });
+
+describe('LoginPage — Right Panel', () => {
+  test('right panel does not contain live detection feed', () => {
+    renderLoginPage();
+    // "Detecções" / "Detections" should not appear — feed was removed
+    expect(screen.queryByText(/Detecções/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Detections/i)).not.toBeInTheDocument();
+  });
+});
