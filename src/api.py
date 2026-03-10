@@ -29,10 +29,20 @@ _CORS_ORIGINS = os.environ.get(
 
 CORS(
     app,
-    origins=_CORS_ORIGINS,
-    methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "Authorization"],
-    supports_credentials=False,
+    resources={
+        r"/api/checklist/*": {
+            "origins": _CORS_ORIGINS,
+            "methods": ["GET", "POST", "PUT", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": False,
+        },
+        r"/*": {
+            "origins": _CORS_ORIGINS,
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": False,
+        },
+    },
 )
 
 
